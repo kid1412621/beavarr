@@ -1,19 +1,20 @@
+import { useMutation } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import beaver from "@/assets/beaver.svg";
-import { Button } from "@/components/ui/button";
 import { hcWithType } from "server/dist/client";
-import { useMutation } from "@tanstack/react-query";
+import beaver from "@/assets/beaver.svg";
+import { ModeToggle } from "@/components/mode-toggle";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
 	component: Index,
 });
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
+const SERVER_URL = import.meta.env.DEV ? "http://localhost:4242" : "/";
 
 const client = hcWithType(SERVER_URL);
 
-type ResponseType = Awaited<ReturnType<typeof client.hello.$get>>;
+type ResponseType = Awaited<ReturnType<typeof client.api.hello.$get>>;
 
 function Index() {
 	const [data, setData] = useState<
@@ -23,7 +24,7 @@ function Index() {
 	const { mutate: sendRequest } = useMutation({
 		mutationFn: async () => {
 			try {
-				const res = await client.hello.$get();
+				const res = await client.api.hello.$get();
 				if (!res.ok) {
 					console.log("Error fetching data");
 					return;
@@ -59,6 +60,7 @@ function Index() {
 						Docs
 					</a>
 				</Button>
+				<ModeToggle />
 			</div>
 			{data && (
 				<pre className="bg-gray-100 p-4 rounded-md">

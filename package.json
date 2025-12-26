@@ -18,6 +18,11 @@
     "build": "turbo build",
     "build:client": "turbo build --filter=client",
     "build:server": "turbo build --filter=server",
+    "build:single": "bun run build && bun run copy:static && bun run build:server",
+    "copy:static": "rm -rf server/static && cp -r client/dist server/static",
+    "start:single": "cd server && bun dist/index.js",
+    "build:docker": "docker build -t beavarr .",
+    "start:docker": "docker run -p 4242:4242 --name beavarr --rm beavarr",
     "lint": "biome lint .",
     "type-check": "turbo type-check",
     "test": "turbo test",
@@ -39,10 +44,10 @@
   "devDependencies": {
     "@biomejs/biome": "^2.3.10",
     "bun-types": "latest",
-    "turbo": "^2.6.3"
+    "turbo": "^2.7.2"
   },
   "peerDependencies": {
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "hono": "^4.11.1"
