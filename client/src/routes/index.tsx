@@ -3,7 +3,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { hcWithType } from "server/dist/client";
 import beaver from "@/assets/beaver.svg";
-import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
@@ -60,7 +59,6 @@ function Index() {
 						Docs
 					</a>
 				</Button>
-				<ModeToggle />
 			</div>
 			{data && (
 				<pre className="bg-gray-100 p-4 rounded-md">

@@ -7,13 +7,28 @@ const port = parseInt(process.env.PORT || "4242");
 
 const app = new Hono();
 
+// Debug middleware - log all outgoing responses
+// app.use("*", async (c, next) => {
+// 	await next();
+// 	const status = c.res.status;
+
+// 	console.log(
+// 		`[${new Date().toISOString()}] ${c.req.method} ${c.req.url} -> ${status}`,
+// 	);
+// });
+
 // api
 if (process.env.NODE_ENV !== "production") {
 	app.use(cors());
 }
 
+import chatRoute from "./routes/chat";
+import settingsRoute from "./routes/settings";
+
 export const route = app
 	.basePath("/api")
+	.route("/settings", settingsRoute)
+	.route("/chat", chatRoute)
 	.get("/", (c) => {
 		return c.text("Hello Hono!");
 	})
@@ -28,11 +43,9 @@ export const route = app
 	});
 
 // ui
-app
-	.use("*", serveStatic({ root: "./static" }))
-	.get("*", async (c, next) => {
-		return serveStatic({ root: "./static", path: "index.html" })(c, next);
-	});
+app.use("*", serveStatic({ root: "./static" })).get("*", async (c, next) => {
+	return serveStatic({ root: "./static", path: "index.html" })(c, next);
+});
 
 export default {
 	port,
