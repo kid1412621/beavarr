@@ -24,10 +24,12 @@ if (process.env.NODE_ENV !== "production") {
 
 import chatRoute from "./routes/chat";
 import settingsRoute from "./routes/settings";
+import traktRoute from "./routes/trakt";
 
 export const route = app
 	.basePath("/api")
 	.route("/settings", settingsRoute)
+	.route("/trakt", traktRoute)
 	.route("/chat", chatRoute)
 	.get("/", (c) => {
 		return c.text("Hello Hono!");

@@ -71,7 +71,7 @@ function Root() {
                 />
                 <aside
                     className={cn(
-                        "fixed bottom-0 left-0 top-16 z-50 w-1/2 bg-[#E9ECEF] border-r flex flex-col transition-transform duration-200",
+                        "fixed bottom-0 left-0 top-16 z-50 w-1/2 bg-sidebar border-r flex flex-col transition-transform duration-200",
                         sidebarOpen ? "translate-x-0" : "-translate-x-full",
                         "lg:static lg:w-[200px] lg:translate-x-0 lg:h-full lg:shrink-0 lg:z-auto"
                     )}

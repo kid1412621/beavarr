@@ -10,6 +10,11 @@ While there are plenty of existing app building stacks out there, many of them a
 
 ## Features
 
+### Todo
+
+- explore the franchise/timeline
+- explore what's the references in the show/movie, like poster in the scene, etc
+
 - **Full-Stack TypeScript**: End-to-end type safety between client and server
 - **Shared Types**: Common type definitions shared between client and server
 - **Monorepo Structure**: Organized as a workspaces-based monorepo with Turbo for build orchestration

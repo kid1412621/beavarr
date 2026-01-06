@@ -33,8 +33,8 @@ export function Sidebar({ items, className, onItemClick }: SidebarProps) {
           className={cn(
             "flex items-center gap-2 px-3 h-[40px] text-base font-normal transition-colors border-l-2",
             location.pathname === item.to || (item.to !== "/" && location.pathname.startsWith(item.to))
-              ? "bg-[#F1F3F5] text-[#343A40] border-l-[#DA77F2]"
-              : "text-[#343A40] hover:bg-[#F1F3F5] hover:text-[#343A40] border-l-transparent"
+              ? "bg-sidebar-accent text-sidebar-accent-foreground border-l-sidebar-primary"
+              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-transparent"
           )}
         >
           {item.icon || defaultIcon}
