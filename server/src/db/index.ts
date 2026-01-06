@@ -16,6 +16,9 @@ sqlite.run(`
     radarr_api_key TEXT,
     trakt_client_id TEXT,
     trakt_client_secret TEXT,
+    trakt_access_token TEXT,
+    trakt_refresh_token TEXT,
+    trakt_token_expires_at INTEGER,
     tmdb_api_key TEXT,
     openai_api_key TEXT,
     openai_base_url TEXT,
@@ -24,8 +27,24 @@ sqlite.run(`
   )
 `);
 
+// Add new columns for OAuth tokens if they don't exist
+try {
+  sqlite.run("ALTER TABLE settings ADD COLUMN trakt_access_token TEXT");
+} catch {
+  // Column already exists
+}
+try {
+  sqlite.run("ALTER TABLE settings ADD COLUMN trakt_refresh_token TEXT");
+} catch {
+  // Column already exists
+}
+try {
+  sqlite.run("ALTER TABLE settings ADD COLUMN trakt_token_expires_at INTEGER");
+} catch {
+  // Column already exists
+}
 try {
   sqlite.run("ALTER TABLE settings ADD COLUMN openai_model TEXT");
-} catch (error) {
-  // Column likely already exists, ignore
+} catch {
+  // Column already exists
 }

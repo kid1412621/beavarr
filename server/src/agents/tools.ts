@@ -111,7 +111,25 @@ export const traktTrendingTool = new DynamicStructuredTool({
                 return JSON.stringify(results.slice(0, 10));
             }
         } catch (error) {
+            console.error("failed to call trakt", error)
             return `Error fetching trending from Trakt: ${error}`;
+        }
+    },
+});
+
+export const traktWatchlistTool = new DynamicStructuredTool({
+    name: "trakt_watchlist",
+    description: "Get the authenticated user's Trakt watchlist. Shows movies and/or TV shows the user wants to watch.",
+    schema: z.object({
+        type: z.enum(['movies', 'shows', 'all']).optional().default('all').describe("Type of content to fetch"),
+    }),
+    func: async ({ type }: { type: 'movies' | 'shows' | 'all' }) => {
+        try {
+            const results = await traktService.getWatchlist(type) as any[];
+            return JSON.stringify(results.slice(0, 20));
+        } catch (error) {
+            console.error("failed to call trakt watchlist", error)
+            return `Error fetching watchlist from Trakt: ${error}`;
         }
     },
 });

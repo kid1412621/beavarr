@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as Trakt_callbackRouteImport } from './routes/trakt_callback'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as IndexRouteImport } from './routes/index'
 
+const Trakt_callbackRoute = Trakt_callbackRouteImport.update({
+  id: '/trakt_callback',
+  path: '/trakt_callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -40,12 +46,14 @@ export interface FileRoutesByFullPath {
   '/chat': typeof ChatRoute
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
+  '/trakt_callback': typeof Trakt_callbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
+  '/trakt_callback': typeof Trakt_callbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,20 @@ export interface FileRoutesById {
   '/chat': typeof ChatRoute
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
+  '/trakt_callback': typeof Trakt_callbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/chat' | '/onboarding' | '/settings'
+  fullPaths: '/' | '/chat' | '/onboarding' | '/settings' | '/trakt_callback'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/chat' | '/onboarding' | '/settings'
-  id: '__root__' | '/' | '/chat' | '/onboarding' | '/settings'
+  to: '/' | '/chat' | '/onboarding' | '/settings' | '/trakt_callback'
+  id:
+    | '__root__'
+    | '/'
+    | '/chat'
+    | '/onboarding'
+    | '/settings'
+    | '/trakt_callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,10 +82,18 @@ export interface RootRouteChildren {
   ChatRoute: typeof ChatRoute
   OnboardingRoute: typeof OnboardingRoute
   SettingsRoute: typeof SettingsRoute
+  Trakt_callbackRoute: typeof Trakt_callbackRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/trakt_callback': {
+      id: '/trakt_callback'
+      path: '/trakt_callback'
+      fullPath: '/trakt_callback'
+      preLoaderRoute: typeof Trakt_callbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -107,6 +130,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChatRoute: ChatRoute,
   OnboardingRoute: OnboardingRoute,
   SettingsRoute: SettingsRoute,
+  Trakt_callbackRoute: Trakt_callbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
