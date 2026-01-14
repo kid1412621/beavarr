@@ -182,12 +182,42 @@ traktRoute.get('/user', async (c) => {
             name: user.name,
             vip: user.vip,
             vip_ep: user.vip_ep,
-            avatar: user.avatar,
+            avatar: user.images?.avatar?.full || null,
             joined: user.joined_at,
         });
     } catch (error) {
         console.error('Get user error:', error);
         return c.json({ error: 'Failed to get user' }, 500);
+    }
+});
+
+// Proxy avatar image through server to avoid CORS issues
+traktRoute.get('/avatar', async (c) => {
+    const avatarUrl = c.req.query('url');
+    if (!avatarUrl) {
+        return c.json({ error: 'Missing url parameter' }, 400);
+    }
+
+    try {
+        const response = await fetch(avatarUrl, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (compatible; Beavarr/1.0)',
+            },
+        });
+
+        if (!response.ok) {
+            return c.json({ error: 'Failed to fetch avatar' }, 500);
+        }
+
+        const contentType = response.headers.get('content-type') || 'image/jpeg';
+        c.header('Content-Type', contentType);
+        c.header('Cache-Control', 'public, max-age=3600');
+
+        const arrayBuffer = await response.arrayBuffer();
+        return c.body(arrayBuffer);
+    } catch (error) {
+        console.error('Avatar proxy error:', error);
+        return c.json({ error: 'Failed to fetch avatar' }, 500);
     }
 });
 
@@ -200,6 +230,85 @@ traktRoute.get('/watchlist', async (c) => {
     } catch (error) {
         console.error('Get watchlist error:', error);
         return c.json({ error: 'Failed to get watchlist' }, 500);
+    }
+});
+
+// === Device Flow Endpoints ===
+
+// Start device authorization flow
+traktRoute.post('/device/code', async (c) => {
+    try {
+        const deviceCode = await traktOAuthService.getDeviceCode();
+        return c.json({
+            device_code: deviceCode.device_code,
+            user_code: deviceCode.user_code,
+            verification_url: deviceCode.verification_url,
+            expires_in: deviceCode.expires_in,
+            interval: deviceCode.interval,
+        });
+    } catch (error) {
+        console.error('Device code error:', error);
+        return c.json({ error: 'Failed to start device authorization' }, 500);
+    }
+});
+
+// Poll for device authorization completion
+traktRoute.post('/device/poll', async (c) => {
+    try {
+        const { device_code } = await c.req.json();
+
+        if (!device_code) {
+            return c.json({ error: 'device_code required' }, 400);
+        }
+
+        const tokens = await traktOAuthService.pollForToken(device_code);
+
+        if (tokens === null) {
+            // Still waiting for user authorization
+            return c.json({ status: 'pending' });
+        }
+
+        // Authorization successful, save tokens
+        await traktOAuthService.saveTokens(tokens);
+
+        // Get user info
+        const user = await traktService.getUser();
+
+        return c.json({
+            status: 'authorized',
+            user: {
+                id: user.id,
+                username: user.username,
+                name: user.name,
+            },
+        });
+    } catch (error) {
+        console.error('Device poll error:', error);
+        return c.json({ error: 'Failed to poll for authorization' }, 500);
+    }
+});
+
+// Disconnect using device flow (with token revocation)
+traktRoute.delete('/device', async (c) => {
+    try {
+        await traktOAuthService.disconnect();
+        return c.json({ success: true });
+    } catch (error) {
+        console.error('Device disconnect error:', error);
+        return c.json({ error: 'Failed to disconnect' }, 500);
+    }
+});
+
+// Check if using custom credentials (advanced mode)
+traktRoute.get('/auth-mode', async (c) => {
+    try {
+        const isCustom = await traktOAuthService.isUsingCustomCredentials();
+        return c.json({
+            mode: isCustom ? 'authorization_code' : 'device',
+        });
+    } catch (error) {
+        console.error('Auth mode check error:', error);
+        return c.json({ error: 'Failed to check auth mode' }, 500);
     }
 });
 
