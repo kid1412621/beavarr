@@ -7,8 +7,12 @@ interface TraktUser {
     name: string;
     vip: boolean;
     vip_ep: boolean;
-    avatar: string | null;
     joined_at: string;
+    images?: {
+        avatar?: {
+            full?: string;
+        };
+    };
 }
 
 export class TraktService {
@@ -38,8 +42,8 @@ export class TraktService {
         return {
             'Content-Type': 'application/json',
             'trakt-api-version': '2',
+            'trakt-api-key': traktOAuthService.getClientId(),
             'Authorization': `Bearer ${accessToken}`,
-            'trakt-api-key': `${process.env.TRAKT_CLIENT_ID}`
         };
     }
 
@@ -48,7 +52,6 @@ export class TraktService {
         const response = await fetch('https://api.trakt.tv/movies/trending', {
             headers: this.headers(accessToken),
         });
-        console.log("trakt response", response)
         if (!response.ok) {
             throw new Error(`Failed to fetch trending movies from Trakt: ${response.statusText}`);
         }
@@ -68,10 +71,9 @@ export class TraktService {
 
     async getUser(): Promise<TraktUser> {
         const accessToken = await this.getValidToken();
-        const response = await fetch('https://api.trakt.tv/users/me', {
+        const response = await fetch('https://api.trakt.tv/users/me?extended=full', {
             headers: this.headers(accessToken),
         });
-        console.log("trakt response", response)
         if (!response.ok) {
             throw new Error(`Failed to fetch Trakt user: ${response.statusText}`);
         }
