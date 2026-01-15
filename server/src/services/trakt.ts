@@ -77,7 +77,7 @@ export class TraktService {
         if (!response.ok) {
             throw new Error(`Failed to fetch Trakt user: ${response.statusText}`);
         }
-        return await response.json() as Promise<TraktUser>;
+        return await response.json() as TraktUser;
     }
 
     async getWatchlist(type: 'movies' | 'shows' | 'all' = 'all') {
