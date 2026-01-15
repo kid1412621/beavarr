@@ -69,7 +69,7 @@ export function TraktSettings({ form }: { form: any }) {
         if (!deviceCodeInfo || status?.connected) return;
 
         const pollInterval = deviceCodeInfo.interval * 1000;
-        let timeoutId: NodeJS.Timeout;
+        let timeoutId: ReturnType<typeof setTimeout>;
 
         const poll = async () => {
             try {
