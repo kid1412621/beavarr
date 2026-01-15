@@ -12,7 +12,7 @@ export async function updateSettings(updates: Partial<InsertSettings>) {
     const existing = await getSettings();
     if (existing) {
         const updated = await db.update(settings)
-            .set(updates as Record<string, unknown>)
+            .set(updates)
             .where(eq(settings.id, existing.id))
             .returning();
         return updated[0];
