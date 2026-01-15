@@ -1,7 +1,9 @@
 import { Hono } from "hono";
 import { createMediaAgent } from "../agents/media_agent";
 import { getSettings } from "../db/utils";
+import { createLogger } from "../lib/logger";
 
+const logger = createLogger("chat");
 const chatRoute = new Hono();
 
 chatRoute.post("/", async (c) => {
@@ -11,7 +13,7 @@ chatRoute.post("/", async (c) => {
             return c.json({ error: "Message is required" }, 400);
         }
 
-        console.log("Creating agent...");
+        logger.info("Creating agent...");
         const settings = await getSettings();
 
         if (!settings?.openaiApiKey) {
@@ -23,13 +25,13 @@ chatRoute.post("/", async (c) => {
             openaiBaseUrl: settings.openaiBaseUrl,
             openaiModel: settings.openaiModel
         });
-        console.log("Agent created. Invoking...");
+        logger.info("Agent created. Invoking...");
 
         const result = await agent.invoke({
             messages: [{ role: "user", content: message }],
         });
 
-        console.log("Agent result:", result);
+        logger.debug({ result }, "Agent result");
 
         // Extract the last assistant message from the result
         const messages = result.messages ?? [];
@@ -45,7 +47,7 @@ chatRoute.post("/", async (c) => {
             messages: messages
         });
     } catch (error: any) {
-        console.error("Chat error:", error);
+        logger.error(error, "Chat error");
         const errorMessage = error.message || "Unknown error";
         if (errorMessage.includes("OpenAI API Key not configured")) {
             return c.json({ error: "OpenAI API Key not configured. Please go to settings." }, 400);

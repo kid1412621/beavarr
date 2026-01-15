@@ -1,7 +1,10 @@
 import { Database } from "bun:sqlite";
 import { drizzle } from "drizzle-orm/bun-sqlite";
 import { resolve } from "path"; // Import resolve from Node.js path module
+import { createLogger } from "../lib/logger";
 import * as schema from "./schema";
+
+const logger = createLogger("db");
 
 const sqlite = new Database(resolve(import.meta.dir, "../../sqlite.db"));
 export const db = drizzle(sqlite, { schema });
@@ -30,21 +33,33 @@ sqlite.run(`
 // Add new columns for OAuth tokens if they don't exist
 try {
   sqlite.run("ALTER TABLE settings ADD COLUMN trakt_access_token TEXT");
-} catch {
-  // Column already exists
+} catch (error) {
+  const message = error instanceof Error ? error.message : String(error);
+  if (!message.includes("already exists")) {
+    logger.warn({ error }, "Failed to add trakt_access_token column");
+  }
 }
 try {
   sqlite.run("ALTER TABLE settings ADD COLUMN trakt_refresh_token TEXT");
-} catch {
-  // Column already exists
+} catch (error) {
+  const message = error instanceof Error ? error.message : String(error);
+  if (!message.includes("already exists")) {
+    logger.warn({ error }, "Failed to add trakt_refresh_token column");
+  }
 }
 try {
   sqlite.run("ALTER TABLE settings ADD COLUMN trakt_token_expires_at INTEGER");
-} catch {
-  // Column already exists
+} catch (error) {
+  const message = error instanceof Error ? error.message : String(error);
+  if (!message.includes("already exists")) {
+    logger.warn({ error }, "Failed to add trakt_token_expires_at column");
+  }
 }
 try {
   sqlite.run("ALTER TABLE settings ADD COLUMN openai_model TEXT");
-} catch {
-  // Column already exists
+} catch (error) {
+  const message = error instanceof Error ? error.message : String(error);
+  if (!message.includes("already exists")) {
+    logger.warn({ error }, "Failed to add openai_model column");
+  }
 }
