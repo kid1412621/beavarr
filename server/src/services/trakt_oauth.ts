@@ -1,4 +1,7 @@
 import { getSettings, updateSettings } from '../db/utils';
+import { createLogger } from '../lib/logger';
+
+const logger = createLogger('trakt-oauth');
 
 const TRAKT_AUTH_URL = 'https://trakt.tv/oauth/authorize';
 const TRAKT_TOKEN_URL = 'https://api.trakt.tv/oauth/token';
@@ -225,7 +228,7 @@ export class TraktOAuthService {
                 client_secret: clientSecret,
             }),
         }).catch(err => {
-            console.error('Failed to revoke token:', err);
+            logger.error(err, 'Failed to revoke token');
         });
     }
 

@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { serveStatic } from "hono/bun";
 import { cors } from "hono/cors";
 import type { ApiResponse } from "shared/dist";
+import { logger } from "./lib/logger";
 
 const port = parseInt(process.env.PORT || "4242");
 
@@ -12,7 +13,7 @@ const app = new Hono();
 // 	await next();
 // 	const status = c.res.status;
 
-// 	console.log(
+// 	logger.info(
 // 		`[${new Date().toISOString()}] ${c.req.method} ${c.req.url} -> ${status}`,
 // 	);
 // });
@@ -53,3 +54,5 @@ export default {
 	port,
 	fetch: app.fetch,
 };
+
+logger.info({ port }, "Server starting");
