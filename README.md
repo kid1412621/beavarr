@@ -1,21 +1,24 @@
-# bhvr 🦫
-
-![cover](https://cdn.stevedylan.dev/ipfs/bafybeievx27ar5qfqyqyud7kemnb5n2p4rzt2matogi6qttwkpxonqhra4)
-
-A full-stack TypeScript monorepo starter with shared types, using Bun, Hono, Vite, and React.
-
-## Why bhvr?
-
-While there are plenty of existing app building stacks out there, many of them are either bloated, outdated, or have too much of a vendor lock-in. bhvr is built with the opinion that you should be able to deploy your client or server in any environment while also keeping type safety.
-
+# beavarr 🦫
+ 
+![logo](client/src/assets/logo.png)
+ 
+A full-stack TypeScript monorepo application that leverages LLMs along with Trakt, Sonarr, and Radarr to give users comprehensive advice on their TV/movie watch experience.
+ 
+## Why beavarr?
+ 
+Beavarr combines the "Beaver" from the BHVR tech stack with the "*arr" stack (Sonarr/Radarr) ecosystem. It aims to modernize media management by integrating intelligent agents to guide your viewing habits.
+ 
+While built on the solid foundation of the BHVR stack, beavarr extends it to create a personalized media assistant.
+ 
 ## Features
 
-### Todo
-
+### TODO
 - explore the franchise/timeline
 - explore what's the references in the show/movie, like poster in the scene, etc
 
-- **Full-Stack TypeScript**: End-to-end type safety between client and server
+- **LLM Integration**: AI-powered recommendations and insights for your library.
+- **Media Stack Integration**: Seamlessly works with Trakt, Sonarr, and Radarr.
+- **Full-Stack TypeScript**: End-to-end type safety between client and server.
 - **Shared Types**: Common type definitions shared between client and server
 - **Monorepo Structure**: Organized as a workspaces-based monorepo with Turbo for build orchestration
 - **Modern Stack**:
