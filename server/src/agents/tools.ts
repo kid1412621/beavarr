@@ -16,7 +16,7 @@ export const sonarrSearchTool = new DynamicStructuredTool({
     }),
     func: async ({ term }: { term: string }) => {
         try {
-            const results = (await sonarrService.search(term)) as any[];
+            const results = await sonarrService.search(term);
             return JSON.stringify(results.slice(0, 5)); // Limit to 5 results
         } catch (error) {
             return `Error searching Sonarr: ${error}`;
@@ -73,7 +73,7 @@ export const radarrSearchTool = new DynamicStructuredTool({
     }),
     func: async ({ term }: { term: string }) => {
         try {
-            const results = (await radarrService.search(term)) as any[];
+            const results = await radarrService.search(term);
             return JSON.stringify(results.slice(0, 5));
         } catch (error) {
             return `Error searching Radarr: ${error}`;
@@ -127,10 +127,10 @@ export const traktTrendingTool = new DynamicStructuredTool({
     func: async ({ type }: { type: "movies" | "shows" }) => {
         try {
             if (type === "movies") {
-                const results = (await traktService.getTrendingMovies()) as any[];
+                const results = await traktService.getTrendingMovies();
                 return JSON.stringify(results.slice(0, 10));
             } else {
-                const results = (await traktService.getTrendingShows()) as any[];
+                const results = await traktService.getTrendingShows();
                 return JSON.stringify(results.slice(0, 10));
             }
         } catch (error) {
@@ -153,7 +153,7 @@ export const traktWatchlistTool = new DynamicStructuredTool({
     }),
     func: async ({ type }: { type: "movies" | "shows" | "all" }) => {
         try {
-            const results = (await traktService.getWatchlist(type)) as any[];
+            const results = await traktService.getWatchlist(type);
             return JSON.stringify(results.slice(0, 20));
         } catch (error) {
             logger.error(error, "failed to call trakt watchlist");
@@ -171,7 +171,7 @@ export const tmdbSearchTool = new DynamicStructuredTool({
     }),
     func: async ({ query }: { query: string }) => {
         try {
-            const results = (await tmdbService.searchMulti(query)) as any;
+            const results = await tmdbService.searchMulti(query);
             return JSON.stringify(results.results.slice(0, 5));
         } catch (error) {
             return `Error searching TMDB: ${error}`;
