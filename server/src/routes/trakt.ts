@@ -4,6 +4,7 @@ import { getSettings } from "../db/utils";
 import { createLogger } from "../lib/logger";
 import { traktService } from "../services/trakt";
 import { traktOAuthService } from "../services/trakt_oauth";
+import { setCookie } from "hono/cookie";
 
 const logger = createLogger("trakt");
 const traktRoute = new Hono();
@@ -20,16 +21,13 @@ traktRoute.get("/auth-url", async (c) => {
         const state = randomUUID();
 
         // Store state in a cookie for validation on callback
-        c.header(
-            "Set-Cookie",
-            `trakt_oauth_state=${state}; HttpOnly; SameSite=Lax; Path=/; Max-Age=600`,
-        );
-        if (process.env.NODE_ENV === "production") {
-            c.header(
-                "Set-Cookie",
-                `trakt_oauth_state=${state}; HttpOnly; SameSite=Lax; Path=/; Max-Age=600; Secure`,
-            );
-        }
+        setCookie(c, "trakt_oauth_state", state, {
+            httpOnly: true,
+            sameSite: "Lax",
+            path: "/",
+            maxAge: 600,
+            secure: process.env.NODE_ENV === "production",
+        });
 
         const authUrl = traktOAuthService.getAuthorizationUrl(settings.traktClientId!, state);
         const redirectUri = traktOAuthService.getRedirectUri();

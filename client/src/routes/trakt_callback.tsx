@@ -15,7 +15,7 @@ interface State {
 function TraktCallback() {
     const navigate = useNavigate();
     const [state, setState] = useState<State>({ status: "loading" });
-    const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:4242"
+    const SERVER_URL = import.meta.env.DEV ? "http://localhost:4242" : "/";
 
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
