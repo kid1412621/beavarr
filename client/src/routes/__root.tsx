@@ -1,19 +1,22 @@
 import { useState } from "react";
-import { createRootRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { createRootRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { hcWithType } from "server/dist/client";
 import { useQuery } from "@tanstack/react-query";
 import { Sidebar } from "@/components/sidebar";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Home, MessageSquare, Settings } from "lucide-react";
 
 const SERVER_URL = import.meta.env.DEV ? "http://localhost:4242" : "/";
 const client = hcWithType(SERVER_URL);
 
+
+
 const navItems = [
-    { title: "Home", to: "/" },
-    { title: "Chat", to: "/chat" },
-    { title: "Settings", to: "/settings" },
+    { title: "Home", to: "/", icon: <Home className="size-4" /> },
+    { title: "Chat", to: "/chat", icon: <MessageSquare className="size-4" /> },
+    { title: "Settings", to: "/settings", icon: <Settings className="size-4" /> },
 ];
 
 function Root() {
@@ -23,7 +26,7 @@ function Root() {
     useQuery({
         queryKey: ['settings'],
         queryFn: async () => {
-            const res = await (client.api as any).settings.$get();
+            const res = await client.api.settings.$get();
             if (!res.ok) throw new Error('Failed to fetch settings');
             const settings = await res.json();
             if (!settings?.openaiApiKey) {
@@ -57,7 +60,10 @@ function Root() {
                         </svg>
                     </div>
                 </Button>
-                <span className="font-semibold">Beavarr</span>
+                <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                    <img src="/beaver.svg" alt="Beavarr Logo" className="size-4" />
+                    <span className="font-semibold text-lg">Beavarr</span>
+                </Link>
             </header>
 
             <div className="flex flex-1 overflow-hidden relative">

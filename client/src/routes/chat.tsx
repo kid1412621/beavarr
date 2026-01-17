@@ -53,7 +53,7 @@ function ChatPage() {
         setIsLoading(true)
 
         try {
-            const res = await (client.api as any).chat.$post({
+            const res = await client.api.chat.$post({
                 json: { message: text }
             })
 

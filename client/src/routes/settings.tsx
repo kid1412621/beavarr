@@ -22,7 +22,7 @@ function Settings() {
     const { data: initialSettings, isPending } = useQuery({
         queryKey: ['settings'],
         queryFn: async () => {
-            const res = await (client.api as any).settings.$get();
+            const res = await client.api.settings.$get();
             if (!res.ok) throw new Error('Failed to fetch settings');
             return await res.json();
         },
@@ -38,7 +38,7 @@ function Settings() {
 function InnerForm({ initialValues }: { initialValues: any }) {
     const { mutate: saveSettings, isPending: isSaving } = useMutation({
         mutationFn: async (values: SettingsForm) => {
-            const res = await (client.api as any).settings.$post({ json: values });
+            const res = await client.api.settings.$post({ json: values });
             if (!res.ok) throw new Error('Failed to save settings');
             return await res.json();
         },

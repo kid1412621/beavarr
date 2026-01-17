@@ -29,7 +29,7 @@ export function TraktSettings({ form }: { form: any }) {
     const { data: status } = useQuery({
         queryKey: ['trakt-status'],
         queryFn: async () => {
-            const res = await (client.api as any).trakt.status.$get();
+            const res = await client.api.trakt.status.$get();
             if (!res.ok) throw new Error('Failed to fetch status');
             return await res.json();
         },
@@ -39,7 +39,7 @@ export function TraktSettings({ form }: { form: any }) {
     const { data: authMode } = useQuery({
         queryKey: ['trakt-auth-mode'],
         queryFn: async () => {
-            const res = await (client.api as any).trakt['auth-mode'].$get();
+            const res = await client.api.trakt['auth-mode'].$get();
             if (!res.ok) return { mode: 'device' };
             return await res.json();
         },
@@ -48,7 +48,7 @@ export function TraktSettings({ form }: { form: any }) {
     // Start device code flow
     const startDeviceCode = useMutation({
         mutationFn: async () => {
-            const res = await (client.api as any).trakt['device/code'].$post();
+            const res = await client.api.trakt.device.code.$post();
             if (!res.ok) throw new Error('Failed to start device authorization');
             return await res.json() as DeviceCodeInfo;
         },
@@ -74,7 +74,7 @@ export function TraktSettings({ form }: { form: any }) {
         const poll = async () => {
             try {
                 // Store device code in memory for polling
-                const res = await (client.api as any).trakt['device/poll'].$post({
+                const res = await client.api.trakt.device.poll.$post({
                     json: { device_code: deviceCodeInfo.device_code }
                 });
 
@@ -135,7 +135,7 @@ export function TraktSettings({ form }: { form: any }) {
     const handleDisconnect = useMutation({
         mutationFn: async () => {
             const endpoint = authMode?.mode === 'authorization_code' ? 'disconnect' : 'device';
-            const res = await (client.api as any).trakt[endpoint].$delete();
+            const res = await client.api.trakt[endpoint].$delete();
             if (!res.ok) throw new Error('Failed to disconnect');
             return await res.json();
         },
@@ -161,7 +161,7 @@ export function TraktSettings({ form }: { form: any }) {
     const { data: user } = useQuery({
         queryKey: ['trakt-user'],
         queryFn: async () => {
-            const res = await (client.api as any).trakt.user.$get();
+            const res = await client.api.trakt.user.$get();
             if (!res.ok) return null;
             return await res.json();
         },

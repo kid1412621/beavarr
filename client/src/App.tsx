@@ -20,7 +20,7 @@ declare module "@tanstack/react-router" {
 export default function App() {
     return (
         <StrictMode>
-            <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+            <ThemeProvider>
                 <QueryClientProvider client={queryClient}>
                     <RouterProvider router={router} />
                 </QueryClientProvider>
