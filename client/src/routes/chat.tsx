@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useRef, useEffect } from 'react'
-import { hcWithType } from 'server/dist/client'
+import { client } from '@/lib/api'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -20,8 +20,7 @@ interface MediaItem {
     seasons?: any[]
 }
 
-const SERVER_URL = import.meta.env.DEV ? "http://localhost:4242" : "/";
-const client = hcWithType(SERVER_URL);
+
 
 export const Route = createFileRoute('/chat')({
     component: ChatPage,

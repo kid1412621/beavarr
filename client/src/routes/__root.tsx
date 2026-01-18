@@ -1,17 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createRootRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-import { hcWithType } from "server/dist/client";
 import { useQuery } from "@tanstack/react-query";
 import { Sidebar } from "@/components/sidebar";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Home, MessageSquare, Settings } from "lucide-react";
-
-const SERVER_URL = import.meta.env.DEV ? "http://localhost:4242" : "/";
-const client = hcWithType(SERVER_URL);
-
-
+import { settingsQueryOptions } from "@/lib/api";
 
 const navItems = [
     { title: "Home", to: "/", icon: <Home className="size-4" /> },
@@ -23,18 +18,13 @@ function Root() {
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    useQuery({
-        queryKey: ['settings'],
-        queryFn: async () => {
-            const res = await client.api.settings.$get();
-            if (!res.ok) throw new Error('Failed to fetch settings');
-            const settings = await res.json();
-            if (!settings?.openaiApiKey) {
-                navigate({ to: '/onboarding' });
-            }
-            return settings;
-        },
-    });
+    const { data: settings } = useQuery(settingsQueryOptions);
+
+    useEffect(() => {
+        if (settings && !settings.openaiApiKey) {
+            navigate({ to: '/onboarding' });
+        }
+    }, [settings, navigate]);
 
     return (
         <div className={cn("h-screen bg-background text-foreground flex flex-col", "font-sans antialiased")}>

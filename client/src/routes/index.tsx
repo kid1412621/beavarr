@@ -1,17 +1,15 @@
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { hcWithType } from "server/dist/client";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
+import { client } from "@/lib/api";
 
 export const Route = createFileRoute("/")({
 	component: Index,
 });
 
-const SERVER_URL = import.meta.env.DEV ? "http://localhost:4242" : "/";
 
-const client = hcWithType(SERVER_URL);
 
 type ResponseType = Awaited<ReturnType<typeof client.api.hello.$get>>;
 

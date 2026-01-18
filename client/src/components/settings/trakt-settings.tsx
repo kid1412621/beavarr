@@ -4,11 +4,8 @@ import { Label } from '@/components/ui/label'
 import { Clipboard, ExternalLink, RefreshCw } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { hcWithType } from 'server/dist/client'
-import { useState, useEffect } from 'react'
-
-const SERVER_URL = import.meta.env.DEV ? "http://localhost:4242" : "/";
-const client = hcWithType(SERVER_URL);
+import { client } from "@/lib/api";
+import { useState, useEffect } from 'react';
 
 interface DeviceCodeInfo {
     device_code: string;
@@ -286,7 +283,15 @@ export function TraktSettings({ form }: { form: any }) {
                     <div className="flex items-center justify-between">
                         <h4 className="font-medium">Authorization Code Flow</h4>
                         <p className="text-xs text-muted-foreground">
-                            For advanced users with custom Trakt app credentials
+                            For advanced users with custom Trakt app credentials.{' '}
+                            <a
+                                href="https://trakt.tv/oauth/applications"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline hover:text-foreground"
+                            >
+                                Create your app here
+                            </a>
                         </p>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
