@@ -1,34 +1,46 @@
 # beavarr 🦫
- 
+
 ![logo](client/src/assets/logo.png)
- 
-A full-stack TypeScript monorepo application that leverages LLMs along with Trakt, Sonarr, and Radarr to give users comprehensive advice on their TV/movie watch experience.
- 
-## Why beavarr?
- 
-Beavarr combines the "Beaver" from the BHVR tech stack with the "*arr" stack (Sonarr/Radarr) ecosystem. It aims to modernize media management by integrating intelligent agents to guide your viewing habits.
- 
+
+A full-stack TypeScript monorepo application that leverages LLMs along with Trakt, Sonarr, and Radarr to give users comprehensive advice on their show/movie watch experience.
+
+## What's beavarr?
+
+Beavarr combines the "Beaver" from the BHVR tech stack with the "\*arr" stack (Sonarr/Radarr) ecosystem. It aims to modernize media management by integrating intelligent agents to guide your viewing habits.
+
 While built on the solid foundation of the BHVR stack, beavarr extends it to create a personalized media assistant.
- 
+
 ## Features
 
+- **LLM Integration**: AI-powered recommendations and insights for your library.
+  - OpenAI API compatible
+- **Media Stack Integration**: Seamlessly works with Trakt, Sonarr, and Radarr.
+
+  | service       | Watch history | Library | Metadata |
+  | ------------- | :-----------: | :-----: | :------: |
+  | Sonarr        |               |   ✅    |    ✅    |
+  | Radarr        |               |   ✅    |    ✅    |
+  | Jellyfin(WIP) |      ✅       |   ✅    |    ✅    |
+  | Trakt         |      ✅       |         |          |
+  | TMDB(Planed)  |               |         |    ✅    |
+  | TVDB(Planed)  |               |         |    ✅    |
+  | IMDB(Planed)  |               |         |    ✅    |
+
 ### TODO
+
 - explore the franchise/timeline
 - explore what's the references in the show/movie, like poster in the scene, etc
 
-- **LLM Integration**: AI-powered recommendations and insights for your library.
-- **Media Stack Integration**: Seamlessly works with Trakt, Sonarr, and Radarr.
-- **Full-Stack TypeScript**: End-to-end type safety between client and server.
-- **Shared Types**: Common type definitions shared between client and server
-- **Monorepo Structure**: Organized as a workspaces-based monorepo with Turbo for build orchestration
-- **Modern Stack**:
-  - [Bun](https://bun.sh) as the JavaScript runtime and package manager
-  - [Hono](https://hono.dev) as the backend framework
-  - [Vite](https://vitejs.dev) for frontend bundling
-  - [React](https://react.dev) for the frontend UI
-  - [Turbo](https://turbo.build) for monorepo build orchestration and caching
+## Tech statck
 
-## Project Structure
+- [TypeScript](https://www.typescriptlang.org/docs/) full-stack
+- [Bun](https://bun.sh) as the JavaScript runtime and package manager
+- [Hono](https://hono.dev) as the backend framework
+- [Vite](https://vitejs.dev) for frontend bundling
+- [React](https://react.dev) for the frontend UI
+- [Turbo](https://turbo.build) for monorepo build orchestration and caching
+
+### Project Structure
 
 ```
 .
@@ -40,7 +52,7 @@ While built on the solid foundation of the BHVR stack, beavarr extends it to cre
 └── turbo.json            # Turbo configuration for build orchestration
 ```
 
-### Server
+#### Server
 
 bhvr uses Hono as a backend API for its simplicity and massive ecosystem of plugins. If you have ever used Express then it might feel familiar. Declaring routes and returning data is easy.
 
@@ -81,7 +93,7 @@ export default app;
 
 If you wanted to add a database to Hono you can do so with a multitude of Typescript libraries like [Supabase](https://supabase.com), or ORMs like [Drizzle](https://orm.drizzle.team/docs/get-started) or [Prisma](https://www.prisma.io/orm)
 
-### Client
+#### Client
 
 bhvr uses Vite + React Typescript template, which means you can build your frontend just as you would with any other React app. This makes it flexible to add UI components like [shadcn/ui](https://ui.shadcn.com) or routing using [React Router](https://reactrouter.com/start/declarative/installation).
 
@@ -160,7 +172,7 @@ function App() {
 export default App
 ```
 
-### Shared
+#### Shared
 
 The Shared package is used for anything you want to share between the Server and Client. This could be types or libraries that you use in both environments.
 
@@ -186,9 +198,9 @@ By running `bun run dev` or `bun run build` it will compile and export the packa
 import { ApiResponse } from "shared";
 ```
 
-## Getting Started
+### Getting Started
 
-### Quick Start
+#### Quick Start
 
 You can start a new bhvr project using the [CLI](https://github.com/stevedylandev/create-bhvr)
 
@@ -196,14 +208,14 @@ You can start a new bhvr project using the [CLI](https://github.com/stevedylande
 bun create bhvr
 ```
 
-### Installation
+#### Installation
 
 ```bash
 # Install dependencies for all workspaces
 bun install
 ```
 
-### Development
+#### Development
 
 ```bash
 # Run all workspaces in development mode with Turbo
@@ -214,7 +226,7 @@ bun run dev:client    # Run the Vite dev server for React
 bun run dev:server    # Run the Hono backend
 ```
 
-### Building
+#### Building
 
 ```bash
 # Build all workspaces with Turbo
@@ -225,7 +237,7 @@ bun run build:client  # Build the React frontend
 bun run build:server  # Build the Hono backend
 ```
 
-### Additional Commands
+#### Additional Commands
 
 ```bash
 # Lint all workspaces
@@ -238,36 +250,8 @@ bun run type-check
 bun run test
 ```
 
-### Deployment
+## Credits
 
-Deploying each piece is very versatile and can be done numerous ways, and exploration into automating these will happen at a later date. Here are some references in the meantime.
-
-**Client**
-
-- [Orbiter](https://orbiter.host)
-- [GitHub Pages](https://vite.dev/guide/static-deploy.html#github-pages)
-- [Netlify](https://vite.dev/guide/static-deploy.html#netlify)
-- [Cloudflare Pages](https://vite.dev/guide/static-deploy.html#cloudflare-pages)
-
-**Server**
-
-- [Cloudflare Worker](https://gist.github.com/stevedylandev/4aa1fc569bcba46b7169193c0498d0b3)
-- [Bun](https://hono.dev/docs/getting-started/bun)
-- [Node.js](https://hono.dev/docs/getting-started/nodejs)
-
-## Type Sharing
-
-Types are automatically shared between the client and server thanks to the shared package and TypeScript path aliases. You can import them in your code using:
-
-```typescript
-import { ApiResponse } from "shared/types";
-```
-
-## Learn More
-
-- [Bun Documentation](https://bun.sh/docs)
-- [Vite Documentation](https://vitejs.dev/guide/)
-- [React Documentation](https://react.dev/learn)
-- [Hono Documentation](https://hono.dev/docs)
-- [Turbo Documentation](https://turbo.build/docs)
-- [TypeScript Documentation](https://www.typescriptlang.org/docs/)
+- [BHVR](https://github.com/stevedylandev/bhvr)
+- [Langchain](https://langchain.com)
+- [Recommendarr](https://github.com/TannerMidd/recommendarr)
