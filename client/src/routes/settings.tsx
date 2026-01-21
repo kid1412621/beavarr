@@ -3,6 +3,8 @@ import { useForm } from '@tanstack/react-form'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Separator } from "@/components/ui/separator"
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { SonarrSettings } from '@/components/settings/sonarr-settings'
 import { RadarrSettings } from '@/components/settings/radarr-settings'
@@ -25,6 +27,7 @@ function Settings() {
 
     return <InnerForm key={initialSettings ? 'loaded' : 'empty'} initialValues={initialSettings} />
 }
+
 
 function InnerForm({ initialValues }: { initialValues: any }) {
     const queryClient = useQueryClient();
@@ -51,6 +54,7 @@ function InnerForm({ initialValues }: { initialValues: any }) {
             tmdbApiKey: initialValues?.tmdbApiKey || '',
             openaiApiKey: initialValues?.openaiApiKey || '',
             openaiBaseUrl: initialValues?.openaiBaseUrl || '',
+            openaiModel: initialValues?.openaiModel || '',
         } as SettingsForm,
         validators: {
             onChange: settingsSchema
@@ -61,13 +65,13 @@ function InnerForm({ initialValues }: { initialValues: any }) {
     })
 
     return (
-        <div className="p-4 max-w-2xl mx-auto">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Settings</CardTitle>
-                    <CardDescription>Configure your *arr stack and AI integrations.</CardDescription>
+        <div className="p-4 max-w-4xl mx-auto">
+            <Card className="border-none shadow-none bg-transparent">
+                <CardHeader className="px-0">
+                    <CardTitle className="text-2xl">Settings</CardTitle>
+                    <CardDescription>Configure your specific services.</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="px-0">
                     <form
                         onSubmit={(e) => {
                             e.preventDefault()
@@ -76,13 +80,60 @@ function InnerForm({ initialValues }: { initialValues: any }) {
                         }}
                         className="space-y-4"
                     >
-                        <SonarrSettings form={form} />
-                        <RadarrSettings form={form} />
-                        <TraktSettings form={form} />
-                        <MediaSettings form={form} />
-                        <AiSettings form={form} />
+                        <Tabs defaultValue="ai" className="w-full">
+                            <TabsList className="grid w-full grid-cols-2">
+                                <TabsTrigger value="ai">AI Settings</TabsTrigger>
+                                <TabsTrigger value="media">Media Services</TabsTrigger>
+                            </TabsList>
 
-                        <div className="pt-4">
+                            <TabsContent value="ai" className="mt-4">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>AI Configuration</CardTitle>
+                                        <CardDescription>Configure OpenAI or compatible LLM settings.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <AiSettings form={form} />
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+
+                            <TabsContent value="media" className="space-y-4 mt-4">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Library Management</CardTitle>
+                                        <CardDescription>Connect to your Sonarr and Radarr instances.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <SonarrSettings form={form} />
+                                        <Separator />
+                                        <RadarrSettings form={form} />
+                                    </CardContent>
+                                </Card>
+
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Watch History</CardTitle>
+                                        <CardDescription>Sync your watch history with Trakt.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <TraktSettings form={form} />
+                                    </CardContent>
+                                </Card>
+
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Metadata</CardTitle>
+                                        <CardDescription>Configure metadata providers like TMDB.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <MediaSettings form={form} />
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+                        </Tabs>
+
+                        <div className="pt-4 flex justify-end">
                             <Button type="submit" disabled={isSaving}>
                                 {isSaving ? 'Saving...' : 'Save Settings'}
                             </Button>

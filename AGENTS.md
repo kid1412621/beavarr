@@ -55,6 +55,7 @@ Beavarr is a full-stack TypeScript monorepo project using Bun, Hono, Vite, and R
 - TypeScript strict mode enabled
 - Follow existing patterns in each workspace
 - Shared configuration for consistent code style across the monorepo
+- Never use deprecated APIs, e.g. `z.string().url()` which is old version of zod, use `z.url()` instead
 
 ### Server Development (Hono)
 
