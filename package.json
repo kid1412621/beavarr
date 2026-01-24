@@ -42,7 +42,7 @@
     "langchain"
   ],
   "devDependencies": {
-    "@biomejs/biome": "^2.3.11",
+    "@biomejs/biome": "^2.3.12",
     "bun-types": "latest",
     "turbo": "^2.7.5"
   },
@@ -50,6 +50,6 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "hono": "^4.11.4"
+    "hono": "^4.11.5"
   }
 }

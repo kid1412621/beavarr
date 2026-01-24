@@ -34,13 +34,14 @@ function InnerForm({ initialValues }: { initialValues: any }) {
     const queryClient = useQueryClient();
     const [step, setStep] = useState(1);
 
-    const { mutate: saveSettings, isPending: isSaving } = useMutation({
+    const { mutateAsync: saveSettings, isPending: isSaving } = useMutation({
         mutationFn: async (values: SettingsForm) => {
             const res = await client.api.settings.$post({ json: values });
             if (!res.ok) throw new Error('Failed to save settings');
             return await res.json();
         },
         onSuccess: (data) => {
+            // Only navigate away if we are finishing the last step
             if (step === 2) {
                 alert("Settings saved!");
                 queryClient.setQueryData(['settings'], data);
@@ -66,14 +67,27 @@ function InnerForm({ initialValues }: { initialValues: any }) {
             onChange: settingsSchema
         },
         onSubmit: async ({ value }) => {
+            if (!form.state.isDirty) {
+                navigate({ to: '/' });
+                return;
+            }
             await saveSettings(value);
         },
     })
 
-    const handleNext = (e: React.MouseEvent) => {
-        // TODO handle first step saving
+    const handleNext = async (e: React.MouseEvent) => {
         e.preventDefault();
-        setStep(2);
+        e.stopPropagation();
+        try {
+            // Save current state before moving to next step only if dirty
+            if (form.state.isDirty) {
+                await saveSettings(form.state.values);
+            }
+            setStep(2);
+        } catch (error) {
+            console.error("Failed to save step 1", error);
+            alert("Failed to save settings");
+        }
     };
 
     const handleBack = () => {
@@ -84,6 +98,10 @@ function InnerForm({ initialValues }: { initialValues: any }) {
         <div className="p-4 max-w-2xl mx-auto h-screen flex items-center justify-center">
             <Card className="w-full">
                 <CardHeader>
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className={`h-2 flex-1 rounded-full ${step >= 1 ? 'bg-primary' : 'bg-muted'}`} />
+                        <div className={`h-2 flex-1 rounded-full ${step >= 2 ? 'bg-primary' : 'bg-muted'}`} />
+                    </div>
                     <CardTitle>
                         {step === 1 ? 'Configure Intelligence' : 'Connect Services'}
                     </CardTitle>
