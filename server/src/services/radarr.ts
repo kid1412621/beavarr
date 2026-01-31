@@ -62,6 +62,15 @@ export class RadarrService {
         return { url: settings.radarrUrl, key: settings.radarrApiKey };
     }
 
+    async getMovies(): Promise<RadarrMovie[]> {
+        const { url, key } = await this.getBaseUrl();
+        const response = await fetch(`${url}/api/v3/movie`, {
+            headers: { 'X-Api-Key': key }
+        });
+        if (!response.ok) throw new Error('Failed to get movies from Radarr');
+        return await response.json() as RadarrMovie[];
+    }
+
     async search(term: string): Promise<RadarrMovie[]> {
         const { url, key } = await this.getBaseUrl();
         const response = await fetch(`${url}/api/v3/movie/lookup?term=${encodeURIComponent(term)}`, {

@@ -12,6 +12,7 @@ export const settings = sqliteTable('settings', {
     traktRefreshToken: text('trakt_refresh_token'),
     traktTokenExpiresAt: integer('trakt_token_expires_at', { mode: 'timestamp' }),
     tmdbApiKey: text('tmdb_api_key'),
+    posterSource: text('poster_source').default('history'),
     openaiApiKey: text('openai_api_key'),
     openaiBaseUrl: text('openai_base_url'),
     openaiModel: text('openai_model'),

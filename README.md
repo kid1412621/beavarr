@@ -255,3 +255,4 @@ bun run test
 - [BHVR](https://github.com/stevedylandev/bhvr)
 - [Langchain](https://langchain.com)
 - [Recommendarr](https://github.com/TannerMidd/recommendarr)
+- [Reiverr](https://github.com/aleksilassila/reiverr)

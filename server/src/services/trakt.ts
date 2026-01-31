@@ -23,16 +23,30 @@ interface TraktIds {
     tvdb?: number;
 }
 
+export interface TraktImage {
+    full: string;
+    medium: string;
+    thumb: string;
+}
+
 export interface TraktMovie {
     title: string;
     year: number;
     ids: TraktIds;
+    images?: {
+        poster?: TraktImage;
+        fanart?: TraktImage;
+    };
 }
 
 export interface TraktShow {
     title: string;
     year: number;
     ids: TraktIds;
+    images?: {
+        poster?: TraktImage;
+        fanart?: TraktImage;
+    };
 }
 
 export interface TraktTrendingMovie {
@@ -52,6 +66,21 @@ export interface TraktWatchlistItem {
     type: 'movie' | 'show';
     movie?: TraktMovie;
     show?: TraktShow;
+}
+
+export interface TraktHistoryItem {
+    id: number;
+    watched_at: string;
+    action: string;
+    type: 'movie' | 'episode';
+    movie?: TraktMovie;
+    show?: TraktShow;
+    episode?: {
+        season: number;
+        number: number;
+        title: string;
+        ids: TraktIds;
+    };
 }
 
 export class TraktService {
@@ -88,7 +117,7 @@ export class TraktService {
 
     async getTrendingMovies(): Promise<TraktTrendingMovie[]> {
         const accessToken = await this.getValidToken();
-        const response = await fetch('https://api.trakt.tv/movies/trending', {
+        const response = await fetch('https://api.trakt.tv/movies/trending?extended=full,images', {
             headers: this.headers(accessToken),
         });
         if (!response.ok) {
@@ -99,7 +128,7 @@ export class TraktService {
 
     async getTrendingShows(): Promise<TraktTrendingShow[]> {
         const accessToken = await this.getValidToken();
-        const response = await fetch('https://api.trakt.tv/shows/trending', {
+        const response = await fetch('https://api.trakt.tv/shows/trending?extended=full,images', {
             headers: this.headers(accessToken),
         });
         if (!response.ok) {
@@ -134,6 +163,27 @@ export class TraktService {
             throw new Error(`Failed to fetch watchlist: ${response.statusText}`);
         }
         return await response.json() as TraktWatchlistItem[];
+    }
+
+    async getHistory(type: 'movies' | 'shows' | 'all' = 'all', limit: number = 20): Promise<TraktHistoryItem[]> {
+        const accessToken = await this.getValidToken();
+        const url = new URL('https://api.trakt.tv/users/me/history');
+        if (type !== 'all') {
+            url.pathname += `/${type}`;
+        }
+
+        url.searchParams.set('limit', limit.toString());
+        url.searchParams.set('extended', 'full,images');
+
+        const response = await fetch(url.toString(), {
+            headers: this.headers(accessToken),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch history: ${response.statusText}`);
+        }
+
+        return await response.json() as TraktHistoryItem[];
     }
 }
 

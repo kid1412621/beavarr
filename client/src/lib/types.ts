@@ -17,6 +17,7 @@ export const mediaSettingsSchema = z.object({
     traktClientId: z.string().optional(),
     traktClientSecret: z.string().optional(),
     tmdbApiKey: z.string().optional(),
+    posterSource: z.enum(['history', 'trending', 'library']),
 });
 
 export const settingsSchema = aiSettingsSchema.extend(mediaSettingsSchema.shape);

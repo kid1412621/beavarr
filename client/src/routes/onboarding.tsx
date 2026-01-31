@@ -62,6 +62,7 @@ function InnerForm({ initialValues }: { initialValues: any }) {
             openaiApiKey: initialValues?.openaiApiKey || '',
             openaiBaseUrl: initialValues?.openaiBaseUrl || '',
             openaiModel: initialValues?.openaiModel || '',
+            posterSource: initialValues?.posterSource || 'history',
         } as SettingsForm,
         validators: {
             onChange: settingsSchema

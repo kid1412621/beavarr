@@ -11,6 +11,7 @@ import { RadarrSettings } from '@/components/settings/radarr-settings'
 import { TraktSettings } from '@/components/settings/trakt-settings'
 import { MediaSettings } from '@/components/settings/media-settings'
 import { AiSettings } from '@/components/settings/ai-settings'
+import { GeneralSettings } from '@/components/settings/general-settings'
 import { type SettingsForm, settingsSchema } from '@/lib/types'
 import { client, settingsQueryOptions } from '@/lib/api'
 
@@ -55,6 +56,7 @@ function InnerForm({ initialValues }: { initialValues: any }) {
             openaiApiKey: initialValues?.openaiApiKey || '',
             openaiBaseUrl: initialValues?.openaiBaseUrl || '',
             openaiModel: initialValues?.openaiModel || '',
+            posterSource: initialValues?.posterSource || 'history',
         } as SettingsForm,
         validators: {
             onChange: settingsSchema
@@ -80,11 +82,16 @@ function InnerForm({ initialValues }: { initialValues: any }) {
                         }}
                         className="space-y-4"
                     >
-                        <Tabs defaultValue="ai" className="w-full">
-                            <TabsList className="grid w-full grid-cols-2">
+                        <Tabs defaultValue="general" className="w-full">
+                            <TabsList className="grid w-full grid-cols-3">
+                                <TabsTrigger value="general">General</TabsTrigger>
                                 <TabsTrigger value="ai">AI Settings</TabsTrigger>
                                 <TabsTrigger value="media">Media Services</TabsTrigger>
                             </TabsList>
+
+                            <TabsContent value="general" className="mt-4">
+                                <GeneralSettings form={form} />
+                            </TabsContent>
 
                             <TabsContent value="ai" className="mt-4">
                                 <Card>

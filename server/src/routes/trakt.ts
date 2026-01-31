@@ -7,6 +7,29 @@ import { traktOAuthService } from "../services/trakt_oauth";
 import { setCookie, getCookie, deleteCookie } from "hono/cookie";
 
 const logger = createLogger("trakt");
+
+// Helper to safely extract Trakt image
+const extractTraktImage = (images: any): string | null => {
+    if (!images || !images.poster) return null;
+
+    let url: string | null = null;
+
+    // Case 1: Standard API (Object with sizes)
+    if (images.poster.medium) url = images.poster.medium;
+    else if (images.poster.full) url = images.poster.full;
+
+    // Case 2: Array format (User reported)
+    else if (Array.isArray(images.poster) && images.poster.length > 0) {
+        url = images.poster[0];
+    }
+
+    if (url && !url.startsWith("http")) {
+        return `https://${url}`;
+    }
+
+    return url;
+};
+
 const traktRoute = new Hono()
     // Get authorization URL for Trakt OAuth
     .get("/auth-url", async (c) => {
@@ -120,6 +143,81 @@ const traktRoute = new Hono()
             return c.json({ error: "Failed to disconnect" }, 500);
         }
     })
+    // === Device Flow Endpoints ===
+    // Start device authorization flow
+    .post("/device/code", async (c) => {
+        try {
+            const deviceCode = await traktOAuthService.getDeviceCode();
+            return c.json({
+                device_code: deviceCode.device_code,
+                user_code: deviceCode.user_code,
+                verification_url: deviceCode.verification_url,
+                expires_in: deviceCode.expires_in,
+                interval: deviceCode.interval,
+            });
+        } catch (error) {
+            logger.error(error, "Device code error");
+            return c.json({ error: "Failed to start device authorization" }, 500);
+        }
+    })
+    // Poll for device authorization completion
+    .post("/device/poll", async (c) => {
+        try {
+            const { device_code } = await c.req.json();
+
+            if (!device_code) {
+                return c.json({ error: "device_code required" }, 400);
+            }
+
+            const tokens = await traktOAuthService.pollForToken(device_code);
+
+            if (tokens === null) {
+                // Still waiting for user authorization
+                return c.json({ status: "pending" });
+            }
+
+            // Authorization successful, save tokens
+            await traktOAuthService.saveTokens(tokens);
+
+            // Get user info
+            const user = await traktService.getUser();
+
+            return c.json({
+                status: "authorized",
+                user: {
+                    id: user.id,
+                    username: user.username,
+                    name: user.name,
+                },
+            });
+        } catch (error) {
+            logger.error(error, "Device poll error");
+            return c.json({ error: "Failed to poll for authorization" }, 500);
+        }
+    })
+    // Disconnect using device flow (with token revocation)
+    .delete("/device", async (c) => {
+        try {
+            await traktOAuthService.disconnect();
+            return c.json({ success: true });
+        } catch (error) {
+            logger.error(error, "Device disconnect error");
+            return c.json({ error: "Failed to disconnect" }, 500);
+        }
+    })
+    // Check if using custom credentials (advanced mode)
+    .get("/auth-mode", async (c) => {
+        try {
+            const isCustom = await traktOAuthService.isUsingCustomCredentials();
+            return c.json({
+                mode: isCustom ? "authorization_code" : "device",
+            });
+        } catch (error) {
+            logger.error(error, "Auth mode check error");
+            return c.json({ error: "Failed to check auth mode" }, 500);
+        }
+    })
+
     // Get Trakt connection status
     .get("/status", async (c) => {
         try {
@@ -197,78 +295,120 @@ const traktRoute = new Hono()
             return c.json({ error: "Failed to get watchlist" }, 500);
         }
     })
-    // === Device Flow Endpoints ===
-    // Start device authorization flow
-    .post("/device/code", async (c) => {
+    // Get Trakt history with posters
+    .get("/history", async (c) => {
         try {
-            const deviceCode = await traktOAuthService.getDeviceCode();
-            return c.json({
-                device_code: deviceCode.device_code,
-                user_code: deviceCode.user_code,
-                verification_url: deviceCode.verification_url,
-                expires_in: deviceCode.expires_in,
-                interval: deviceCode.interval,
-            });
-        } catch (error) {
-            logger.error(error, "Device code error");
-            return c.json({ error: "Failed to start device authorization" }, 500);
-        }
-    })
-    // Poll for device authorization completion
-    .post("/device/poll", async (c) => {
-        try {
-            const { device_code } = await c.req.json();
+            const requestedLimit = parseInt(c.req.query("limit") || "20");
+            // Fetch significantly more items upstream to ensure we have enough unique items after deduplication
+            // (e.g. if user watched 20 episodes of one show, we need to fetch past those to find the next show)
+            const fetchLimit = Math.min(requestedLimit * 10, 200);
 
-            if (!device_code) {
-                return c.json({ error: "device_code required" }, 400);
+            logger.info({ requestedLimit, fetchLimit }, "Fetching Trakt history");
+
+            const rawHistory = await traktService.getHistory("all", fetchLimit);
+            logger.info({ count: rawHistory.length }, "Trakt history fetched");
+
+            // Deduplicate: Keep only the first occurrence (most recent) of each show/movie
+            const seenIds = new Set<string>();
+            // TODO: save in db
+            const history: typeof rawHistory = [];
+
+            for (const item of rawHistory) {
+                const key = item.type === "movie"
+                    ? `movie-${item.movie?.ids.trakt}`
+                    : `show-${item.show?.ids.trakt}`;
+
+                if (!seenIds.has(key)) {
+                    seenIds.add(key);
+                    history.push(item);
+                }
             }
 
-            const tokens = await traktOAuthService.pollForToken(device_code);
+            // Enrich with posters
+            const enrichedHistory = await Promise.all(history.map(async (item, index) => {
+                try {
+                    let poster_url: string | null = null;
+                    let title = "";
+                    let year = 0;
 
-            if (tokens === null) {
-                // Still waiting for user authorization
-                return c.json({ status: "pending" });
+                    if (item.type === "movie") {
+                        title = item.movie?.title || "";
+                        year = item.movie?.year || 0;
+                        poster_url = extractTraktImage(item.movie?.images);
+
+                    } else if (item.type === "episode") {
+                        title = item.show?.title || "";
+                        year = item.show?.year || 0;
+                        poster_url = extractTraktImage(item.show?.images);
+                    }
+
+                    return {
+                        ...item,
+                        poster_url,
+                        title,
+                        year
+                    };
+                } catch (e) {
+                    logger.error({ error: e }, "Error enriching history item");
+                    return item;
+                }
+            }));
+
+            const withPosters = enrichedHistory.filter((i: any) => i.poster_url).length;
+            logger.info({ total: enrichedHistory.length, withPosters }, "History enrichment complete");
+
+            return c.json(enrichedHistory.slice(0, requestedLimit));
+        } catch (error) {
+            logger.error(error, "Get history error");
+            return c.json({ error: "Failed to get history" }, 500);
+        }
+    })
+    // Get Trending movies/shows
+    .get("/trending", async (c) => {
+        try {
+            logger.info("Fetching Trakt trending");
+
+            // Fetch both (limit 20 each)
+            const [movies, shows] = await Promise.all([
+                traktService.getTrendingMovies(),
+                traktService.getTrendingShows()
+            ]);
+
+            // Transform to unified format and enrich
+            const trendingMovies = await Promise.all(movies.slice(0, 15).map(async (item) => {
+                let poster_url = extractTraktImage(item.movie.images);
+                return {
+                    type: 'movie',
+                    title: item.movie.title,
+                    year: item.movie.year,
+                    poster_url,
+                    movie: item.movie
+                };
+            }));
+
+            const trendingShows = await Promise.all(shows.slice(0, 15).map(async (item) => {
+                let poster_url = extractTraktImage(item.show.images);
+                return {
+                    type: 'show',
+                    title: item.show.title,
+                    year: item.show.year,
+                    poster_url,
+                    show: item.show
+                };
+            }));
+
+            // Interleave results
+            const result = [];
+            const maxLength = Math.max(trendingMovies.length, trendingShows.length);
+            for (let i = 0; i < maxLength; i++) {
+                if (i < trendingMovies.length) result.push(trendingMovies[i]);
+                if (i < trendingShows.length) result.push(trendingShows[i]);
             }
 
-            // Authorization successful, save tokens
-            await traktOAuthService.saveTokens(tokens);
-
-            // Get user info
-            const user = await traktService.getUser();
-
-            return c.json({
-                status: "authorized",
-                user: {
-                    id: user.id,
-                    username: user.username,
-                    name: user.name,
-                },
-            });
+            return c.json(result);
         } catch (error) {
-            logger.error(error, "Device poll error");
-            return c.json({ error: "Failed to poll for authorization" }, 500);
-        }
-    })
-    // Disconnect using device flow (with token revocation)
-    .delete("/device", async (c) => {
-        try {
-            await traktOAuthService.disconnect();
-            return c.json({ success: true });
-        } catch (error) {
-            logger.error(error, "Device disconnect error");
-            return c.json({ error: "Failed to disconnect" }, 500);
-        }
-    })
-    // Check if using custom credentials (advanced mode)
-    .get("/auth-mode", async (c) => {
-        try {
-            const isCustom = await traktOAuthService.isUsingCustomCredentials();
-            return c.json({
-                mode: isCustom ? "authorization_code" : "device",
-            });
-        } catch (error) {
-            logger.error(error, "Auth mode check error");
-            return c.json({ error: "Failed to check auth mode" }, 500);
+            logger.error(error, "Get trending error");
+            return c.json({ error: "Failed to get trending" }, 500);
         }
     });
 

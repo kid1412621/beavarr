@@ -53,6 +53,15 @@ export class SonarrService {
         return { url: settings.sonarrUrl, key: settings.sonarrApiKey };
     }
 
+    async getSeries(): Promise<SonarrSeries[]> {
+        const { url, key } = await this.getBaseUrl();
+        const response = await fetch(`${url}/api/v3/series`, {
+            headers: { 'X-Api-Key': key }
+        });
+        if (!response.ok) throw new Error('Failed to get series from Sonarr');
+        return await response.json() as SonarrSeries[];
+    }
+
     async search(term: string): Promise<SonarrSeries[]> {
         const { url, key } = await this.getBaseUrl();
         const response = await fetch(`${url}/api/v3/series/lookup?term=${encodeURIComponent(term)}`, {
