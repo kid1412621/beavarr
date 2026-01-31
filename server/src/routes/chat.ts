@@ -2,12 +2,13 @@ import { Hono } from "hono";
 import { createMediaAgent } from "../agents/media_agent";
 import { getSettings } from "../db/utils";
 import { createLogger } from "../lib/logger";
+import { type ChatRequest, type ChatResponse, type ChatMessage } from "shared";
 
 const logger = createLogger("chat");
 const chatRoute = new Hono()
     .post("/", async (c) => {
         try {
-            const { message } = await c.req.json();
+            const { message } = await c.req.json<ChatRequest>();
             if (!message) {
                 return c.json({ error: "Message is required" }, 400);
             }
@@ -35,15 +36,30 @@ const chatRoute = new Hono()
             // Extract the last assistant message from the result
             const messages = result.messages ?? [];
             const lastMessage = messages[messages.length - 1];
+
             const responseContent = lastMessage
                 ? (typeof lastMessage.content === 'string'
                     ? lastMessage.content
                     : JSON.stringify(lastMessage.content))
                 : "No response from agent";
 
-            return c.json({
+            // Map LangChain messages to ChatMessage
+            const mappedMessages: ChatMessage[] = messages.map((m: any) => {
+                // Try to determine role. LangChain messages often have 'type' or use class names.
+                // Assuming 'human'/'user' and 'ai'/'assistant'.
+                let role = "assistant";
+                if (m.constructor?.name === "HumanMessage" || m._getType?.() === "human") {
+                    role = "user";
+                }
+                return {
+                    role,
+                    content: m.content
+                };
+            });
+
+            return c.json<ChatResponse>({
                 response: responseContent,
-                messages: messages
+                messages: mappedMessages
             });
         } catch (error: any) {
             logger.error(error, "Chat error");

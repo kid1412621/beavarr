@@ -3,6 +3,7 @@ import { Film } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { client, settingsQueryOptions } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import type { LibraryItem } from "shared";
 
 const POSTER_WIDTH = 200; // px
 
@@ -97,7 +98,7 @@ function PosterRow({
                         100% { transform: translateX(-50%); }
                     }
                     @keyframes scroll-reverse {
-                         0% { transform: translateX(-50%); }
+                        0% { transform: translateX(-50%); }
                         100% { transform: translateX(0); }
                     }
                 `}
@@ -117,20 +118,19 @@ export function PosterWall() {
             if (source === 'trending') {
                 res = await client.api.trakt.trending.$get();
             } else if (source === 'library') {
-                // @ts-ignore - types might not be updated yet
                 res = await client.api.library.$get();
             } else {
                 res = await client.api.trakt.history.$get({ query: { limit: "100" } });
             }
             if (!res.ok) throw new Error("Failed to fetch posters");
-            return res.json() as Promise<any[]>;
+            return res.json();
         },
         enabled: !!settings
     });
 
     // Extract valid poster URLs
     const posterUrls = (posters || [])
-        .map((item: any) => item.poster_url)
+        .map((item: LibraryItem) => item.poster_url)
         .filter((url: string | null) => !!url) as string[];
 
     // Distribute posters round-robin to ensure unique content per row

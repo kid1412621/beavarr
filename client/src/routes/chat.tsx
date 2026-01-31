@@ -61,11 +61,12 @@ function ChatPage() {
                 throw new Error(errorData.error || 'Failed to send message');
             }
 
-            const data = await res.json() as any;
+            // ChatResponse inferred from server
+            const data = await res.json();
             setMessages(prev => [...prev, {
                 role: 'assistant',
                 content: data.response,
-                steps: data.steps
+                steps: data.messages
             }])
         } catch (error: any) {
             console.error('Chat error:', error)

@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { createLogger } from "../lib/logger";
 import { radarrService } from "../services/radarr";
 import { sonarrService } from "../services/sonarr";
+import { type LibraryItem } from "shared";
 
 const logger = createLogger("library");
 
@@ -26,7 +27,7 @@ const libraryRoute = new Hono()
             logger.info({ movies: movies.length, series: series.length }, "Library fetched");
 
             // Transform to unified format
-            const libraryMovies = movies.map(m => {
+            const libraryMovies: LibraryItem[] = movies.map(m => {
                 let poster_url = null;
                 if (m.images) {
                     const poster = m.images.find(img => img.coverType === "poster");
@@ -42,7 +43,7 @@ const libraryRoute = new Hono()
                 };
             });
 
-            const libraryShows = series.map(s => {
+            const libraryShows: LibraryItem[] = series.map(s => {
                 let poster_url = null;
                 if (s.images) {
                     const poster = s.images.find(img => img.coverType === "poster");
@@ -64,7 +65,7 @@ const libraryRoute = new Hono()
 
             const combined = [...libraryMovies, ...libraryShows].sort(() => 0.5 - Math.random()); // Shuffle for now as a "Library Wall"
 
-            return c.json(combined);
+            return c.json<LibraryItem[]>(combined);
         } catch (error) {
             logger.error(error, "Get library error");
             return c.json({ error: "Failed to get library" }, 500);

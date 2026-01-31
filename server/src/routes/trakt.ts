@@ -5,6 +5,7 @@ import { createLogger } from "../lib/logger";
 import { traktService } from "../services/trakt";
 import { traktOAuthService } from "../services/trakt_oauth";
 import { setCookie, getCookie, deleteCookie } from "hono/cookie";
+import { type TraktAuthRequest, type TraktStatusResponse, type TraktUserResponse, type TraktDeviceCodeResponse, type TraktPollResponse, type LibraryItem } from "shared";
 
 const logger = createLogger("trakt");
 
@@ -148,7 +149,7 @@ const traktRoute = new Hono()
     .post("/device/code", async (c) => {
         try {
             const deviceCode = await traktOAuthService.getDeviceCode();
-            return c.json({
+            return c.json<TraktDeviceCodeResponse>({
                 device_code: deviceCode.device_code,
                 user_code: deviceCode.user_code,
                 verification_url: deviceCode.verification_url,
@@ -163,7 +164,7 @@ const traktRoute = new Hono()
     // Poll for device authorization completion
     .post("/device/poll", async (c) => {
         try {
-            const { device_code } = await c.req.json();
+            const { device_code } = await c.req.json<TraktAuthRequest>();
 
             if (!device_code) {
                 return c.json({ error: "device_code required" }, 400);
@@ -173,7 +174,7 @@ const traktRoute = new Hono()
 
             if (tokens === null) {
                 // Still waiting for user authorization
-                return c.json({ status: "pending" });
+                return c.json<TraktPollResponse>({ status: "pending" });
             }
 
             // Authorization successful, save tokens
@@ -182,13 +183,13 @@ const traktRoute = new Hono()
             // Get user info
             const user = await traktService.getUser();
 
-            return c.json({
+            return c.json<TraktPollResponse>({
                 status: "authorized",
                 user: {
                     id: user.id,
                     username: user.username,
                     name: user.name,
-                },
+                }
             });
         } catch (error) {
             logger.error(error, "Device poll error");
@@ -227,7 +228,7 @@ const traktRoute = new Hono()
                 settings?.traktTokenExpiresAt ?? null,
             );
 
-            return c.json({
+            return c.json<TraktStatusResponse>({
                 connected: isConnected,
                 hasValidToken: isConnected && !isExpired,
                 needsTokenRefresh: isConnected && isExpired,
@@ -241,7 +242,7 @@ const traktRoute = new Hono()
     .get("/user", async (c) => {
         try {
             const user = await traktService.getUser();
-            return c.json({
+            return c.json<TraktUserResponse>({
                 id: user.id,
                 username: user.username,
                 name: user.name,
@@ -330,34 +331,46 @@ const traktRoute = new Hono()
                     let poster_url: string | null = null;
                     let title = "";
                     let year = 0;
+                    let tmdbId: number | undefined;
+                    let tvdbId: number | undefined;
 
-                    if (item.type === "movie") {
-                        title = item.movie?.title || "";
-                        year = item.movie?.year || 0;
-                        poster_url = extractTraktImage(item.movie?.images);
+                    if (item.type === "movie" && item.movie) {
+                        title = item.movie.title || "";
+                        year = item.movie.year || 0;
+                        poster_url = extractTraktImage(item.movie.images);
+                        tmdbId = item.movie.ids.tmdb;
 
-                    } else if (item.type === "episode") {
-                        title = item.show?.title || "";
-                        year = item.show?.year || 0;
-                        poster_url = extractTraktImage(item.show?.images);
+                    } else if (item.type === "episode" && item.show) {
+                        title = item.show.title || "";
+                        year = item.show.year || 0;
+                        poster_url = extractTraktImage(item.show.images);
+                        tvdbId = item.show.ids.tvdb;
                     }
 
+                    // Strict matching to LibraryItem
+                    if (!title) return null;
+
                     return {
-                        ...item,
-                        poster_url,
+                        type: item.type === 'episode' ? 'show' : 'movie',
                         title,
-                        year
-                    };
+                        year,
+                        poster_url,
+                        tmdbId,
+                        tvdbId
+                    } as LibraryItem;
                 } catch (e) {
                     logger.error({ error: e }, "Error enriching history item");
-                    return item;
+                    return null;
                 }
             }));
 
-            const withPosters = enrichedHistory.filter((i: any) => i.poster_url).length;
-            logger.info({ total: enrichedHistory.length, withPosters }, "History enrichment complete");
+            // Filter out nulls
+            const validHistory = enrichedHistory.filter((item): item is LibraryItem => item !== null);
 
-            return c.json(enrichedHistory.slice(0, requestedLimit));
+            const withPosters = validHistory.filter(i => i.poster_url).length;
+            logger.info({ total: validHistory.length, withPosters }, "History enrichment complete");
+
+            return c.json<LibraryItem[]>(validHistory.slice(0, requestedLimit));
         } catch (error) {
             logger.error(error, "Get history error");
             return c.json({ error: "Failed to get history" }, 500);
@@ -382,8 +395,8 @@ const traktRoute = new Hono()
                     title: item.movie.title,
                     year: item.movie.year,
                     poster_url,
-                    movie: item.movie
-                };
+                    tmdbId: item.movie.ids.tmdb
+                } as LibraryItem;
             }));
 
             const trendingShows = await Promise.all(shows.slice(0, 15).map(async (item) => {
@@ -393,19 +406,25 @@ const traktRoute = new Hono()
                     title: item.show.title,
                     year: item.show.year,
                     poster_url,
-                    show: item.show
-                };
+                    tvdbId: item.show.ids.tvdb
+                } as LibraryItem;
             }));
 
             // Interleave results
-            const result = [];
+            const result: LibraryItem[] = [];
             const maxLength = Math.max(trendingMovies.length, trendingShows.length);
             for (let i = 0; i < maxLength; i++) {
-                if (i < trendingMovies.length) result.push(trendingMovies[i]);
-                if (i < trendingShows.length) result.push(trendingShows[i]);
+                if (i < trendingMovies.length) {
+                    const item = trendingMovies[i];
+                    if (item) result.push(item);
+                }
+                if (i < trendingShows.length) {
+                    const item = trendingShows[i];
+                    if (item) result.push(item);
+                }
             }
 
-            return c.json(result);
+            return c.json<LibraryItem[]>(result);
         } catch (error) {
             logger.error(error, "Get trending error");
             return c.json({ error: "Failed to get trending" }, 500);

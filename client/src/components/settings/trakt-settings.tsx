@@ -6,20 +6,13 @@ import { Input } from '@/components/ui/input'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { client } from "@/lib/api";
 import { useState, useEffect } from 'react';
-
-interface DeviceCodeInfo {
-    device_code: string;
-    user_code: string;
-    verification_url: string;
-    expires_in: number;
-    interval: number;
-}
+import type { TraktDeviceCodeResponse } from 'shared';
 
 export function TraktSettings({ form }: { form: any }) {
     const queryClient = useQueryClient();
     const [isConnecting, setIsConnecting] = useState(false);
     const [showAdvanced, setShowAdvanced] = useState(false);
-    const [deviceCodeInfo, setDeviceCodeInfo] = useState<DeviceCodeInfo | null>(null);
+    const [deviceCodeInfo, setDeviceCodeInfo] = useState<TraktDeviceCodeResponse | null>(null);
     const [timeRemaining, setTimeRemaining] = useState<number>(0);
 
     // Query connection status
@@ -47,7 +40,7 @@ export function TraktSettings({ form }: { form: any }) {
         mutationFn: async () => {
             const res = await client.api.trakt.device.code.$post();
             if (!res.ok) throw new Error('Failed to start device authorization');
-            return await res.json() as DeviceCodeInfo;
+            return await res.json();
         },
         onSuccess: (data) => {
             setDeviceCodeInfo(data);

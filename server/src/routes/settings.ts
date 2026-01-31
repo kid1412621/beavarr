@@ -4,6 +4,7 @@ import { db } from "../db";
 import { settings } from "../db/schema";
 import { getSettings } from "../db/utils";
 import { createLogger } from "../lib/logger";
+import { type SettingsForm } from "shared";
 
 const logger = createLogger("settings");
 const settingsRoute = new Hono()
@@ -22,7 +23,7 @@ const settingsRoute = new Hono()
     })
     .post("/", async (c) => {
         try {
-            const body = await c.req.json();
+            const body = await c.req.json<SettingsForm>();
             const existing = await getSettings();
 
             if (existing) {
@@ -35,6 +36,7 @@ const settingsRoute = new Hono()
                 return c.json(updated[0]);
             } else {
                 // Create new
+                // body might be partial but we rely on DB defaults
                 const inserted = await db.insert(settings).values(body).returning();
                 return c.json(inserted[0]);
             }
