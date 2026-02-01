@@ -12,9 +12,10 @@ const settingsRoute = new Hono()
         try {
             const currentSettings = await getSettings();
             if (!currentSettings) {
-                return c.json(null);
+                // Return default settings if none exist
+                const inserted = await db.insert(settings).values({}).returning();
+                return c.json(inserted[0]);
             }
-            // Return settings (client should handle masking if needed, but for now we send back what's stored)
             return c.json(currentSettings);
         } catch (error) {
             logger.error(error, "Error fetching settings");

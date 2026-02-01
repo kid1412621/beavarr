@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "bun --watch run src/index.ts & tsc --watch",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
     "@langchain/core": "^1.1.17",

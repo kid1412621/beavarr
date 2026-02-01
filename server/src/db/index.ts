@@ -4,28 +4,12 @@ import { resolve } from "path";
 import { createLogger } from "../lib/logger";
 import * as schema from "./schema";
 
+import { migrate } from "drizzle-orm/bun-sqlite/migrator";
+
 const logger = createLogger("db");
 
 const sqlite = new Database(resolve(import.meta.dir, "../../sqlite.db"));
 export const db = drizzle(sqlite, { schema });
 
-// Initialize database - create tables if they don't exist
-sqlite.run(`
-  CREATE TABLE IF NOT EXISTS settings (
-    id INTEGER PRIMARY KEY,
-    sonarr_url TEXT,
-    sonarr_api_key TEXT,
-    radarr_url TEXT,
-    radarr_api_key TEXT,
-    trakt_client_id TEXT,
-    trakt_client_secret TEXT,
-    trakt_access_token TEXT,
-    trakt_refresh_token TEXT,
-    trakt_token_expires_at INTEGER,
-    tmdb_api_key TEXT,
-    openai_api_key TEXT,
-    openai_base_url TEXT,
-    openai_model TEXT,
-    updated_at INTEGER
-  )
-`);
+// Initialize database - run migrations
+await migrate(db, { migrationsFolder: resolve(import.meta.dir, "../../drizzle") });

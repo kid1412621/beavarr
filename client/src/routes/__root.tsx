@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { createRootRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
+import { createRootRoute, Link, Outlet, useNavigate, useLocation } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { useQuery } from "@tanstack/react-query";
 import { Sidebar } from "@/components/sidebar";
@@ -20,11 +20,14 @@ function Root() {
 
     const { data: settings } = useQuery(settingsQueryOptions);
 
+    const location = useLocation();
+
     useEffect(() => {
-        if (settings && !settings.openaiApiKey) {
+        // Redirect to onboarding if no API key is set, but not if we're already there
+        if (settings && !settings.openaiApiKey && !location.pathname.startsWith('/onboarding')) {
             navigate({ to: '/onboarding' });
         }
-    }, [settings, navigate]);
+    }, [settings, navigate, location.pathname]);
 
     return (
         <div className={cn("h-screen bg-background text-foreground flex flex-col", "font-sans antialiased")}>
