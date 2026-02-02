@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { Hono } from "hono";
-import { getSettings } from "../db/utils";
+import { getSettings } from "../db/repo/settings";
 import { createLogger } from "../lib/logger";
 import { traktService } from "../services/trakt";
 import { traktOAuthService } from "../services/trakt_oauth";

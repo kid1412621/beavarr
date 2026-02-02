@@ -1,4 +1,4 @@
-import { getSettings } from '../db/utils';
+import { getSettings } from '../db/repo/settings';
 
 interface RadarrImage {
     coverType: string;

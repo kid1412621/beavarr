@@ -1,4 +1,4 @@
-import { getSettings, updateSettings } from '../db/utils';
+import { getSettings, updateSettings } from '../db/repo/settings';
 import { createLogger } from '../lib/logger';
 
 const logger = createLogger('trakt-oauth');

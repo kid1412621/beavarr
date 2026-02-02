@@ -1,11 +1,19 @@
-import { db } from './index';
-import { settings } from './schema';
+import { db } from '../index';
+import { settings } from '../schema';
 import { eq } from 'drizzle-orm';
-import type { InsertSettings } from './schema';
+import type { InsertSettings } from '../schema';
 
 export async function getSettings() {
     const result = await db.select().from(settings).limit(1);
     return result[0] || null;
+}
+
+export async function getOrCreateSettings() {
+    const current = await getSettings();
+    if (current) return current;
+
+    const inserted = await db.insert(settings).values({}).returning();
+    return inserted[0];
 }
 
 export async function updateSettings(updates: Partial<InsertSettings>) {

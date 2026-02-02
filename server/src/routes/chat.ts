@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { createMediaAgent } from "../agents/media_agent";
-import { getSettings } from "../db/utils";
+import { getSettings } from "../db/repo/settings";
 import { createLogger } from "../lib/logger";
 import { type ChatRequest, type ChatResponse, type ChatMessage } from "shared";
 

@@ -13,3 +13,5 @@ export const db = drizzle(sqlite, { schema });
 
 // Initialize database - run migrations
 await migrate(db, { migrationsFolder: resolve(import.meta.dir, "../../drizzle") });
+
+logger.info("Database initialized");
