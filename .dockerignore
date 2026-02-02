@@ -13,3 +13,22 @@ helm-charts
 .editorconfig
 .idea
 coverage*
+
+# Ignore Bun and build artifacts
+.bun
+dist
+client/dist
+server/dist
+shared/dist
+
+# Ignore caches and logs
+.cache
+*.log
+npm-debug.log*
+yarn-error.log*
+.DS_Store
+
+# Turbo build cache and node artifacts
+.turbo
+server/node_modules
+client/node_modules

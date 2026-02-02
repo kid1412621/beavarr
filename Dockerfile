@@ -1,60 +1,66 @@
-# Unified Base Stage
-FROM oven/bun:alpine AS base
+FROM oven/bun:1.3.8-alpine AS base
 WORKDIR /app
 
-# Copy package files (Done once for all stages)
 COPY package.json bun.lock ./
 COPY client/package.json ./client/
 COPY server/package.json ./server/
 COPY shared/package.json ./shared/
 
-# Remove postinstall scripts to prevent premature build failures
-RUN sed -i '/"postinstall":/d' package.json
+# Install dependencies
+RUN bun install --frozen-lockfile --ignore-scripts
 
-
-# Client Build Stage
-FROM base AS build-client
-# Install ALL dependencies (for turbo & vite)
-RUN bun install --frozen-lockfile
-# Copy source code
+# Build Stage: full source copy and build
+FROM base AS build
 COPY . .
-# Run client build using package.json script
-RUN bun run build:client
 
+# Run the monorepo build which produces client/dist and server/dist
+# build:single runs: bun run build && bun run copy:static && bun run build:server
+RUN bun run build:single
 
-# Server Build Stage
-FROM base AS build-server
-# Install ALL dependencies (for turbo & tsc)
-RUN bun install --frozen-lockfile
-# Copy source code
-COPY . .
-# Run server build using package.json script
-RUN bun run build:server
+# Prune dev dependencies for production
+RUN bun install --production --frozen-lockfile --ignore-scripts
 
-
-# Release Stage
-FROM base AS release
-# Install ONLY production dependencies for SERVER workspace
-# This ignores client dependencies (React, etc)
-RUN bun install --production --frozen-lockfile --filter server
-
-# Copy artifacts from build-server
-COPY --from=build-server /app/shared/dist ./shared/dist
-COPY --from=build-server /app/shared/package.json ./shared/package.json
-
-COPY --from=build-server /app/server/dist ./server/dist
-COPY --from=build-server /app/server/package.json ./server/package.json
-
-# Copy artifacts from build-client (static assets)
-# Replicating "copy:static": cp -r client/dist server/static
-COPY --from=build-client /app/client/dist ./server/static
-
-# Copy root package.json
-COPY --from=base /app/package.json .
-
-# Runtime environment
+# Runtime Stage: minimal image with only runtime artifacts
+FROM oven/bun:1.3.8-alpine AS runtime
+WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=4242
+
+# Create a non-root user for runtime
+RUN addgroup -S app && adduser -S -G app app
+
+# Copy runtime artifacts from build stage
+COPY --from=build /app/package.json ./package.json
+COPY --from=build /app/bun.lock ./bun.lock
+COPY --from=build /app/node_modules ./node_modules
+
+# Position drizzle migrations where the code expects them (../../drizzle from server/dist/db)
+COPY --from=build /app/server/drizzle ./server/drizzle
+
+# Set up the server directory
+COPY --from=build /app/server/package.json ./server/package.json
+COPY --from=build /app/server/dist ./server/dist
+COPY --from=build /app/server/static ./server/static
+
+COPY --from=build /app/shared/package.json ./shared/package.json
+COPY --from=build /app/shared/dist ./shared/dist
+
+# Ensure the app user has permissions to the /app directory (for SQLite DB creation)
+RUN chown -R app:app /app
+
+# Install curl for healthcheck
+RUN apk add --no-cache curl
+
+# Hardening and metadata
+USER app
+LABEL org.opencontainers.image.source="https://github.com/kid1412621/beavarr"
+
+# Healthcheck targeting the API
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD curl -fsS http://localhost:${PORT}/api/hello || exit 1
+
 EXPOSE 4242
 
-CMD ["bun", "run", "start:single"]
+# Run from the server directory so ./static resolves correctly
+WORKDIR /app/server
+CMD ["bun", "dist/index.js"]

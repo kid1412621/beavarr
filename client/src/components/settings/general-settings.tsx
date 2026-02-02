@@ -36,11 +36,12 @@ export function GeneralSettings({ form }: { form: any }) {
                                         <select
                                             id={field.name}
                                             name={field.name}
-                                            value={field.state.value}
+                                            value={field.state.value || ''}
                                             onBlur={field.handleBlur}
                                             onChange={(e) => field.handleChange(e.target.value)}
                                             className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                         >
+                                            <option value="">None (Empty)</option>
                                             <option value="history" disabled={!hasTrakt}>
                                                 {hasTrakt ? "History (Trakt)" : "History (Trakt - Not Connected)"}
                                             </option>

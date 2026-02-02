@@ -11,6 +11,7 @@ import { RadarrSettings } from '@/components/settings/radarr-settings'
 import { TraktSettings } from '@/components/settings/trakt-settings'
 import { MediaSettings } from '@/components/settings/media-settings'
 import { AiSettings } from '@/components/settings/ai-settings'
+import { GeneralSettings } from '@/components/settings/general-settings'
 import { type SettingsForm, settingsSchema } from '@/lib/types'
 import { client, settingsQueryOptions } from '@/lib/api'
 
@@ -62,7 +63,7 @@ function InnerForm({ initialValues }: { initialValues: any }) {
             openaiApiKey: initialValues?.openaiApiKey || '',
             openaiBaseUrl: initialValues?.openaiBaseUrl || '',
             openaiModel: initialValues?.openaiModel || '',
-            posterSource: initialValues?.posterSource,
+            posterSource: initialValues?.posterSource || '',
         } as SettingsForm,
         validators: {
             onChange: settingsSchema
@@ -142,6 +143,11 @@ function InnerForm({ initialValues }: { initialValues: any }) {
                                 </div>
                                 <Separator />
                                 <div className="space-y-4">
+                                    <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">General</h3>
+                                    <GeneralSettings form={form} />
+                                </div>
+                                <Separator />
+                                <div className="space-y-4">
                                     <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">History & Metadata</h3>
                                     <TraktSettings form={form} />
                                     <MediaSettings form={form} />
@@ -165,9 +171,23 @@ function InnerForm({ initialValues }: { initialValues: any }) {
                                     Next: Services
                                 </Button>
                             ) : (
-                                <Button type="submit" disabled={isSaving}>
-                                    {isSaving ? 'Finishing...' : 'Complete Setup'}
-                                </Button>
+                                <div className="flex flex-col items-end gap-2 text-right">
+                                    <Button type="submit" disabled={isSaving}>
+                                        {isSaving ? 'Finishing...' : 'Complete Setup'}
+                                    </Button>
+                                    <form.Subscribe
+                                        selector={(state: any) => state.errors}
+                                        children={(errors: any) => (
+                                            <>
+                                                {errors.length > 0 && (
+                                                    <p className="text-destructive text-xs font-medium">
+                                                        {errors[0]?.message || 'Please fix errors above'}
+                                                    </p>
+                                                )}
+                                            </>
+                                        )}
+                                    />
+                                </div>
                             )}
                         </div>
                     </form>

@@ -56,7 +56,7 @@ function InnerForm({ initialValues }: { initialValues: any }) {
             openaiApiKey: initialValues?.openaiApiKey || '',
             openaiBaseUrl: initialValues?.openaiBaseUrl || '',
             openaiModel: initialValues?.openaiModel || '',
-            posterSource: initialValues?.posterSource,
+            posterSource: initialValues?.posterSource || '',
         } as SettingsForm,
         validators: {
             onChange: settingsSchema
@@ -76,6 +76,7 @@ function InnerForm({ initialValues }: { initialValues: any }) {
                 <CardContent className="px-0">
                     <form
                         onSubmit={(e) => {
+                            console.log("-----")
                             e.preventDefault()
                             e.stopPropagation()
                             form.handleSubmit()

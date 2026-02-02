@@ -109,7 +109,7 @@ function PosterRow({
 
 export function PosterWall() {
     const { data: settings } = useQuery(settingsQueryOptions);
-    const source = settings?.posterSource || 'history';
+    const source = settings?.posterSource;
 
     const { data: posters } = useQuery({
         queryKey: ["poster-wall", source],
@@ -125,7 +125,7 @@ export function PosterWall() {
             if (!res.ok) throw new Error("Failed to fetch posters");
             return res.json();
         },
-        enabled: !!settings
+        enabled: !!source
     });
 
     // Extract valid poster URLs

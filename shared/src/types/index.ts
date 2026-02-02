@@ -17,7 +17,7 @@ export interface MediaSettingsForm {
   traktClientId?: string;
   traktClientSecret?: string;
   tmdbApiKey?: string;
-  posterSource: 'history' | 'trending' | 'library';
+  posterSource?: 'history' | 'trending' | 'library' | '';
 }
 
 export type SettingsForm = AiSettingsForm & MediaSettingsForm;
