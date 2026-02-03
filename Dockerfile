@@ -41,11 +41,6 @@ COPY --from=builder /app/client/dist ./server/static
 RUN chown -R app:app /app
 
 USER app
-LABEL org.opencontainers.image.title="beavarr"
-LABEL org.opencontainers.image.version="0.1.0"
-LABEL org.opencontainers.image.description="LLM armed *arr stack watch experience"
-LABEL org.opencontainers.image.source="https://github.com/kid1412621/beavarr"
-LABEL org.opencontainers.image.licenses="MIT"
 
 EXPOSE 4242
 
