@@ -11,6 +11,9 @@ Makefile
 helm-charts
 .env
 .editorconfig
+.oxlintrc.json
+.oxfmtrc.json
+.prettierrc
 .idea
 coverage*
 

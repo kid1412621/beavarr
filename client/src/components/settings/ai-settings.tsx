@@ -1,17 +1,17 @@
+import { Clipboard } from 'lucide-react';
 
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Clipboard } from 'lucide-react'
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export function AiSettings({ form }: { form: any }) {
     const pasteFromClipboard = async (field: any) => {
         try {
-            const text = await navigator.clipboard.readText()
-            field.handleChange(text)
+            const text = await navigator.clipboard.readText();
+            field.handleChange(text);
         } catch (err) {
-            console.error('Failed to read clipboard', err)
+            console.error('Failed to read clipboard', err);
         }
-    }
+    };
 
     return (
         <div className="space-y-4">
@@ -27,19 +27,21 @@ export function AiSettings({ form }: { form: any }) {
                                 type="password"
                                 value={field.state.value}
                                 onBlur={field.handleBlur}
-                                onChange={(e) => field.handleChange(e.target.value)}
+                                onChange={(e) =>
+                                    field.handleChange(e.target.value)
+                                }
                             />
                             <button
                                 type="button"
                                 onClick={() => pasteFromClipboard(field)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
                                 title="Paste from clipboard"
                             >
                                 <Clipboard className="h-4 w-4" />
                             </button>
                         </div>
                         {field.state.meta.touchedErrors?.length > 0 && (
-                            <em className="text-red-500 text-xs">
+                            <em className="text-xs text-red-500">
                                 {field.state.meta.touchedErrors.join(', ')}
                             </em>
                         )}
@@ -59,7 +61,7 @@ export function AiSettings({ form }: { form: any }) {
                             onChange={(e) => field.handleChange(e.target.value)}
                         />
                         {field.state.meta.touchedErrors?.length > 0 && (
-                            <em className="text-red-500 text-xs">
+                            <em className="text-xs text-red-500">
                                 {field.state.meta.touchedErrors.join(', ')}
                             </em>
                         )}
@@ -80,7 +82,7 @@ export function AiSettings({ form }: { form: any }) {
                             onChange={(e) => field.handleChange(e.target.value)}
                         />
                         {field.state.meta.touchedErrors?.length > 0 && (
-                            <em className="text-red-500 text-xs">
+                            <em className="text-xs text-red-500">
                                 {field.state.meta.touchedErrors.join(', ')}
                             </em>
                         )}
@@ -88,5 +90,5 @@ export function AiSettings({ form }: { form: any }) {
                 )}
             />
         </div>
-    )
+    );
 }

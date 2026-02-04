@@ -1,5 +1,6 @@
-import { ChatOpenAI } from "@langchain/openai";
-import { createAgent } from "langchain";
+import { ChatOpenAI } from '@langchain/openai';
+import { createAgent } from 'langchain';
+
 import {
     radarrAddTool,
     radarrSearchTool,
@@ -8,7 +9,7 @@ import {
     tmdbSearchTool,
     traktTrendingTool,
     traktWatchlistTool,
-} from "./tools";
+} from './tools';
 
 const SYSTEM_PROMPT = `You are a helpful media assistant named Beavarr. You can manage user's media library via Sonarr and Radarr. You can also recommend content via Trakt and TMDB. Always search before adding content. Use the tools provided.`;
 
@@ -22,12 +23,12 @@ export async function createMediaAgent({
     openaiModel?: string | null;
 }) {
     if (!openaiApiKey) {
-        throw new Error("OpenAI API Key not configured");
+        throw new Error('OpenAI API Key not configured');
     }
 
     const model = new ChatOpenAI({
         apiKey: openaiApiKey,
-        model: openaiModel || "gpt-4.1-nano",
+        model: openaiModel || 'gpt-4.1-nano',
         temperature: 0,
         configuration: {
             baseURL: openaiBaseUrl || undefined,

@@ -1,7 +1,9 @@
+import { eq } from 'drizzle-orm';
+
+import type { InsertSettings } from '../schema';
+
 import { db } from '../index';
 import { settings } from '../schema';
-import { eq } from 'drizzle-orm';
-import type { InsertSettings } from '../schema';
 
 export async function getSettings() {
     const result = await db.select().from(settings).limit(1);
@@ -19,7 +21,8 @@ export async function getOrCreateSettings() {
 export async function updateSettings(updates: Partial<InsertSettings>) {
     const existing = await getSettings();
     if (existing) {
-        const updated = await db.update(settings)
+        const updated = await db
+            .update(settings)
             .set(updates)
             .where(eq(settings.id, existing.id))
             .returning();

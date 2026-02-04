@@ -88,17 +88,27 @@ export class TraktService {
         const settings = await getSettings();
 
         if (!settings?.traktAccessToken) {
-            throw new Error('Trakt is not connected. Please authenticate with Trakt first.');
+            throw new Error(
+                'Trakt is not connected. Please authenticate with Trakt first.',
+            );
         }
 
         // Check if token needs refresh
-        if (traktOAuthService.isTokenExpired(settings.traktTokenExpiresAt ?? null)) {
+        if (
+            traktOAuthService.isTokenExpired(
+                settings.traktTokenExpiresAt ?? null,
+            )
+        ) {
             if (!settings.traktRefreshToken) {
-                throw new Error('Trakt token expired and no refresh token available.');
+                throw new Error(
+                    'Trakt token expired and no refresh token available.',
+                );
             }
 
             // Refresh the token
-            const tokens = await traktOAuthService.refreshAccessToken(settings.traktRefreshToken);
+            const tokens = await traktOAuthService.refreshAccessToken(
+                settings.traktRefreshToken,
+            );
             await traktOAuthService.saveTokens(tokens);
             return tokens.access_token;
         }
@@ -111,44 +121,61 @@ export class TraktService {
             'Content-Type': 'application/json',
             'trakt-api-version': '2',
             'trakt-api-key': traktOAuthService.getClientId(),
-            'Authorization': `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
         };
     }
 
     async getTrendingMovies(): Promise<TraktTrendingMovie[]> {
         const accessToken = await this.getValidToken();
-        const response = await fetch('https://api.trakt.tv/movies/trending?extended=full,images', {
-            headers: this.headers(accessToken),
-        });
+        const response = await fetch(
+            'https://api.trakt.tv/movies/trending?extended=full,images',
+            {
+                headers: this.headers(accessToken),
+            },
+        );
         if (!response.ok) {
-            throw new Error(`Failed to fetch trending movies from Trakt: ${response.statusText}`);
+            throw new Error(
+                `Failed to fetch trending movies from Trakt: ${response.statusText}`,
+            );
         }
-        return await response.json() as TraktTrendingMovie[];
+        return (await response.json()) as TraktTrendingMovie[];
     }
 
     async getTrendingShows(): Promise<TraktTrendingShow[]> {
         const accessToken = await this.getValidToken();
-        const response = await fetch('https://api.trakt.tv/shows/trending?extended=full,images', {
-            headers: this.headers(accessToken),
-        });
+        const response = await fetch(
+            'https://api.trakt.tv/shows/trending?extended=full,images',
+            {
+                headers: this.headers(accessToken),
+            },
+        );
         if (!response.ok) {
-            throw new Error(`Failed to fetch trending shows from Trakt: ${response.statusText}`);
+            throw new Error(
+                `Failed to fetch trending shows from Trakt: ${response.statusText}`,
+            );
         }
-        return await response.json() as TraktTrendingShow[];
+        return (await response.json()) as TraktTrendingShow[];
     }
 
     async getUser(): Promise<TraktUser> {
         const accessToken = await this.getValidToken();
-        const response = await fetch('https://api.trakt.tv/users/me?extended=full', {
-            headers: this.headers(accessToken),
-        });
+        const response = await fetch(
+            'https://api.trakt.tv/users/me?extended=full',
+            {
+                headers: this.headers(accessToken),
+            },
+        );
         if (!response.ok) {
-            throw new Error(`Failed to fetch Trakt user: ${response.statusText}`);
+            throw new Error(
+                `Failed to fetch Trakt user: ${response.statusText}`,
+            );
         }
-        return await response.json() as TraktUser;
+        return (await response.json()) as TraktUser;
     }
 
-    async getWatchlist(type: 'movies' | 'shows' | 'all' = 'all'): Promise<TraktWatchlistItem[]> {
+    async getWatchlist(
+        type: 'movies' | 'shows' | 'all' = 'all',
+    ): Promise<TraktWatchlistItem[]> {
         const accessToken = await this.getValidToken();
         const url = new URL('https://api.trakt.tv/users/me/watchlist');
         if (type !== 'all') {
@@ -160,12 +187,17 @@ export class TraktService {
             headers: this.headers(accessToken),
         });
         if (!response.ok) {
-            throw new Error(`Failed to fetch watchlist: ${response.statusText}`);
+            throw new Error(
+                `Failed to fetch watchlist: ${response.statusText}`,
+            );
         }
-        return await response.json() as TraktWatchlistItem[];
+        return (await response.json()) as TraktWatchlistItem[];
     }
 
-    async getHistory(type: 'movies' | 'shows' | 'all' = 'all', limit: number = 20): Promise<TraktHistoryItem[]> {
+    async getHistory(
+        type: 'movies' | 'shows' | 'all' = 'all',
+        limit: number = 20,
+    ): Promise<TraktHistoryItem[]> {
         const accessToken = await this.getValidToken();
         const url = new URL('https://api.trakt.tv/users/me/history');
         if (type !== 'all') {
@@ -183,7 +215,7 @@ export class TraktService {
             throw new Error(`Failed to fetch history: ${response.statusText}`);
         }
 
-        return await response.json() as TraktHistoryItem[];
+        return (await response.json()) as TraktHistoryItem[];
     }
 }
 

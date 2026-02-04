@@ -1,9 +1,11 @@
-import { useState, useRef, useLayoutEffect } from "react";
-import { Film } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { client, settingsQueryOptions } from "@/lib/api";
-import { cn } from "@/lib/utils";
-import type { LibraryItem } from "shared";
+import type { LibraryItem } from 'shared';
+
+import { useQuery } from '@tanstack/react-query';
+import { Film } from 'lucide-react';
+import { useState, useRef, useLayoutEffect } from 'react';
+
+import { client, settingsQueryOptions } from '@/lib/api';
+import { cn } from '@/lib/utils';
 
 const POSTER_WIDTH = 200; // px
 
@@ -19,21 +21,28 @@ function PosterImage({ src, className }: { src?: string; className?: string }) {
     }, []);
 
     return (
-        <div className={cn("relative w-full h-full bg-gray-800 overflow-hidden", className)}>
+        <div
+            className={cn(
+                'relative w-full h-full bg-gray-800 overflow-hidden',
+                className,
+            )}
+        >
             {/* Loading Skeleton */}
             {isLoading && (
-                <div className="absolute inset-0 bg-white/5 animate-pulse z-10" />
+                <div className="absolute inset-0 z-10 animate-pulse bg-white/5" />
             )}
 
             {/* Image */}
-            {src && !hasError && !src.includes("placehold.co") ? (
+            {src && !hasError && !src.includes('placehold.co') ? (
                 <img
                     ref={imgRef}
                     src={src}
                     alt="Poster"
                     className={cn(
-                        "w-full h-full object-cover transition-all duration-700 ease-in-out",
-                        isLoading ? "scale-110 blur-md opacity-0" : "scale-100 blur-0 opacity-100"
+                        'w-full h-full object-cover transition-all duration-700 ease-in-out',
+                        isLoading
+                            ? 'scale-110 blur-md opacity-0'
+                            : 'scale-100 blur-0 opacity-100',
                     )}
                     onLoad={() => setIsLoading(false)}
                     onError={() => {
@@ -46,12 +55,14 @@ function PosterImage({ src, className }: { src?: string; className?: string }) {
             ) : null}
 
             {/* Fallback */}
-            {(hasError || !src || src.includes("placehold.co")) && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 border border-white/5 p-4 text-center z-0">
-                    <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-2 animate-in fade-in zoom-in duration-300">
-                        <Film className="w-6 h-6 text-white/20" />
+            {(hasError || !src || src.includes('placehold.co')) && (
+                <div className="absolute inset-0 z-0 flex flex-col items-center justify-center border border-white/5 bg-gradient-to-br from-gray-800 to-gray-900 p-4 text-center">
+                    <div className="animate-in fade-in zoom-in mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-white/5 duration-300">
+                        <Film className="h-6 w-6 text-white/20" />
                     </div>
-                    <span className="text-xs font-medium text-white/30 tracking-wider">NO IMAGE</span>
+                    <span className="text-xs font-medium tracking-wider text-white/30">
+                        NO IMAGE
+                    </span>
                 </div>
             )}
         </div>
@@ -62,29 +73,37 @@ function PosterRow({
     posters,
     speed = 20,
     reverse = false,
-}: { posters: string[]; speed?: number; reverse?: boolean }) {
+}: {
+    posters: string[];
+    speed?: number;
+    reverse?: boolean;
+}) {
     // Duplicate posters to ensure smooth loop
-    const displayPosters = posters.length < 50 ? [...posters, ...posters, ...posters, ...posters] : posters;
+    const displayPosters =
+        posters.length < 50
+            ? [...posters, ...posters, ...posters, ...posters]
+            : posters;
 
     return (
         <div
             className="flex gap-4 overflow-hidden py-2"
             style={{
                 maskImage:
-                    "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
-                WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
+                    'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
+                WebkitMaskImage:
+                    'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
             }}
         >
             <div
-                className="flex gap-4 shrink-0"
+                className="flex shrink-0 gap-4"
                 style={{
-                    animation: `scroll${reverse ? "-reverse" : ""} ${speed}s linear infinite`,
+                    animation: `scroll${reverse ? '-reverse' : ''} ${speed}s linear infinite`,
                 }}
             >
                 {displayPosters.map((url, i) => (
                     <div
                         key={i}
-                        className="relative aspect-[2/3] rounded-xl overflow-hidden shadow-lg border border-white/10 bg-gray-800 shrink-0 transform-gpu"
+                        className="relative aspect-[2/3] shrink-0 transform-gpu overflow-hidden rounded-xl border border-white/10 bg-gray-800 shadow-lg"
                         style={{ width: `${POSTER_WIDTH}px` }}
                     >
                         <PosterImage src={url} key={url} />
@@ -112,7 +131,7 @@ export function PosterWall() {
     const source = settings?.posterSource;
 
     const { data: posters } = useQuery({
-        queryKey: ["poster-wall", source],
+        queryKey: ['poster-wall', source],
         queryFn: async () => {
             let res;
             if (source === 'trending') {
@@ -120,12 +139,14 @@ export function PosterWall() {
             } else if (source === 'library') {
                 res = await client.api.library.$get();
             } else {
-                res = await client.api.trakt.history.$get({ query: { limit: "100" } });
+                res = await client.api.trakt.history.$get({
+                    query: { limit: '100' },
+                });
             }
-            if (!res.ok) throw new Error("Failed to fetch posters");
+            if (!res.ok) throw new Error('Failed to fetch posters');
             return res.json();
         },
-        enabled: !!source
+        enabled: !!source,
     });
 
     // Extract valid poster URLs
@@ -142,14 +163,14 @@ export function PosterWall() {
         });
     } else {
         // Fallback if no history
-        rows[0] = Array(10).fill("");
-        rows[1] = Array(10).fill("");
-        rows[2] = Array(10).fill("");
+        rows[0] = Array(10).fill('');
+        rows[1] = Array(10).fill('');
+        rows[2] = Array(10).fill('');
     }
 
     // Ensure each row has enough items for smooth scrolling
-    const [row1, row2, row3] = rows.map(row => {
-        if (row.length === 0) return Array(10).fill("");
+    const [row1, row2, row3] = rows.map((row) => {
+        if (row.length === 0) return Array(10).fill('');
         let filled = [...row];
         while (filled.length < 10) {
             filled = [...filled, ...row];
@@ -161,7 +182,7 @@ export function PosterWall() {
     const fill = (arr: string[]) => arr;
 
     return (
-        <div className="absolute inset-0 flex flex-col justify-center opacity-50 blur-[2px] scale-110 pointer-events-none select-none">
+        <div className="pointer-events-none absolute inset-0 flex scale-110 flex-col justify-center opacity-50 blur-[2px] select-none">
             <PosterRow posters={fill(row1)} speed={60} />
             <PosterRow posters={fill(row2)} speed={70} reverse />
             <PosterRow posters={fill(row3)} speed={80} />

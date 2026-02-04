@@ -1,74 +1,87 @@
-import { Hono } from "hono";
-import { createMediaAgent } from "../agents/media_agent";
-import { getSettings } from "../db/repo/settings";
-import { createLogger } from "../lib/logger";
-import { type ChatRequest, type ChatResponse, type ChatMessage } from "shared";
+import { Hono } from 'hono';
+import { type ChatRequest, type ChatResponse, type ChatMessage } from 'shared';
 
-const logger = createLogger("chat");
-const chatRoute = new Hono()
-    .post("/", async (c) => {
-        try {
-            const { message } = await c.req.json<ChatRequest>();
-            if (!message) {
-                return c.json({ error: "Message is required" }, 400);
-            }
+import { createMediaAgent } from '../agents/media_agent';
+import { getSettings } from '../db/repo/settings';
+import { createLogger } from '../lib/logger';
 
-            logger.info("Creating agent...");
-            const settings = await getSettings();
-
-            if (!settings?.openaiApiKey) {
-                return c.json({ error: "OpenAI API Key not configured. Please go to settings." }, 400);
-            }
-
-            const agent = await createMediaAgent({
-                openaiApiKey: settings.openaiApiKey,
-                openaiBaseUrl: settings.openaiBaseUrl,
-                openaiModel: settings.openaiModel
-            });
-            logger.info("Agent created. Invoking...");
-
-            const result = await agent.invoke({
-                messages: [{ role: "user", content: message }],
-            });
-
-            logger.debug({ result }, "Agent result");
-
-            // Extract the last assistant message from the result
-            const messages = result.messages ?? [];
-            const lastMessage = messages[messages.length - 1];
-
-            const responseContent = lastMessage
-                ? (typeof lastMessage.content === 'string'
-                    ? lastMessage.content
-                    : JSON.stringify(lastMessage.content))
-                : "No response from agent";
-
-            // Map LangChain messages to ChatMessage
-            const mappedMessages: ChatMessage[] = messages.map((m: any) => {
-                // Try to determine role. LangChain messages often have 'type' or use class names.
-                // Assuming 'human'/'user' and 'ai'/'assistant'.
-                let role = "assistant";
-                if (m.constructor?.name === "HumanMessage" || m._getType?.() === "human") {
-                    role = "user";
-                }
-                return {
-                    role,
-                    content: m.content
-                };
-            });
-
-            return c.json<ChatResponse>({
-                response: responseContent,
-                messages: mappedMessages
-            });
-        } catch (error: any) {
-            logger.error(error, "Chat error");
-            const errorMessage = error.message || "Unknown error";
-            if (errorMessage.includes("OpenAI API Key not configured")) {
-                return c.json({ error: "OpenAI API Key not configured. Please go to settings." }, 400);
-            }
-            return c.json({ error: "Failed to process chat request" }, 500);
+const logger = createLogger('chat');
+const chatRoute = new Hono().post('/', async (c) => {
+    try {
+        const { message } = await c.req.json<ChatRequest>();
+        if (!message) {
+            return c.json({ error: 'Message is required' }, 400);
         }
-    });
+
+        logger.info('Creating agent...');
+        const settings = await getSettings();
+
+        if (!settings?.openaiApiKey) {
+            return c.json(
+                {
+                    error: 'OpenAI API Key not configured. Please go to settings.',
+                },
+                400,
+            );
+        }
+
+        const agent = await createMediaAgent({
+            openaiApiKey: settings.openaiApiKey,
+            openaiBaseUrl: settings.openaiBaseUrl,
+            openaiModel: settings.openaiModel,
+        });
+        logger.info('Agent created. Invoking...');
+
+        const result = await agent.invoke({
+            messages: [{ role: 'user', content: message }],
+        });
+
+        logger.debug({ result }, 'Agent result');
+
+        // Extract the last assistant message from the result
+        const messages = result.messages ?? [];
+        const lastMessage = messages[messages.length - 1];
+
+        const responseContent = lastMessage
+            ? typeof lastMessage.content === 'string'
+                ? lastMessage.content
+                : JSON.stringify(lastMessage.content)
+            : 'No response from agent';
+
+        // Map LangChain messages to ChatMessage
+        const mappedMessages: ChatMessage[] = messages.map((m: any) => {
+            // Try to determine role. LangChain messages often have 'type' or use class names.
+            // Assuming 'human'/'user' and 'ai'/'assistant'.
+            let role = 'assistant';
+            if (
+                m.constructor?.name === 'HumanMessage' ||
+                m._getType?.() === 'human'
+            ) {
+                role = 'user';
+            }
+            return {
+                role,
+                content: m.content,
+            };
+        });
+
+        return c.json<ChatResponse>({
+            response: responseContent,
+            messages: mappedMessages,
+        });
+    } catch (error: any) {
+        logger.error(error, 'Chat error');
+        const errorMessage = error.message || 'Unknown error';
+        if (errorMessage.includes('OpenAI API Key not configured')) {
+            return c.json(
+                {
+                    error: 'OpenAI API Key not configured. Please go to settings.',
+                },
+                400,
+            );
+        }
+        return c.json({ error: 'Failed to process chat request' }, 500);
+    }
+});
 
 export default chatRoute;

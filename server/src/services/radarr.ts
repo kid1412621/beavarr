@@ -65,19 +65,22 @@ export class RadarrService {
     async getMovies(): Promise<RadarrMovie[]> {
         const { url, key } = await this.getBaseUrl();
         const response = await fetch(`${url}/api/v3/movie`, {
-            headers: { 'X-Api-Key': key }
+            headers: { 'X-Api-Key': key },
         });
         if (!response.ok) throw new Error('Failed to get movies from Radarr');
-        return await response.json() as RadarrMovie[];
+        return (await response.json()) as RadarrMovie[];
     }
 
     async search(term: string): Promise<RadarrMovie[]> {
         const { url, key } = await this.getBaseUrl();
-        const response = await fetch(`${url}/api/v3/movie/lookup?term=${encodeURIComponent(term)}`, {
-            headers: { 'X-Api-Key': key }
-        });
+        const response = await fetch(
+            `${url}/api/v3/movie/lookup?term=${encodeURIComponent(term)}`,
+            {
+                headers: { 'X-Api-Key': key },
+            },
+        );
         if (!response.ok) throw new Error('Failed to search Radarr');
-        return await response.json() as RadarrMovie[];
+        return (await response.json()) as RadarrMovie[];
     }
 
     async addMovie(movie: Partial<RadarrMovie>): Promise<RadarrMovie> {
@@ -86,17 +89,17 @@ export class RadarrService {
             method: 'POST',
             headers: {
                 'X-Api-Key': key,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 ...movie,
                 qualityProfileId: 1,
                 monitored: true,
-                rootFolderPath: '/movies' // Placeholder
-            })
+                rootFolderPath: '/movies', // Placeholder
+            }),
         });
         if (!response.ok) throw new Error('Failed to add movie to Radarr');
-        return await response.json() as RadarrMovie;
+        return (await response.json()) as RadarrMovie;
     }
 }
 

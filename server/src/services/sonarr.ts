@@ -56,19 +56,22 @@ export class SonarrService {
     async getSeries(): Promise<SonarrSeries[]> {
         const { url, key } = await this.getBaseUrl();
         const response = await fetch(`${url}/api/v3/series`, {
-            headers: { 'X-Api-Key': key }
+            headers: { 'X-Api-Key': key },
         });
         if (!response.ok) throw new Error('Failed to get series from Sonarr');
-        return await response.json() as SonarrSeries[];
+        return (await response.json()) as SonarrSeries[];
     }
 
     async search(term: string): Promise<SonarrSeries[]> {
         const { url, key } = await this.getBaseUrl();
-        const response = await fetch(`${url}/api/v3/series/lookup?term=${encodeURIComponent(term)}`, {
-            headers: { 'X-Api-Key': key }
-        });
+        const response = await fetch(
+            `${url}/api/v3/series/lookup?term=${encodeURIComponent(term)}`,
+            {
+                headers: { 'X-Api-Key': key },
+            },
+        );
         if (!response.ok) throw new Error('Failed to search Sonarr');
-        return await response.json() as SonarrSeries[];
+        return (await response.json()) as SonarrSeries[];
     }
 
     async addSeries(series: Partial<SonarrSeries>): Promise<SonarrSeries> {
@@ -77,7 +80,7 @@ export class SonarrService {
             method: 'POST',
             headers: {
                 'X-Api-Key': key,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 ...series,
@@ -85,17 +88,17 @@ export class SonarrService {
                 languageProfileId: 1,
                 monitored: true,
                 seasonFolder: true,
-                rootFolderPath: '/tv' // Needs to be configured or fetched!
-            })
+                rootFolderPath: '/tv', // Needs to be configured or fetched!
+            }),
         });
         if (!response.ok) throw new Error('Failed to add series to Sonarr');
-        return await response.json() as SonarrSeries;
+        return (await response.json()) as SonarrSeries;
     }
 
     async getRootFolders() {
         const { url, key } = await this.getBaseUrl();
         const response = await fetch(`${url}/api/v3/rootfolder`, {
-            headers: { 'X-Api-Key': key }
+            headers: { 'X-Api-Key': key },
         });
         if (!response.ok) throw new Error('Failed to get root folders');
         return await response.json();
@@ -104,7 +107,7 @@ export class SonarrService {
     async getQualityProfiles() {
         const { url, key } = await this.getBaseUrl();
         const response = await fetch(`${url}/api/v3/qualityprofile`, {
-            headers: { 'X-Api-Key': key }
+            headers: { 'X-Api-Key': key },
         });
         if (!response.ok) throw new Error('Failed to get quality profiles');
         return await response.json();

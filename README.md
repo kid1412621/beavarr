@@ -13,18 +13,18 @@ While built on the solid foundation of the BHVR stack, beavarr extends it to cre
 ## Features
 
 - **LLM Integration**: AI-powered recommendations and insights for your library.
-  - OpenAI API compatible
+    - OpenAI API compatible
 - **Media Stack Integration**: Seamlessly works with Trakt, Sonarr, and Radarr.
 
-  | service       | Watch history | Library | Metadata |
-  | ------------- | :-----------: | :-----: | :------: |
-  | Sonarr        |               |   ✅    |    ✅    |
-  | Radarr        |               |   ✅    |    ✅    |
-  | Jellyfin(WIP) |      ✅       |   ✅    |    ✅    |
-  | Trakt         |      ✅       |         |          |
-  | TMDB(Planed)  |               |         |    ✅    |
-  | TVDB(Planed)  |               |         |    ✅    |
-  | IMDB(Planed)  |               |         |    ✅    |
+    | service       | Watch history | Library | Metadata |
+    | ------------- | :-----------: | :-----: | :------: |
+    | Sonarr        |               |   ✅    |    ✅    |
+    | Radarr        |               |   ✅    |    ✅    |
+    | Jellyfin(WIP) |      ✅       |   ✅    |    ✅    |
+    | Trakt         |      ✅       |         |          |
+    | TMDB(Planed)  |               |         |    ✅    |
+    | TVDB(Planed)  |               |         |    ✅    |
+    | IMDB(Planed)  |               |         |    ✅    |
 
 ### TODO
 
@@ -38,6 +38,7 @@ While built on the solid foundation of the BHVR stack, beavarr extends it to cre
 - [Hono](https://hono.dev) as the backend framework
 - [Vite](https://vitejs.dev) for frontend bundling
 - [React](https://react.dev) for the frontend UI
+- [Oxc](https://oxc.rs) (Oxlint & Oxfmt) for high-performance linting and formatting
 - [Turbo](https://turbo.build) for monorepo build orchestration and caching
 
 ### Project Structure
@@ -48,6 +49,8 @@ While built on the solid foundation of the BHVR stack, beavarr extends it to cre
 ├── server/               # Hono backend
 ├── shared/               # Shared TypeScript definitions
 │   └── src/types/        # Type definitions used by both client and server
+├── .oxlintrc.json        # Oxc linter configuration
+├── .oxfmtrc.json         # Oxc formatter configuration
 ├── package.json          # Root package.json with workspaces
 └── turbo.json            # Turbo configuration for build orchestration
 ```
@@ -67,25 +70,25 @@ server
 ```
 
 ```typescript src/index.ts
-import { Hono } from "hono";
-import { cors } from "hono/cors";
-import type { ApiResponse } from "shared/dist";
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+import type { ApiResponse } from 'shared/dist';
 
 const app = new Hono();
 
 app.use(cors());
 
-app.get("/", (c) => {
-  return c.text("Hello Hono!");
+app.get('/', (c) => {
+    return c.text('Hello Hono!');
 });
 
-app.get("/hello", async (c) => {
-  const data: ApiResponse = {
-    message: "Hello BHVR!",
-    success: true,
-  };
+app.get('/hello', async (c) => {
+    const data: ApiResponse = {
+        message: 'Hello BHVR!',
+        success: true,
+    };
 
-  return c.json(data, { status: 200 });
+    return c.json(data, { status: 200 });
 });
 
 export default app;
@@ -99,7 +102,6 @@ bhvr uses Vite + React Typescript template, which means you can build your front
 
 ```
 client
-├── eslint.config.js
 ├── index.html
 ├── package.json
 ├── public
@@ -189,13 +191,13 @@ shared
 Inside the `src/index.ts` we export any of our code from the folders so it's usable in other parts of the monorepo
 
 ```typescript
-export * from "./types";
+export * from './types';
 ```
 
 By running `bun run dev` or `bun run build` it will compile and export the packages from `shared` so it can be used in either `client` or `server`
 
 ```typescript
-import { ApiResponse } from "shared";
+import { ApiResponse } from 'shared';
 ```
 
 ### Getting Started
@@ -242,6 +244,9 @@ bun run build:server  # Build the Hono backend
 ```bash
 # Lint all workspaces
 bun run lint
+
+# Format all workspaces
+bun run format
 
 # Type check all workspaces
 bun run type-check

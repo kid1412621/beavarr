@@ -5,11 +5,12 @@
 Beavarr is a full-stack TypeScript monorepo project using Bun, Hono, Vite, and React. The project emphasizes type safety between client and server through shared type definitions, with a focus on flexibility for deployment in any environment.
 
 **Key Technologies:**
+
 - Runtime: Bun
 - Backend: Hono + [Langchain](https://docs.langchain.com/llms.txt) + [Drizzle](https://orm.drizzle.team/llms-full.txt) + SQLite
 - Frontend: Vite + React + [Shadcn UI](https://ui.shadcn.com/llms.txt)
 - Build orchestration: Turbo
-- Linting/Formatting: Biome
+- Linting/Formatting: Oxc (Oxlint & Oxfmt)
 - Language: TypeScript
 
 ## Monorepo Structure
@@ -20,10 +21,11 @@ Beavarr is a full-stack TypeScript monorepo project using Bun, Hono, Vite, and R
 ├── server/               # Hono backend
 ├── shared/               # Shared TypeScript definitions
 │   └── src/types/        # Type definitions for client & server
-├── .github/workflows/    # CI/CD workflows
+├── .oxlintrc.json        # Oxc linter configuration
+├── .oxfmtrc.json         # Oxc formatter configuration
 ├── package.json          # Root package with workspaces
 ├── turbo.json           # Turbo build configuration
-└── biome.json           # Biome linter/formatter config
+└── .github/workflows/    # CI/CD workflows
 ```
 
 ## Setup Commands
@@ -35,7 +37,8 @@ Beavarr is a full-stack TypeScript monorepo project using Bun, Hono, Vite, and R
 - Build all packages: `bun run build`
 - Build client: `bun run build:client`
 - Build server: `bun run build:server`
-- Lint all packages: `bun run lint`
+- Lint all packages: `bun run lint` (using `oxlint`)
+- Format code: `bun run format` (using `oxfmt`)
 - Type check: `bun run type-check`
 - Run tests: `bun run test`
 
@@ -51,10 +54,13 @@ Beavarr is a full-stack TypeScript monorepo project using Bun, Hono, Vite, and R
 
 ### Code Style
 
-- Use Biome for linting and formatting (configured in `biome.json`)
-- TypeScript strict mode enabled
-- Follow existing patterns in each workspace
-- Shared configuration for consistent code style across the monorepo
+- Use **Oxc** for linting (`oxlint`) and formatting (`oxfmt`).
+- Linter configuration: `.oxlintrc.json`.
+- Formatter configuration: `.oxfmtrc.json`.
+- TypeScript strict mode enabled.
+- Follow existing patterns in each workspace.
+- Shared configuration for consistent code style across the monorepo.
+- Use native Oxc configs over Prettier/ESLint configs where possible.
 - Never use deprecated APIs, e.g. `z.string().url()` which is old version of zod, use `z.url()` instead
 
 ### Server Development (Hono)
@@ -77,6 +83,7 @@ Beavarr is a full-stack TypeScript monorepo project using Bun, Hono, Vite, and R
 ### Adding New Packages
 
 When adding workspace packages:
+
 - Create appropriate `package.json` with workspace references
 - Add proper `tsconfig.json` extending from root config
 - Update root `package.json` workspaces field if needed
@@ -109,6 +116,7 @@ When adding workspace packages:
 ## Common Workflows
 
 ### Adding a New API Endpoint
+
 1. Define request/response types in `shared/src/types/`
 2. Export types from `shared/src/index.ts`
 3. Build shared package: `cd shared && bun run build`
@@ -116,12 +124,14 @@ When adding workspace packages:
 5. Update client to consume endpoint with proper typing
 
 ### Adding a New UI Component
+
 1. Create component in `client/src/components/`
 2. Import and use in relevant pages
 3. Use shared types for any data structures
 4. Ensure component follows existing style patterns
 
 ### Updating Shared Types
+
 1. Modify types in `shared/src/types/`
 2. Rebuild shared package: `cd shared && bun run build`
 3. Update affected client/server code
@@ -130,5 +140,6 @@ When adding workspace packages:
 ## Docker Support
 
 The repository includes a `Dockerfile` for containerized deployment. Use standard Docker commands:
+
 - Build: `bun run build:docker` or `docker build -t beavarr .`
 - Run: `bun run run:docker` or `docker run -p 4242:4242 beavarr`

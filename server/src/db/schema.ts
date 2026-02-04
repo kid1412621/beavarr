@@ -10,13 +10,17 @@ export const settings = sqliteTable('settings', {
     traktClientSecret: text('trakt_client_secret'),
     traktAccessToken: text('trakt_access_token'),
     traktRefreshToken: text('trakt_refresh_token'),
-    traktTokenExpiresAt: integer('trakt_token_expires_at', { mode: 'timestamp' }),
+    traktTokenExpiresAt: integer('trakt_token_expires_at', {
+        mode: 'timestamp',
+    }),
     tmdbApiKey: text('tmdb_api_key'),
     posterSource: text('poster_source'),
     openaiApiKey: text('openai_api_key'),
     openaiBaseUrl: text('openai_base_url'),
     openaiModel: text('openai_model'),
-    updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(() => new Date()),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(
+        () => new Date(),
+    ),
 });
 
 export type Settings = typeof settings.$inferSelect;

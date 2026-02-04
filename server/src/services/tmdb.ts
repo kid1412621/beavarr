@@ -36,23 +36,29 @@ export class TMDBService {
 
     async searchMulti(query: string): Promise<TMDBSearchResponse> {
         const apiKey = await this.getApiKey();
-        const response = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}`);
+        const response = await fetch(
+            `https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}`,
+        );
         if (!response.ok) throw new Error('Failed to search TMDB');
-        return await response.json() as TMDBSearchResponse;
+        return (await response.json()) as TMDBSearchResponse;
     }
 
     async getMovieDetails(id: number): Promise<TMDBResult> {
         const apiKey = await this.getApiKey();
-        const response = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}`);
+        const response = await fetch(
+            `https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}`,
+        );
         if (!response.ok) throw new Error('Failed to get movie details');
-        return await response.json() as TMDBResult;
+        return (await response.json()) as TMDBResult;
     }
 
     async getTVDetails(id: number): Promise<TMDBResult> {
         const apiKey = await this.getApiKey();
-        const response = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}`);
+        const response = await fetch(
+            `https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}`,
+        );
         if (!response.ok) throw new Error('Failed to get TV details');
-        return await response.json() as TMDBResult;
+        return (await response.json()) as TMDBResult;
     }
 }
 

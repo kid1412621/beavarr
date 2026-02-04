@@ -1,8 +1,8 @@
 {
     "editor.codeActionsOnSave": {
-        "source.organizeImports.biome": "explicit",
-        "source.fixAll.biome": "explicit"
+        "source.fixAll.oxc": "always"
     },
+    "oxc.typeAware": true,
     "cSpell.words": [
         "beavarr",
         "bhvr",

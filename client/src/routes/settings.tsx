@@ -1,23 +1,29 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useForm } from '@tanstack/react-form'
+import { useForm } from '@tanstack/react-form';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
 
-import { Button } from '@/components/ui/button'
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Separator } from "@/components/ui/separator"
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { SonarrSettings } from '@/components/settings/sonarr-settings'
-import { RadarrSettings } from '@/components/settings/radarr-settings'
-import { TraktSettings } from '@/components/settings/trakt-settings'
-import { MediaSettings } from '@/components/settings/media-settings'
-import { AiSettings } from '@/components/settings/ai-settings'
-import { GeneralSettings } from '@/components/settings/general-settings'
-import { type SettingsForm, settingsSchema } from '@/lib/types'
-import { client, settingsQueryOptions } from '@/lib/api'
+import { AiSettings } from '@/components/settings/ai-settings';
+import { GeneralSettings } from '@/components/settings/general-settings';
+import { MediaSettings } from '@/components/settings/media-settings';
+import { RadarrSettings } from '@/components/settings/radarr-settings';
+import { SonarrSettings } from '@/components/settings/sonarr-settings';
+import { TraktSettings } from '@/components/settings/trakt-settings';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardHeader,
+    CardTitle,
+    CardContent,
+    CardDescription,
+} from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { client, settingsQueryOptions } from '@/lib/api';
+import { type SettingsForm, settingsSchema } from '@/lib/types';
 
 export const Route = createFileRoute('/settings')({
     component: Settings,
-})
+});
 
 function Settings() {
     const { data: initialSettings, isPending } = useQuery(settingsQueryOptions);
@@ -26,9 +32,13 @@ function Settings() {
         return <div className="p-8">Loading settings...</div>;
     }
 
-    return <InnerForm key={initialSettings ? 'loaded' : 'empty'} initialValues={initialSettings} />
+    return (
+        <InnerForm
+            key={initialSettings ? 'loaded' : 'empty'}
+            initialValues={initialSettings}
+        />
+    );
 }
-
 
 function InnerForm({ initialValues }: { initialValues: any }) {
     const queryClient = useQueryClient();
@@ -39,9 +49,9 @@ function InnerForm({ initialValues }: { initialValues: any }) {
             return await res.json();
         },
         onSuccess: (data) => {
-            alert("Settings saved!");
+            alert('Settings saved!');
             queryClient.setQueryData(['settings'], data);
-        }
+        },
     });
 
     const form: any = useForm({
@@ -59,35 +69,43 @@ function InnerForm({ initialValues }: { initialValues: any }) {
             posterSource: initialValues?.posterSource || '',
         } as SettingsForm,
         validators: {
-            onChange: settingsSchema
+            onChange: settingsSchema,
         },
         onSubmit: async ({ value }) => {
             await saveSettings(value);
         },
-    })
+    });
 
     return (
-        <div className="p-4 max-w-4xl mx-auto">
-            <Card className="border-none shadow-none bg-transparent">
+        <div className="mx-auto max-w-4xl p-4">
+            <Card className="border-none bg-transparent shadow-none">
                 <CardHeader className="px-0">
                     <CardTitle className="text-2xl">Settings</CardTitle>
-                    <CardDescription>Configure your specific services.</CardDescription>
+                    <CardDescription>
+                        Configure your specific services.
+                    </CardDescription>
                 </CardHeader>
                 <CardContent className="px-0">
                     <form
                         onSubmit={(e) => {
-                            console.log("-----")
-                            e.preventDefault()
-                            e.stopPropagation()
-                            form.handleSubmit()
+                            console.log('-----');
+                            e.preventDefault();
+                            e.stopPropagation();
+                            form.handleSubmit();
                         }}
                         className="space-y-4"
                     >
                         <Tabs defaultValue="general" className="w-full">
                             <TabsList className="grid w-full grid-cols-3">
-                                <TabsTrigger value="general">General</TabsTrigger>
-                                <TabsTrigger value="ai">AI Settings</TabsTrigger>
-                                <TabsTrigger value="media">Media Services</TabsTrigger>
+                                <TabsTrigger value="general">
+                                    General
+                                </TabsTrigger>
+                                <TabsTrigger value="ai">
+                                    AI Settings
+                                </TabsTrigger>
+                                <TabsTrigger value="media">
+                                    Media Services
+                                </TabsTrigger>
                             </TabsList>
 
                             <TabsContent value="general" className="mt-4">
@@ -98,7 +116,10 @@ function InnerForm({ initialValues }: { initialValues: any }) {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>AI Configuration</CardTitle>
-                                        <CardDescription>Configure OpenAI or compatible LLM settings.</CardDescription>
+                                        <CardDescription>
+                                            Configure OpenAI or compatible LLM
+                                            settings.
+                                        </CardDescription>
                                     </CardHeader>
                                     <CardContent>
                                         <AiSettings form={form} />
@@ -106,11 +127,19 @@ function InnerForm({ initialValues }: { initialValues: any }) {
                                 </Card>
                             </TabsContent>
 
-                            <TabsContent value="media" className="space-y-4 mt-4">
+                            <TabsContent
+                                value="media"
+                                className="mt-4 space-y-4"
+                            >
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle>Library Management</CardTitle>
-                                        <CardDescription>Connect to your Sonarr and Radarr instances.</CardDescription>
+                                        <CardTitle>
+                                            Library Management
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Connect to your Sonarr and Radarr
+                                            instances.
+                                        </CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <SonarrSettings form={form} />
@@ -122,7 +151,9 @@ function InnerForm({ initialValues }: { initialValues: any }) {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Watch History</CardTitle>
-                                        <CardDescription>Sync your watch history with Trakt.</CardDescription>
+                                        <CardDescription>
+                                            Sync your watch history with Trakt.
+                                        </CardDescription>
                                     </CardHeader>
                                     <CardContent>
                                         <TraktSettings form={form} />
@@ -132,7 +163,10 @@ function InnerForm({ initialValues }: { initialValues: any }) {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Metadata</CardTitle>
-                                        <CardDescription>Configure metadata providers like TMDB.</CardDescription>
+                                        <CardDescription>
+                                            Configure metadata providers like
+                                            TMDB.
+                                        </CardDescription>
                                     </CardHeader>
                                     <CardContent>
                                         <MediaSettings form={form} />
@@ -141,7 +175,7 @@ function InnerForm({ initialValues }: { initialValues: any }) {
                             </TabsContent>
                         </Tabs>
 
-                        <div className="pt-4 flex justify-end">
+                        <div className="flex justify-end pt-4">
                             <Button type="submit" disabled={isSaving}>
                                 {isSaving ? 'Saving...' : 'Save Settings'}
                             </Button>
@@ -150,5 +184,5 @@ function InnerForm({ initialValues }: { initialValues: any }) {
                 </CardContent>
             </Card>
         </div>
-    )
+    );
 }

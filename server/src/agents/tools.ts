@@ -1,16 +1,17 @@
-import { DynamicStructuredTool } from "@langchain/core/tools";
-import { z } from "zod";
-import { createLogger } from "../lib/logger";
-import { radarrService } from "../services/radarr";
-import { sonarrService } from "../services/sonarr";
-import { tmdbService } from "../services/tmdb";
-import { traktService } from "../services/trakt";
+import { DynamicStructuredTool } from '@langchain/core/tools';
+import { z } from 'zod';
 
-const logger = createLogger("tools");
+import { createLogger } from '../lib/logger';
+import { radarrService } from '../services/radarr';
+import { sonarrService } from '../services/sonarr';
+import { tmdbService } from '../services/tmdb';
+import { traktService } from '../services/trakt';
+
+const logger = createLogger('tools');
 
 export const sonarrSearchTool = new DynamicStructuredTool({
-    name: "sonarr_search",
-    description: "Search for TV shows in Sonarr to find titles to add.",
+    name: 'sonarr_search',
+    description: 'Search for TV shows in Sonarr to find titles to add.',
     schema: z.object({
         term: z.string().describe("The search term (e.g., 'Breaking Bad')"),
     }),
@@ -25,21 +26,21 @@ export const sonarrSearchTool = new DynamicStructuredTool({
 });
 
 export const sonarrAddTool = new DynamicStructuredTool({
-    name: "sonarr_add",
+    name: 'sonarr_add',
     description:
-        "Add a TV show to Sonarr library. You MUST search first to get the correct TVDB ID.",
+        'Add a TV show to Sonarr library. You MUST search first to get the correct TVDB ID.',
     schema: z.object({
-        tvdbId: z.number().describe("The TVDB ID of the show to add"),
-        title: z.string().describe("The title of the show"),
-        titleSlug: z.string().describe("The slug of the title"),
+        tvdbId: z.number().describe('The TVDB ID of the show to add'),
+        title: z.string().describe('The title of the show'),
+        titleSlug: z.string().describe('The slug of the title'),
         images: z
             .array(z.any())
             .optional()
-            .describe("Images array from search result"),
+            .describe('Images array from search result'),
         seasons: z
             .array(z.any())
             .optional()
-            .describe("Seasons array from search result"),
+            .describe('Seasons array from search result'),
     }),
     func: async (seriesData: {
         tvdbId: number;
@@ -66,8 +67,8 @@ export const sonarrAddTool = new DynamicStructuredTool({
 });
 
 export const radarrSearchTool = new DynamicStructuredTool({
-    name: "radarr_search",
-    description: "Search for movies in Radarr.",
+    name: 'radarr_search',
+    description: 'Search for movies in Radarr.',
     schema: z.object({
         term: z.string().describe("The search term (e.g., 'Inception')"),
     }),
@@ -82,13 +83,13 @@ export const radarrSearchTool = new DynamicStructuredTool({
 });
 
 export const radarrAddTool = new DynamicStructuredTool({
-    name: "radarr_add",
+    name: 'radarr_add',
     description:
-        "Add a movie to Radarr library. You MUST search first to get the TMDB ID.",
+        'Add a movie to Radarr library. You MUST search first to get the TMDB ID.',
     schema: z.object({
-        tmdbId: z.number().describe("The TMDB ID of the movie"),
-        title: z.string().describe("The title of the movie"),
-        titleSlug: z.string().describe("The slug of the title"),
+        tmdbId: z.number().describe('The TMDB ID of the movie'),
+        title: z.string().describe('The title of the movie'),
+        titleSlug: z.string().describe('The slug of the title'),
         images: z.array(z.any()).optional(),
         year: z.number().optional(),
     }),
@@ -119,14 +120,16 @@ export const radarrAddTool = new DynamicStructuredTool({
 });
 
 export const traktTrendingTool = new DynamicStructuredTool({
-    name: "trakt_trending",
-    description: "Get trending movies or shows from Trakt.",
+    name: 'trakt_trending',
+    description: 'Get trending movies or shows from Trakt.',
     schema: z.object({
-        type: z.enum(["movies", "shows"]).describe("The type of content to fetch"),
+        type: z
+            .enum(['movies', 'shows'])
+            .describe('The type of content to fetch'),
     }),
-    func: async ({ type }: { type: "movies" | "shows" }) => {
+    func: async ({ type }: { type: 'movies' | 'shows' }) => {
         try {
-            if (type === "movies") {
+            if (type === 'movies') {
                 const results = await traktService.getTrendingMovies();
                 return JSON.stringify(results.slice(0, 10));
             } else {
@@ -134,40 +137,40 @@ export const traktTrendingTool = new DynamicStructuredTool({
                 return JSON.stringify(results.slice(0, 10));
             }
         } catch (error) {
-            logger.error(error, "failed to call trakt");
+            logger.error(error, 'failed to call trakt');
             return `Error fetching trending from Trakt: ${error}`;
         }
     },
 });
 
 export const traktWatchlistTool = new DynamicStructuredTool({
-    name: "trakt_watchlist",
+    name: 'trakt_watchlist',
     description:
         "Get the authenticated user's Trakt watchlist. Shows movies and/or TV shows the user wants to watch.",
     schema: z.object({
         type: z
-            .enum(["movies", "shows", "all"])
+            .enum(['movies', 'shows', 'all'])
             .optional()
-            .default("all")
-            .describe("Type of content to fetch"),
+            .default('all')
+            .describe('Type of content to fetch'),
     }),
-    func: async ({ type }: { type: "movies" | "shows" | "all" }) => {
+    func: async ({ type }: { type: 'movies' | 'shows' | 'all' }) => {
         try {
             const results = await traktService.getWatchlist(type);
             return JSON.stringify(results.slice(0, 20));
         } catch (error) {
-            logger.error(error, "failed to call trakt watchlist");
+            logger.error(error, 'failed to call trakt watchlist');
             return `Error fetching watchlist from Trakt: ${error}`;
         }
     },
 });
 
 export const tmdbSearchTool = new DynamicStructuredTool({
-    name: "tmdb_search",
+    name: 'tmdb_search',
     description:
-        "Search for metadata about movies or TV shows on TMDB to get details like cast, plot, etc.",
+        'Search for metadata about movies or TV shows on TMDB to get details like cast, plot, etc.',
     schema: z.object({
-        query: z.string().describe("Search query"),
+        query: z.string().describe('Search query'),
     }),
     func: async ({ query }: { query: string }) => {
         try {

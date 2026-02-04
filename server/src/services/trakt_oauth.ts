@@ -10,8 +10,12 @@ const TRAKT_DEVICE_TOKEN_URL = 'https://api.trakt.tv/oauth/device/token';
 const TRAKT_REVOKE_URL = 'https://api.trakt.tv/oauth/revoke';
 
 // Hardcoded credentials for device flow (public Trakt client for plugins)
-const TRAKT_CLIENT_ID = process.env.TRAKT_CLIENT_ID || '226e50261eab1d2b7123c9037b58607bfa1acb27dc011355d6fe9d58fda5c435';
-const TRAKT_CLIENT_SECRET = process.env.TRAKT_CLIENT_SECRET || '71864a3b2ac67154aa714d1aecbb9901de14a590fd86cef8b6c8a1afc4da4803';
+const TRAKT_CLIENT_ID =
+    process.env.TRAKT_CLIENT_ID ||
+    '226e50261eab1d2b7123c9037b58607bfa1acb27dc011355d6fe9d58fda5c435';
+const TRAKT_CLIENT_SECRET =
+    process.env.TRAKT_CLIENT_SECRET ||
+    '71864a3b2ac67154aa714d1aecbb9901de14a590fd86cef8b6c8a1afc4da4803';
 
 interface TokenResponse {
     access_token: string;
@@ -172,7 +176,9 @@ export class TraktOAuthService {
             return (await response.json()) as TokenResponse;
         }
 
-        const error = await response.json().catch(() => null) as { error?: string } | null;
+        const error = (await response.json().catch(() => null)) as {
+            error?: string;
+        } | null;
 
         // 400 - Pending, still waiting for user authorization
         if (response.status === 400) {
@@ -192,12 +198,16 @@ export class TraktOAuthService {
             if (settings?.traktAccessToken) {
                 return null; // Tokens exist, authorization is complete
             }
-            throw new Error('Authorization was completed but tokens not found. Please try again.');
+            throw new Error(
+                'Authorization was completed but tokens not found. Please try again.',
+            );
         }
 
         // 410 - Expired, need to restart the flow
         if (response.status === 410) {
-            throw new Error('Device code expired. Please start a new authorization.');
+            throw new Error(
+                'Device code expired. Please start a new authorization.',
+            );
         }
 
         // 418 - Denied by user
@@ -210,7 +220,9 @@ export class TraktOAuthService {
             return null;
         }
 
-        throw new Error(`Token poll failed: ${error?.error || 'Unknown error'}`);
+        throw new Error(
+            `Token poll failed: ${error?.error || 'Unknown error'}`,
+        );
     }
 
     async revokeToken(accessToken: string): Promise<void> {
@@ -227,7 +239,7 @@ export class TraktOAuthService {
                 client_id: clientId,
                 client_secret: clientSecret,
             }),
-        }).catch(err => {
+        }).catch((err) => {
             logger.error(err, 'Failed to revoke token');
         });
     }
@@ -235,7 +247,9 @@ export class TraktOAuthService {
     // === Token Management ===
 
     async saveTokens(tokens: TokenResponse) {
-        const expiresAt = new Date((tokens.created_at + tokens.expires_in) * 1000);
+        const expiresAt = new Date(
+            (tokens.created_at + tokens.expires_in) * 1000,
+        );
         await updateSettings({
             traktAccessToken: tokens.access_token,
             traktRefreshToken: tokens.refresh_token,

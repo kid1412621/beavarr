@@ -1,23 +1,30 @@
-import { useState } from 'react'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useForm } from '@tanstack/react-form'
-import { Button } from '@/components/ui/button'
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Separator } from '@/components/ui/separator'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { SonarrSettings } from '@/components/settings/sonarr-settings'
-import { RadarrSettings } from '@/components/settings/radarr-settings'
-import { TraktSettings } from '@/components/settings/trakt-settings'
-import { MediaSettings } from '@/components/settings/media-settings'
-import { AiSettings } from '@/components/settings/ai-settings'
-import { GeneralSettings } from '@/components/settings/general-settings'
-import { type SettingsForm, settingsSchema } from '@/lib/types'
-import { client, settingsQueryOptions } from '@/lib/api'
+import { useForm } from '@tanstack/react-form';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { useState } from 'react';
+
+import { AiSettings } from '@/components/settings/ai-settings';
+import { GeneralSettings } from '@/components/settings/general-settings';
+import { MediaSettings } from '@/components/settings/media-settings';
+import { RadarrSettings } from '@/components/settings/radarr-settings';
+import { SonarrSettings } from '@/components/settings/sonarr-settings';
+import { TraktSettings } from '@/components/settings/trakt-settings';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardHeader,
+    CardTitle,
+    CardContent,
+    CardDescription,
+} from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { client, settingsQueryOptions } from '@/lib/api';
+import { type SettingsForm, settingsSchema } from '@/lib/types';
 
 export const Route = createFileRoute('/onboarding')({
     component: Onboarding,
-})
+});
 
 function Onboarding() {
     const { data: initialSettings, isPending } = useQuery(settingsQueryOptions);
@@ -26,9 +33,13 @@ function Onboarding() {
         return <div className="p-8">Loading...</div>;
     }
 
-    return <InnerForm key={initialSettings ? 'loaded' : 'empty'} initialValues={initialSettings} />
+    return (
+        <InnerForm
+            key={initialSettings ? 'loaded' : 'empty'}
+            initialValues={initialSettings}
+        />
+    );
 }
-
 
 function InnerForm({ initialValues }: { initialValues: any }) {
     const navigate = useNavigate({ from: '/onboarding' });
@@ -44,11 +55,11 @@ function InnerForm({ initialValues }: { initialValues: any }) {
         onSuccess: (data) => {
             // Only navigate away if we are finishing the last step
             if (step === 2) {
-                alert("Settings saved!");
+                alert('Settings saved!');
                 queryClient.setQueryData(['settings'], data);
                 navigate({ to: '/' });
             }
-        }
+        },
     });
 
     const form: any = useForm({
@@ -66,7 +77,7 @@ function InnerForm({ initialValues }: { initialValues: any }) {
             posterSource: initialValues?.posterSource || '',
         } as SettingsForm,
         validators: {
-            onChange: settingsSchema
+            onChange: settingsSchema,
         },
         onSubmit: async ({ value }) => {
             if (!form.state.isDirty) {
@@ -75,7 +86,7 @@ function InnerForm({ initialValues }: { initialValues: any }) {
             }
             await saveSettings(value);
         },
-    })
+    });
 
     const handleNext = async (e: React.MouseEvent) => {
         e.preventDefault();
@@ -87,25 +98,31 @@ function InnerForm({ initialValues }: { initialValues: any }) {
             }
             setStep(2);
         } catch (error) {
-            console.error("Failed to save step 1", error);
-            alert("Failed to save settings");
+            console.error('Failed to save step 1', error);
+            alert('Failed to save settings');
         }
     };
 
     const handleBack = () => {
         setStep(1);
-    }
+    };
 
     return (
-        <div className="p-4 max-w-2xl mx-auto h-screen flex items-center justify-center">
+        <div className="mx-auto flex h-screen max-w-2xl items-center justify-center p-4">
             <Card className="w-full">
                 <CardHeader>
-                    <div className="flex items-center gap-2 mb-2">
-                        <div className={`h-2 flex-1 rounded-full ${step >= 1 ? 'bg-primary' : 'bg-muted'}`} />
-                        <div className={`h-2 flex-1 rounded-full ${step >= 2 ? 'bg-primary' : 'bg-muted'}`} />
+                    <div className="mb-2 flex items-center gap-2">
+                        <div
+                            className={`h-2 flex-1 rounded-full ${step >= 1 ? 'bg-primary' : 'bg-muted'}`}
+                        />
+                        <div
+                            className={`h-2 flex-1 rounded-full ${step >= 2 ? 'bg-primary' : 'bg-muted'}`}
+                        />
                     </div>
                     <CardTitle>
-                        {step === 1 ? 'Configure Intelligence' : 'Connect Services'}
+                        {step === 1
+                            ? 'Configure Intelligence'
+                            : 'Connect Services'}
                     </CardTitle>
                     <CardDescription>
                         {step === 1
@@ -117,17 +134,19 @@ function InnerForm({ initialValues }: { initialValues: any }) {
                 <CardContent>
                     <form
                         onSubmit={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            form.handleSubmit()
+                            e.preventDefault();
+                            e.stopPropagation();
+                            form.handleSubmit();
                         }}
                         className="space-y-6"
                     >
                         {step === 1 && (
-                            <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                            <div className="animate-in fade-in slide-in-from-right-4 space-y-4 duration-300">
                                 <Alert className="bg-muted/50 border-none">
                                     <AlertDescription>
-                                        We currently support OpenAI and compatible providers (like LocalAI, Ollama).
+                                        We currently support OpenAI and
+                                        compatible providers (like LocalAI,
+                                        Ollama).
                                     </AlertDescription>
                                 </Alert>
                                 <AiSettings form={form} />
@@ -135,33 +154,48 @@ function InnerForm({ initialValues }: { initialValues: any }) {
                         )}
 
                         {step === 2 && (
-                            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                            <div className="animate-in fade-in slide-in-from-right-4 space-y-6 duration-300">
                                 <div className="space-y-4">
-                                    <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Library</h3>
+                                    <h3 className="text-muted-foreground text-sm font-medium tracking-wider uppercase">
+                                        Library
+                                    </h3>
                                     <SonarrSettings form={form} />
                                     <RadarrSettings form={form} />
                                 </div>
                                 <Separator />
                                 <div className="space-y-4">
-                                    <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">General</h3>
+                                    <h3 className="text-muted-foreground text-sm font-medium tracking-wider uppercase">
+                                        General
+                                    </h3>
                                     <GeneralSettings form={form} />
                                 </div>
                                 <Separator />
                                 <div className="space-y-4">
-                                    <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">History & Metadata</h3>
+                                    <h3 className="text-muted-foreground text-sm font-medium tracking-wider uppercase">
+                                        History & Metadata
+                                    </h3>
                                     <TraktSettings form={form} />
                                     <MediaSettings form={form} />
                                 </div>
                             </div>
                         )}
 
-                        <div className="pt-6 flex justify-between">
+                        <div className="flex justify-between pt-6">
                             {step === 2 ? (
-                                <Button type="button" variant="outline" onClick={handleBack} disabled={isSaving}>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={handleBack}
+                                    disabled={isSaving}
+                                >
                                     Back
                                 </Button>
                             ) : (
-                                <Button type="button" variant="ghost" onClick={() => navigate({ to: '/' })}>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={() => navigate({ to: '/' })}
+                                >
                                     Skip Setup
                                 </Button>
                             )}
@@ -173,7 +207,9 @@ function InnerForm({ initialValues }: { initialValues: any }) {
                             ) : (
                                 <div className="flex flex-col items-end gap-2 text-right">
                                     <Button type="submit" disabled={isSaving}>
-                                        {isSaving ? 'Finishing...' : 'Complete Setup'}
+                                        {isSaving
+                                            ? 'Finishing...'
+                                            : 'Complete Setup'}
                                     </Button>
                                     <form.Subscribe
                                         selector={(state: any) => state.errors}
@@ -181,7 +217,8 @@ function InnerForm({ initialValues }: { initialValues: any }) {
                                             <>
                                                 {errors.length > 0 && (
                                                     <p className="text-destructive text-xs font-medium">
-                                                        {errors[0]?.message || 'Please fix errors above'}
+                                                        {errors[0]?.message ||
+                                                            'Please fix errors above'}
                                                     </p>
                                                 )}
                                             </>
@@ -194,5 +231,5 @@ function InnerForm({ initialValues }: { initialValues: any }) {
                 </CardContent>
             </Card>
         </div>
-    )
+    );
 }
