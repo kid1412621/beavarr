@@ -2,7 +2,20 @@ import { queryOptions } from '@tanstack/react-query';
 import { hcWithType } from 'server/dist/client';
 
 const SERVER_URL = import.meta.env.DEV ? 'http://localhost:4242' : '/';
-export const client = hcWithType(SERVER_URL);
+
+export const client = hcWithType(SERVER_URL, {
+    fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
+        const token = localStorage.getItem('auth_credentials');
+        if (token) {
+            init = init || {};
+            init.headers = {
+                ...init.headers,
+                Authorization: `Basic ${token}`,
+            };
+        }
+        return fetch(input, init);
+    },
+});
 
 export const settingsQueryOptions = queryOptions({
     queryKey: ['settings'],

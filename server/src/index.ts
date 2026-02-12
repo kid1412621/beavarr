@@ -29,9 +29,23 @@ import chatRoute from './routes/chat';
 import libraryRoute from './routes/library';
 import settingsRoute from './routes/settings';
 import traktRoute from './routes/trakt';
+import authRoute from './routes/auth';
+import { authMiddleware, requirePasswordChange } from './middleware/auth';
+import { initAdminUser } from './db/repo/user';
+
+// Init default admin user
+initAdminUser().catch(err => {
+    logger.error({ err }, 'Failed to initialize admin user');
+});
+
+// Protect all API routes with Basic Auth
+// We exempt /api/auth/* partially (handled inside) but basic auth is needed.
+app.use('/api/*', authMiddleware);
+app.use('/api/*', requirePasswordChange);
 
 export const route = app
     .basePath('/api')
+    .route('/auth', authRoute)
     .route('/settings', settingsRoute)
     .route('/trakt', traktRoute)
     .route('/library', libraryRoute)
@@ -50,9 +64,11 @@ export const route = app
     });
 
 // ui
-app.use('*', serveStatic({ root: './static' })).get('*', async (c, next) => {
-    return serveStatic({ root: './static', path: 'index.html' })(c, next);
-});
+app
+    .use('*', serveStatic({ root: './static' }))
+    .get('*', async (c, next) => {
+        return serveStatic({ root: './static', path: 'index.html' })(c, next);
+    });
 
 export default {
     port,
