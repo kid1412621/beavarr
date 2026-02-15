@@ -93,9 +93,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
 
         if (!res.ok) {
-            const data = await res.json();
-            const message = 'error' in data ? data.error : 'Failed to change password';
-            throw new Error(message);
+            const error = await res.json();
+            throw new Error(error.error || 'Failed to change password');
         }
 
         // Update user state locally to reflect password change
