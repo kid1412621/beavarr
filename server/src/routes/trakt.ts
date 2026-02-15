@@ -14,7 +14,7 @@ import { getSettings } from '../db/repo/settings';
 import { createLogger } from '../lib/logger';
 import { traktService } from '../services/trakt';
 import { traktOAuthService } from '../services/trakt_oauth';
-import { type Env } from '../middleware/auth';
+import { type Env } from '../lib/auth';
 
 const logger = createLogger('trakt');
 

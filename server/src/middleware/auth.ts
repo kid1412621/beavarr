@@ -2,22 +2,14 @@ import { getCookie } from 'hono/cookie';
 import { verify } from 'hono/jwt';
 import type { MiddlewareHandler } from 'hono';
 import { findUserByUsername } from '../db/repo/user';
-import { type User } from '../db/schema';
-
-export type Env = {
-    Variables: {
-        user: User;
-    };
-};
-
-const JWT_SECRET = process.env.JWT_SECRET || 'beavarr_secret_key_change_me_in_production';
+import { type Env, JWT_SECRET } from '../lib/auth';
 
 export const authMiddleware: MiddlewareHandler<Env> = async (c, next) => {
     // 1. Try JWT from cookie
     const token = getCookie(c, 'auth_token');
     if (token) {
         try {
-            const payload = await verify(token, JWT_SECRET);
+            const payload = await verify(token, JWT_SECRET, 'HS256');
             if (payload && typeof payload.sub === 'string') {
                 const username = payload.sub;
                 const user = await findUserByUsername(username);

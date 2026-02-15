@@ -3,7 +3,7 @@ import { type SettingsForm } from 'shared';
 
 import { getOrCreateSettings, updateSettings } from '../db/repo/settings';
 import { createLogger } from '../lib/logger';
-import { type Env } from '../middleware/auth';
+import { type Env } from '../lib/auth';
 
 const logger = createLogger('settings');
 const settingsRoute = new Hono<Env>()
