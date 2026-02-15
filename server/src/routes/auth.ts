@@ -1,74 +1,66 @@
+import { sign } from 'hono/jwt';
+import { setCookie, deleteCookie } from 'hono/cookie';
 import { Hono } from 'hono';
-import { findUserByUsername, updateUserPassword } from '../db/repo/user';
+import { updateUserPassword } from '../db/repo/user';
+import { type Env } from '../middleware/auth';
 
-const app = new Hono();
+const JWT_SECRET = process.env.JWT_SECRET || 'beavarr_secret_key_change_me_in_production';
 
-app.post('/verify', async (c) => {
-    // This endpoint is protected by Basic Auth (applied at the parent route or middleware)
-    // If we reach here, the user is authenticated.
-    // We just return the user status.
+const authRoute = new Hono<Env>()
+    .post('/verify', async (c) => {
+        // This endpoint is protected by Basic Auth (applied at the parent route or middleware)
+        // If we reach here, the user is authenticated and attached to the context.
 
-    const credentials = c.req.header('Authorization');
-    if (!credentials) {
-        return c.json({ error: 'Unauthorized' }, 401);
-    }
+        const user = c.get('user');
 
-    const base64Credentials = credentials.split(' ')[1];
-    if (!base64Credentials) {
-        return c.json({ error: 'Unauthorized' }, 401);
-    }
-    const [username] = Buffer.from(base64Credentials, 'base64').toString().split(':');
-    if (!username) {
-        return c.json({ error: 'Unauthorized' }, 401);
-    }
-    const user = await findUserByUsername(username);
-    if (!user) {
-        return c.json({ error: 'User not found' }, 404);
-    }
+        // Generate JWT
+        const token = await sign({
+            sub: user.username,
+            exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // 7 days
+        }, JWT_SECRET);
 
-    return c.json({
-        success: true,
-        user: {
-            username: user.username,
-            isPasswordChanged: user.isPasswordChanged
+        // Set HttpOnly cookie
+        setCookie(c, 'auth_token', token, {
+            httpOnly: true,
+            path: '/',
+            sameSite: 'Lax',
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 60 * 60 * 24 * 7, // 7 days
+        });
+
+        return c.json({
+            success: true,
+            user: {
+                username: user.username,
+                isPasswordChanged: user.isPasswordChanged,
+            },
+        });
+    })
+    .post('/change-password', async (c) => {
+        const body = await c.req.json();
+        const { newPassword } = body;
+
+        if (!newPassword || newPassword.length < 8) {
+            return c.json({ error: 'Password must be at least 8 characters' }, 400);
         }
-    });
-});
 
-app.post('/change-password', async (c) => {
-    const body = await c.req.json();
-    const { newPassword } = body;
+        const user = c.get('user');
 
-    if (!newPassword || newPassword.length < 8) {
-        return c.json({ error: 'Password must be at least 8 characters' }, 400);
-    }
+        const hashedPassword = await Bun.password.hash(newPassword, {
+            algorithm: 'bcrypt',
+            cost: 10,
+        });
 
-    const credentials = c.req.header('Authorization');
-    if (!credentials) {
-        return c.json({ error: 'Unauthorized' }, 401);
-    }
+        await updateUserPassword(user.id, hashedPassword, true);
 
-    const base64Credentials = credentials.split(' ')[1];
-    if (!base64Credentials) {
-        return c.json({ error: 'Unauthorized' }, 401);
-    }
-    const [username] = Buffer.from(base64Credentials, 'base64').toString().split(':');
-    if (!username) {
-        return c.json({ error: 'Unauthorized' }, 401);
-    }
-    const user = await findUserByUsername(username);
-    if (!user) {
-        return c.json({ error: 'User not found' }, 404);
-    }
-
-    const hashedPassword = await Bun.password.hash(newPassword, {
-        algorithm: 'bcrypt',
-        cost: 10,
+        return c.json({ success: true, message: 'Password updated successfully' });
+    })
+    .post('/logout', async (c) => {
+        deleteCookie(c, 'auth_token', {
+            path: '/',
+            secure: process.env.NODE_ENV === 'production',
+        });
+        return c.json({ success: true });
     });
 
-    await updateUserPassword(user.id, hashedPassword, true);
-
-    return c.json({ success: true, message: 'Password updated successfully' });
-});
-
-export default app;
+export default authRoute;

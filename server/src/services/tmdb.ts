@@ -26,16 +26,16 @@ export interface TMDBSearchResponse {
 }
 
 export class TMDBService {
-    private async getApiKey() {
-        const settings = await getSettings();
+    private async getApiKey(userId: number) {
+        const settings = await getSettings(userId);
         if (!settings?.tmdbApiKey) {
             throw new Error('TMDB API Key is not configured');
         }
         return settings.tmdbApiKey;
     }
 
-    async searchMulti(query: string): Promise<TMDBSearchResponse> {
-        const apiKey = await this.getApiKey();
+    async searchMulti(userId: number, query: string): Promise<TMDBSearchResponse> {
+        const apiKey = await this.getApiKey(userId);
         const response = await fetch(
             `https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}`,
         );
@@ -43,8 +43,8 @@ export class TMDBService {
         return (await response.json()) as TMDBSearchResponse;
     }
 
-    async getMovieDetails(id: number): Promise<TMDBResult> {
-        const apiKey = await this.getApiKey();
+    async getMovieDetails(userId: number, id: number): Promise<TMDBResult> {
+        const apiKey = await this.getApiKey(userId);
         const response = await fetch(
             `https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}`,
         );
@@ -52,8 +52,8 @@ export class TMDBService {
         return (await response.json()) as TMDBResult;
     }
 
-    async getTVDetails(id: number): Promise<TMDBResult> {
-        const apiKey = await this.getApiKey();
+    async getTVDetails(userId: number, id: number): Promise<TMDBResult> {
+        const apiKey = await this.getApiKey(userId);
         const response = await fetch(
             `https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}`,
         );

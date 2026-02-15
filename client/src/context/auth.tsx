@@ -34,30 +34,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         const checkAuth = async () => {
-            const credentials = localStorage.getItem('auth_credentials');
-            if (!credentials) {
-                setIsLoading(false);
-                const path = router.state.location.pathname;
-                if (path !== '/login') {
-                    // router.navigate({ to: '/login' });
-                }
-                return;
-            }
-
-            // Verify token
+            // No need to check localStorage. Just try to verify.
+            // If the auth_token cookie is there and valid, the server will return the user.
             try {
                 const res = await client.api.auth.verify.$post();
                 if (res.ok) {
                     const data = await res.json();
                     setUser(data.user);
                 } else {
-                    // Invalid token
-                    localStorage.removeItem('auth_credentials');
                     setUser(null);
                 }
             } catch (error) {
                 console.error('Auth verification failed', error);
-                localStorage.removeItem('auth_credentials');
                 setUser(null);
             } finally {
                 setIsLoading(false);
@@ -69,27 +57,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const login = async (username: string, password: string) => {
         const credentials = btoa(`${username}:${password}`);
-        // Temporarily set for the request
-        localStorage.setItem('auth_credentials', credentials);
 
-        try {
-            const res = await client.api.auth.verify.$post();
-            if (res.ok) {
-                const data = await res.json();
-                setUser(data.user);
-                // navigate({ to: '/' }); // Let component handle nav
-            } else {
-                localStorage.removeItem('auth_credentials');
-                throw new Error('Invalid credentials');
-            }
-        } catch (error) {
-            localStorage.removeItem('auth_credentials');
-            throw error;
+        // We send the Basic Auth header ONCE during login.
+        // The server will verify it and set an HttpOnly auth_token cookie.
+        const res = await client.api.auth.verify.$post(
+            {},
+            {
+                headers: {
+                    Authorization: `Basic ${credentials}`,
+                },
+            },
+        );
+
+        if (res.ok) {
+            const data = await res.json();
+            setUser(data.user);
+        } else {
+            throw new Error('Invalid credentials');
         }
     };
 
-    const logout = () => {
-        localStorage.removeItem('auth_credentials');
+    const logout = async () => {
+        try {
+            await client.api.auth.logout.$post();
+        } catch (error) {
+            console.error('Logout failed on server', error);
+        }
         setUser(null);
         router.navigate({ to: '/login' });
     };
@@ -107,15 +100,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Update user state locally to reflect password change
         if (user) {
             setUser({ ...user, isPasswordChanged: true });
-        }
-
-        // Update stored credentials with new password (?)
-        // Wait, if we change password, the old credentials (basic auth header) will be invalid for next requests?
-        // Yes. So we need to update the stored credentials with the NEW password.
-        // We know the username from current state.
-        if (user) {
-            const credentials = btoa(`${user.username}:${newPassword}`);
-            localStorage.setItem('auth_credentials', credentials);
         }
     };
 

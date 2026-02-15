@@ -14,6 +14,7 @@ import { getSettings } from '../db/repo/settings';
 import { createLogger } from '../lib/logger';
 import { traktService } from '../services/trakt';
 import { traktOAuthService } from '../services/trakt_oauth';
+import { type Env } from '../middleware/auth';
 
 const logger = createLogger('trakt');
 
@@ -39,11 +40,13 @@ const extractTraktImage = (images: any): string | null => {
     return url;
 };
 
-const traktRoute = new Hono()
+const traktRoute = new Hono<Env>()
     // Get authorization URL for Trakt OAuth
     .get('/auth-url', async (c) => {
         try {
-            const settings = await getSettings();
+            const user = c.get('user');
+            if (!user) return c.json({ error: 'Unauthorized' }, 401);
+            const settings = await getSettings(user.id);
             if (!settings?.traktClientId || !settings?.traktClientSecret) {
                 return c.json(
                     { error: 'Trakt client credentials not configured' },
@@ -119,10 +122,12 @@ const traktRoute = new Hono()
             });
 
             // Exchange code for tokens
-            const tokens = await traktOAuthService.exchangeCodeForTokens(code);
+            const user = c.get('user');
+            if (!user) return c.json({ error: 'Unauthorized' }, 401);
+            const tokens = await traktOAuthService.exchangeCodeForTokens(user.id, code);
 
             // Save tokens
-            await traktOAuthService.saveTokens(tokens);
+            await traktOAuthService.saveTokens(user.id, tokens);
 
             return c.json({
                 success: true,
@@ -143,15 +148,18 @@ const traktRoute = new Hono()
     // Refresh access token
     .post('/refresh', async (c) => {
         try {
-            const settings = await getSettings();
+            const user = c.get('user');
+            if (!user) return c.json({ error: 'Unauthorized' }, 401);
+            const settings = await getSettings(user.id);
             if (!settings?.traktRefreshToken) {
                 return c.json({ error: 'No refresh token available' }, 400);
             }
 
             const tokens = await traktOAuthService.refreshAccessToken(
+                user.id,
                 settings.traktRefreshToken,
             );
-            await traktOAuthService.saveTokens(tokens);
+            await traktOAuthService.saveTokens(user.id, tokens);
 
             return c.json({ success: true });
         } catch (error) {
@@ -162,7 +170,9 @@ const traktRoute = new Hono()
     // Disconnect Trakt
     .delete('/disconnect', async (c) => {
         try {
-            await traktOAuthService.disconnect();
+            const user = c.get('user');
+            if (!user) return c.json({ error: 'Unauthorized' }, 401);
+            await traktOAuthService.disconnect(user.id);
             return c.json({ success: true });
         } catch (error) {
             logger.error(error, 'Disconnect error');
@@ -198,7 +208,10 @@ const traktRoute = new Hono()
                 return c.json({ error: 'device_code required' }, 400);
             }
 
-            const tokens = await traktOAuthService.pollForToken(device_code);
+            const userContext = c.get('user');
+            if (!userContext) return c.json({ error: 'Unauthorized' }, 401);
+
+            const tokens = await traktOAuthService.pollForToken(userContext.id, device_code);
 
             if (tokens === null) {
                 // Still waiting for user authorization
@@ -206,10 +219,10 @@ const traktRoute = new Hono()
             }
 
             // Authorization successful, save tokens
-            await traktOAuthService.saveTokens(tokens);
+            await traktOAuthService.saveTokens(userContext.id, tokens);
 
             // Get user info
-            const user = await traktService.getUser();
+            const user = await traktService.getUser(userContext.id);
 
             return c.json<TraktPollResponse>({
                 status: 'authorized',
@@ -227,7 +240,9 @@ const traktRoute = new Hono()
     // Disconnect using device flow (with token revocation)
     .delete('/device', async (c) => {
         try {
-            await traktOAuthService.disconnect();
+            const user = c.get('user');
+            if (!user) return c.json({ error: 'Unauthorized' }, 401);
+            await traktOAuthService.disconnect(user.id);
             return c.json({ success: true });
         } catch (error) {
             logger.error(error, 'Device disconnect error');
@@ -237,7 +252,9 @@ const traktRoute = new Hono()
     // Check if using custom credentials (advanced mode)
     .get('/auth-mode', async (c) => {
         try {
-            const isCustom = await traktOAuthService.isUsingCustomCredentials();
+            const user = c.get('user');
+            if (!user) return c.json({ error: 'Unauthorized' }, 401);
+            const isCustom = await traktOAuthService.isUsingCustomCredentials(user.id);
             return c.json({
                 mode: isCustom ? 'authorization_code' : 'device',
             });
@@ -250,7 +267,9 @@ const traktRoute = new Hono()
     // Get Trakt connection status
     .get('/status', async (c) => {
         try {
-            const settings = await getSettings();
+            const user = c.get('user');
+            if (!user) return c.json({ error: 'Unauthorized' }, 401);
+            const settings = await getSettings(user.id);
             const isConnected = !!settings?.traktAccessToken;
             const isExpired = traktOAuthService.isTokenExpired(
                 settings?.traktTokenExpiresAt ?? null,
@@ -269,7 +288,9 @@ const traktRoute = new Hono()
     // Get authenticated Trakt user profile
     .get('/user', async (c) => {
         try {
-            const user = await traktService.getUser();
+            const userContext = c.get('user');
+            if (!userContext) return c.json({ error: 'Unauthorized' }, 401);
+            const user = await traktService.getUser(userContext.id);
             return c.json<TraktUserResponse>({
                 id: user.id,
                 username: user.username,
@@ -317,9 +338,11 @@ const traktRoute = new Hono()
     // Get Trakt watchlist
     .get('/watchlist', async (c) => {
         try {
+            const user = c.get('user');
+            if (!user) return c.json({ error: 'Unauthorized' }, 401);
             const type =
-                (c.req.query('type') as 'movies' | 'shows' | 'all') || 'all';
-            const watchlist = await traktService.getWatchlist(type);
+                (c.req.query('type') as 'movies' | 'shows' | 'all' || 'all');
+            const watchlist = await traktService.getWatchlist(user.id, type);
             return c.json(watchlist);
         } catch (error) {
             logger.error(error, 'Get watchlist error');
@@ -334,12 +357,10 @@ const traktRoute = new Hono()
             // (e.g. if user watched 20 episodes of one show, we need to fetch past those to find the next show)
             const fetchLimit = Math.min(requestedLimit * 10, 200);
 
-            logger.info(
-                { requestedLimit, fetchLimit },
-                'Fetching Trakt history',
-            );
+            const user = c.get('user');
+            if (!user) return c.json({ error: 'Unauthorized' }, 401);
 
-            const rawHistory = await traktService.getHistory('all', fetchLimit);
+            const rawHistory = await traktService.getHistory(user.id, 'all', fetchLimit);
             logger.info({ count: rawHistory.length }, 'Trakt history fetched');
 
             // Deduplicate: Keep only the first occurrence (most recent) of each show/movie
@@ -422,12 +443,13 @@ const traktRoute = new Hono()
     // Get Trending movies/shows
     .get('/trending', async (c) => {
         try {
-            logger.info('Fetching Trakt trending');
+            const user = c.get('user');
+            if (!user) return c.json({ error: 'Unauthorized' }, 401);
 
             // Fetch both (limit 20 each)
             const [movies, shows] = await Promise.all([
-                traktService.getTrendingMovies(),
-                traktService.getTrendingShows(),
+                traktService.getTrendingMovies(user.id),
+                traktService.getTrendingShows(user.id),
             ]);
 
             // Transform to unified format and enrich

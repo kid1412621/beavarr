@@ -3,9 +3,10 @@ import { type SettingsForm } from 'shared';
 
 import { getOrCreateSettings, updateSettings } from '../db/repo/settings';
 import { createLogger } from '../lib/logger';
+import { type Env } from '../middleware/auth';
 
 const logger = createLogger('settings');
-const settingsRoute = new Hono()
+const settingsRoute = new Hono<Env>()
     .get('/', async (c) => {
         try {
             const user = c.get('user');

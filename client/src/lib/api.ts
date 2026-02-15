@@ -4,17 +4,11 @@ import { hcWithType } from 'server/dist/client';
 const SERVER_URL = import.meta.env.DEV ? 'http://localhost:4242' : '/';
 
 export const client = hcWithType(SERVER_URL, {
-    fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
-        const token = localStorage.getItem('auth_credentials');
-        if (token) {
-            init = init || {};
-            init.headers = {
-                ...init.headers,
-                Authorization: `Basic ${token}`,
-            };
-        }
-        return fetch(input, init);
-    },
+    fetch: (input: RequestInfo | URL, init?: RequestInit) =>
+        fetch(input, {
+            ...init,
+            credentials: 'include',
+        }),
 });
 
 export const settingsQueryOptions = queryOptions({

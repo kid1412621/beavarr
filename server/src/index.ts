@@ -22,7 +22,12 @@ const app = new Hono();
 
 // api
 if (process.env.NODE_ENV !== 'production') {
-    app.use(cors());
+    app.use(
+        cors({
+            origin: (origin) => origin,
+            credentials: true,
+        }),
+    );
 }
 
 import chatRoute from './routes/chat';
