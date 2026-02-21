@@ -3,8 +3,8 @@ import { type ChatRequest, type ChatResponse, type ChatMessage } from 'shared';
 
 import { createMediaAgent } from '../agents/media_agent';
 import { getSettings } from '../db/repo/settings';
-import { createLogger } from '../lib/logger';
 import { type Env } from '../lib/auth';
+import { createLogger } from '../lib/logger';
 
 const logger = createLogger('chat');
 const chatRoute = new Hono<Env>().post('/', async (c) => {

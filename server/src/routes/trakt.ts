@@ -11,10 +11,10 @@ import {
 } from 'shared';
 
 import { getSettings } from '../db/repo/settings';
+import { type Env } from '../lib/auth';
 import { createLogger } from '../lib/logger';
 import { traktService } from '../services/trakt';
 import { traktOAuthService } from '../services/trakt_oauth';
-import { type Env } from '../lib/auth';
 
 const logger = createLogger('trakt');
 
@@ -124,7 +124,10 @@ const traktRoute = new Hono<Env>()
             // Exchange code for tokens
             const user = c.get('user');
             if (!user) return c.json({ error: 'Unauthorized' }, 401);
-            const tokens = await traktOAuthService.exchangeCodeForTokens(user.id, code);
+            const tokens = await traktOAuthService.exchangeCodeForTokens(
+                user.id,
+                code,
+            );
 
             // Save tokens
             await traktOAuthService.saveTokens(user.id, tokens);
@@ -211,7 +214,10 @@ const traktRoute = new Hono<Env>()
             const userContext = c.get('user');
             if (!userContext) return c.json({ error: 'Unauthorized' }, 401);
 
-            const tokens = await traktOAuthService.pollForToken(userContext.id, device_code);
+            const tokens = await traktOAuthService.pollForToken(
+                userContext.id,
+                device_code,
+            );
 
             if (tokens === null) {
                 // Still waiting for user authorization
@@ -254,7 +260,9 @@ const traktRoute = new Hono<Env>()
         try {
             const user = c.get('user');
             if (!user) return c.json({ error: 'Unauthorized' }, 401);
-            const isCustom = await traktOAuthService.isUsingCustomCredentials(user.id);
+            const isCustom = await traktOAuthService.isUsingCustomCredentials(
+                user.id,
+            );
             return c.json({
                 mode: isCustom ? 'authorization_code' : 'device',
             });
@@ -341,7 +349,7 @@ const traktRoute = new Hono<Env>()
             const user = c.get('user');
             if (!user) return c.json({ error: 'Unauthorized' }, 401);
             const type =
-                (c.req.query('type') as 'movies' | 'shows' | 'all' || 'all');
+                (c.req.query('type') as 'movies' | 'shows' | 'all') || 'all';
             const watchlist = await traktService.getWatchlist(user.id, type);
             return c.json(watchlist);
         } catch (error) {
@@ -360,7 +368,11 @@ const traktRoute = new Hono<Env>()
             const user = c.get('user');
             if (!user) return c.json({ error: 'Unauthorized' }, 401);
 
-            const rawHistory = await traktService.getHistory(user.id, 'all', fetchLimit);
+            const rawHistory = await traktService.getHistory(
+                user.id,
+                'all',
+                fetchLimit,
+            );
             logger.info({ count: rawHistory.length }, 'Trakt history fetched');
 
             // Deduplicate: Keep only the first occurrence (most recent) of each show/movie

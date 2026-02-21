@@ -1,7 +1,8 @@
 import { useForm } from '@tanstack/react-form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useState } from 'react';
+import { toast } from 'sonner';
+import { z } from 'zod';
 
 import { AiSettings } from '@/components/settings/ai-settings';
 import { GeneralSettings } from '@/components/settings/general-settings';
@@ -22,8 +23,13 @@ import { Separator } from '@/components/ui/separator';
 import { client, settingsQueryOptions } from '@/lib/api';
 import { type SettingsForm, settingsSchema } from '@/lib/types';
 
+const onboardingSearchSchema = z.object({
+    step: z.number().catch(1),
+});
+
 export const Route = createFileRoute('/onboarding')({
     component: Onboarding,
+    validateSearch: onboardingSearchSchema,
 });
 
 function Onboarding() {
@@ -43,8 +49,8 @@ function Onboarding() {
 
 function InnerForm({ initialValues }: { initialValues: any }) {
     const navigate = useNavigate({ from: '/onboarding' });
+    const { step } = Route.useSearch();
     const queryClient = useQueryClient();
-    const [step, setStep] = useState(1);
 
     const { mutateAsync: saveSettings, isPending: isSaving } = useMutation({
         mutationFn: async (values: SettingsForm) => {
@@ -55,7 +61,7 @@ function InnerForm({ initialValues }: { initialValues: any }) {
         onSuccess: (data) => {
             // Only navigate away if we are finishing the last step
             if (step === 2) {
-                alert('Settings saved!');
+                toast.success('Settings saved!');
                 queryClient.setQueryData(['settings'], data);
                 navigate({ to: '/' });
             }
@@ -96,19 +102,19 @@ function InnerForm({ initialValues }: { initialValues: any }) {
             if (form.state.isDirty) {
                 await saveSettings(form.state.values);
             }
-            setStep(2);
+            navigate({ search: (old) => ({ ...old, step: 2 }) });
         } catch (error) {
             console.error('Failed to save step 1', error);
-            alert('Failed to save settings');
+            toast.error('Failed to save settings');
         }
     };
 
     const handleBack = () => {
-        setStep(1);
+        navigate({ search: (old) => ({ ...old, step: 1 }) });
     };
 
     return (
-        <div className="mx-auto flex h-screen max-w-2xl items-center justify-center p-4">
+        <div className="mx-auto flex min-h-screen max-w-2xl items-start justify-center p-4 md:py-12">
             <Card className="w-full">
                 <CardHeader>
                     <div className="mb-2 flex items-center gap-2">

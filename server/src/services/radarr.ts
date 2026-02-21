@@ -83,7 +83,10 @@ export class RadarrService {
         return (await response.json()) as RadarrMovie[];
     }
 
-    async addMovie(userId: number, movie: Partial<RadarrMovie>): Promise<RadarrMovie> {
+    async addMovie(
+        userId: number,
+        movie: Partial<RadarrMovie>,
+    ): Promise<RadarrMovie> {
         const { url, key } = await this.getBaseUrl(userId);
         const response = await fetch(`${url}/api/v3/movie`, {
             method: 'POST',

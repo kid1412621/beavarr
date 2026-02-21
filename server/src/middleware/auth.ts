@@ -1,6 +1,8 @@
+import type { MiddlewareHandler } from 'hono';
+
 import { getCookie } from 'hono/cookie';
 import { verify } from 'hono/jwt';
-import type { MiddlewareHandler } from 'hono';
+
 import { findUserByUsername } from '../db/repo/user';
 import { type Env, JWT_SECRET } from '../lib/auth';
 
@@ -59,7 +61,10 @@ export const authMiddleware: MiddlewareHandler<Env> = async (c, next) => {
     await next();
 };
 
-export const requirePasswordChange: MiddlewareHandler<Env> = async (c, next) => {
+export const requirePasswordChange: MiddlewareHandler<Env> = async (
+    c,
+    next,
+) => {
     const user = c.get('user');
 
     if (!user) {
@@ -67,12 +72,21 @@ export const requirePasswordChange: MiddlewareHandler<Env> = async (c, next) => 
     }
 
     if (!user.isPasswordChanged) {
-        // Allow access to change-password and verify endpoints 
-        if (c.req.path === '/api/auth/change-password' || c.req.path === '/api/auth/verify') {
+        // Allow access to change-password and verify endpoints
+        if (
+            c.req.path === '/api/auth/change-password' ||
+            c.req.path === '/api/auth/verify'
+        ) {
             return next();
         }
 
-        return c.json({ error: 'Password change required', code: 'PASSWORD_CHANGE_REQUIRED' }, 403);
+        return c.json(
+            {
+                error: 'Password change required',
+                code: 'PASSWORD_CHANGE_REQUIRED',
+            },
+            403,
+        );
     }
 
     await next();

@@ -6,4 +6,5 @@ export type Env = {
     };
 };
 
-export const JWT_SECRET = process.env.JWT_SECRET || 'beavarr_secret_key_change_me_in_production';
+export const JWT_SECRET =
+    process.env.JWT_SECRET || 'beavarr_secret_key_change_me_in_production';

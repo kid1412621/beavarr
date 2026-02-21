@@ -1,25 +1,18 @@
-import { cva, type VariantProps } from 'class-variance-authority';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
-const labelVariants = cva(
-    'text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
-);
-
-const Label = React.forwardRef<
-    HTMLLabelElement,
-    React.LabelHTMLAttributes<HTMLLabelElement> &
-        VariantProps<typeof labelVariants>
->(({ className, ...props }, ref) => {
+function Label({ className, ...props }: React.ComponentProps<'label'>) {
     return (
         <label
-            ref={ref}
-            className={cn(labelVariants(), className)}
+            data-slot="label"
+            className={cn(
+                'gap-2 text-sm leading-none font-medium group-data-[disabled=true]:opacity-50 peer-disabled:opacity-50 flex items-center select-none group-data-[disabled=true]:pointer-events-none peer-disabled:cursor-not-allowed',
+                className,
+            )}
             {...props}
         />
     );
-});
-Label.displayName = 'Label';
+}
 
 export { Label };

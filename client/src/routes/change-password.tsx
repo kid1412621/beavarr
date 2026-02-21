@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuth } from '@/context/auth';
+import { useAuth } from '@/hooks/use-auth';
 
 export const Route = createFileRoute('/change-password')({
     component: ChangePasswordPage,
@@ -43,7 +43,11 @@ function ChangePasswordPage() {
             await changePassword(password);
             navigate({ to: '/' });
         } catch (err: any) {
-setError(err instanceof Error ? err.message : 'Failed to change password');
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : 'Failed to change password',
+            );
         }
     };
 

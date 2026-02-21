@@ -1,10 +1,10 @@
 import { Hono } from 'hono';
 import { type LibraryItem } from 'shared';
 
+import { type Env } from '../lib/auth';
 import { createLogger } from '../lib/logger';
 import { radarrService } from '../services/radarr';
 import { sonarrService } from '../services/sonarr';
-import { type Env } from '../lib/auth';
 
 const logger = createLogger('library');
 
