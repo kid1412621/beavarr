@@ -3,8 +3,8 @@ import { RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 
 import { ThemeProvider } from '@/components/theme-provider';
-import { AuthProvider } from '@/context/auth'; // Import AuthProvider
-import { router } from '@/router'; // Import router
+import { AuthProvider } from '@/context/auth';
+import { router } from '@/router';
 
 const queryClient = new QueryClient();
 
