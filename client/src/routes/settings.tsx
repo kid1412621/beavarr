@@ -78,15 +78,15 @@ function InnerForm({ initialValues }: { initialValues: any }) {
     });
 
     return (
-        <div className="mx-auto max-w-4xl p-8">
+        <div className="mx-auto max-w-4xl">
             <Card className="border-none bg-transparent shadow-none">
-                <CardHeader>
+                <CardHeader className="px-8">
                     <CardTitle className="text-2xl">Settings</CardTitle>
                     <CardDescription>
                         Configure your specific services.
                     </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="px-8">
                     <form
                         onSubmit={(e) => {
                             e.preventDefault();
