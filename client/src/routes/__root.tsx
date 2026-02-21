@@ -64,7 +64,7 @@ function Root() {
         // 3. Authenticated & Password Changed & No API Key -> Onboarding
         if (settings && !settings.openaiApiKey) {
             if (!path.startsWith('/onboarding')) {
-                navigate({ to: '/onboarding' });
+                navigate({ to: '/onboarding', search: { step: 1 } });
             }
         }
     }, [
@@ -179,7 +179,9 @@ function Root() {
                                 alt="Beavarr Logo"
                                 className="size-4"
                             />
-                            <span className="text-lg font-semibold">Beavarr</span>
+                            <span className="text-lg font-semibold">
+                                Beavarr
+                            </span>
                         </Link>
                     </div>
                     <Button variant="ghost" onClick={logout}>
