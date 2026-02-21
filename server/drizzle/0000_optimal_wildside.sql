@@ -25,7 +25,7 @@ CREATE TABLE `users` (
 	`username` text NOT NULL,
 	`password` text NOT NULL,
 	`is_password_changed` integer DEFAULT false NOT NULL,
-	`created_at` integer DEFAULT '"2026-02-12T09:49:03.660Z"' NOT NULL,
+	`created_at` integer DEFAULT (strftime('%s', 'now')) NOT NULL,
 	`updated_at` integer
 );
 --> statement-breakpoint

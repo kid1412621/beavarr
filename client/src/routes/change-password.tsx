@@ -43,7 +43,7 @@ function ChangePasswordPage() {
             await changePassword(password);
             navigate({ to: '/' });
         } catch (err: any) {
-            setError(err.message || 'Failed to change password');
+setError(err instanceof Error ? err.message : 'Failed to change password');
         }
     };
 

@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "936cdbfa-106b-461d-b5ee-9569c93837bb",
+  "id": "d0528648-76b3-4e66-8542-358eab4e8362",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "settings": {
@@ -193,7 +193,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2026-02-12T09:49:03.660Z\"'"
+          "default": "(strftime('%s', 'now'))"
         },
         "updated_at": {
           "name": "updated_at",
