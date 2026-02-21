@@ -45,8 +45,8 @@
     "devDependencies": {
         "bun-types": "^1.3.9",
         "oxfmt": "^0.28.0",
-        "oxlint": "^1.46.0",
-        "turbo": "^2.8.7"
+        "oxlint": "^1.49.0",
+        "turbo": "^2.8.10"
     },
     "peerDependencies": {
         "typescript": "^5.9.3"

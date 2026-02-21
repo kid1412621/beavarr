@@ -28,10 +28,6 @@ const navItems = [
 import { useAuth } from '@/context/auth';
 
 function Root() {
-    return <RootContent />;
-}
-
-function RootContent() {
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
