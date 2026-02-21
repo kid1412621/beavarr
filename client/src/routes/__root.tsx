@@ -25,24 +25,76 @@ const navItems = [
     },
 ];
 
+import { useAuth } from '@/context/auth';
+
 function Root() {
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    const { data: settings } = useQuery(settingsQueryOptions);
+    const { isAuthenticated, isLoading, user, logout } = useAuth();
+    const { data: settings } = useQuery({
+        ...settingsQueryOptions,
+        enabled: isAuthenticated,
+    });
 
     const location = useLocation();
 
     useEffect(() => {
-        // Redirect to onboarding if no API key is set, but not if we're already there
-        if (
-            settings &&
-            !settings.openaiApiKey &&
-            !location.pathname.startsWith('/onboarding')
-        ) {
-            navigate({ to: '/onboarding' });
+        if (isLoading) return;
+
+        const path = location.pathname;
+
+        // 1. Unauthenticated -> Login
+        if (!isAuthenticated) {
+            if (path !== '/login') {
+                navigate({ to: '/login' });
+            }
+            return;
         }
-    }, [settings, navigate, location.pathname]);
+
+        // 2. Authenticated but Password Change Required -> Change Password
+        if (!user?.isPasswordChanged) {
+            if (path !== '/change-password') {
+                navigate({ to: '/change-password' });
+            }
+            return;
+        }
+
+        // 3. Authenticated & Password Changed & No API Key -> Onboarding
+        if (settings && !settings.openaiApiKey) {
+            if (!path.startsWith('/onboarding')) {
+                navigate({ to: '/onboarding' });
+            }
+        }
+    }, [
+        settings,
+        navigate,
+        location.pathname,
+        isAuthenticated,
+        isLoading,
+        user,
+    ]);
+
+    if (isLoading)
+        return (
+            <div className="flex h-screen items-center justify-center">
+                Loading...
+            </div>
+        );
+
+    // If on login page, render only Outlet (no sidebar)
+    if (location.pathname === '/login') {
+        return <Outlet />;
+    }
+
+    // If on change-password page, render only Outlet (no sidebar) - or keep sidebar?
+    // Probably better to keep it simple.
+    if (location.pathname === '/change-password') {
+        return <Outlet />;
+    }
+
+    // If not authenticated (should be handled by effect, but as guard)
+    if (!isAuthenticated) return null;
 
     return (
         <div
@@ -52,70 +104,75 @@ function Root() {
             )}
         >
             {/* Header - toggle button only on mobile */}
-            <header className="bg-background flex h-16 shrink-0 items-center gap-3 border-b px-4">
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="group relative lg:hidden"
-                    onClick={() => setSidebarOpen(!sidebarOpen)}
-                >
-                    <div
-                        className={cn(
-                            'absolute transition-all duration-300 transform',
-                            sidebarOpen
-                                ? 'rotate-90 opacity-0 scale-0'
-                                : 'rotate-0 opacity-100 scale-100',
-                        )}
+            <header className="bg-background flex h-16 shrink-0 items-center justify-between border-b px-4">
+                <div className="flex items-center gap-3">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="group relative lg:hidden"
+                        onClick={() => setSidebarOpen(!sidebarOpen)}
                     >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="size-5"
+                        <div
+                            className={cn(
+                                'absolute transition-all duration-300 transform',
+                                sidebarOpen
+                                    ? 'rotate-90 opacity-0 scale-0'
+                                    : 'rotate-0 opacity-100 scale-100',
+                            )}
                         >
-                            <line x1="3" x2="21" y1="6" y2="6" />
-                            <line x1="3" x2="21" y1="12" y2="12" />
-                            <line x1="3" x2="21" y1="18" y2="18" />
-                        </svg>
-                    </div>
-                    <div
-                        className={cn(
-                            'absolute transition-all duration-300 transform',
-                            sidebarOpen
-                                ? 'rotate-0 opacity-100 scale-100'
-                                : '-rotate-90 opacity-0 scale-0',
-                        )}
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="size-5"
+                            >
+                                <line x1="3" x2="21" y1="6" y2="6" />
+                                <line x1="3" x2="21" y1="12" y2="12" />
+                                <line x1="3" x2="21" y1="18" y2="18" />
+                            </svg>
+                        </div>
+                        <div
+                            className={cn(
+                                'absolute transition-all duration-300 transform',
+                                sidebarOpen
+                                    ? 'rotate-0 opacity-100 scale-100'
+                                    : '-rotate-90 opacity-0 scale-0',
+                            )}
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="size-5"
+                            >
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                        </div>
+                    </Button>
+                    <Link
+                        to="/"
+                        className="flex items-center gap-2 transition-opacity hover:opacity-80"
                     >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="size-5"
-                        >
-                            <line x1="18" y1="6" x2="6" y2="18" />
-                            <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                    </div>
+                        <img
+                            src="/beaver.svg"
+                            alt="Beavarr Logo"
+                            className="size-4"
+                        />
+                        <span className="text-lg font-semibold">Beavarr</span>
+                    </Link>
+                </div>
+                <Button variant="ghost" onClick={logout}>
+                    Logout
                 </Button>
-                <Link
-                    to="/"
-                    className="flex items-center gap-2 transition-opacity hover:opacity-80"
-                >
-                    <img
-                        src="/beaver.svg"
-                        alt="Beavarr Logo"
-                        className="size-4"
-                    />
-                    <span className="text-lg font-semibold">Beavarr</span>
-                </Link>
             </header>
 
             <div className="relative flex flex-1 overflow-hidden">

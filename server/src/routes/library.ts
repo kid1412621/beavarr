@@ -4,24 +4,29 @@ import { type LibraryItem } from 'shared';
 import { createLogger } from '../lib/logger';
 import { radarrService } from '../services/radarr';
 import { sonarrService } from '../services/sonarr';
+import { type Env } from '../lib/auth';
 
 const logger = createLogger('library');
 
-const libraryRoute = new Hono().get('/', async (c) => {
+const libraryRoute = new Hono<Env>().get('/', async (c) => {
     try {
         logger.info('Fetching library content');
+        const user = c.get('user');
+        if (!user) {
+            return c.json({ error: 'Unauthorized' }, 401);
+        }
 
         // Fetch validation
         // We do this in parallel
         const [movies, series] = await Promise.all([
-            radarrService.getMovies().catch((e) => {
+            radarrService.getMovies(user.id).catch((e) => {
                 logger.error(
                     { error: e },
                     'Failed to fetch movies from Radarr',
                 );
                 return [];
             }),
-            sonarrService.getSeries().catch((e) => {
+            sonarrService.getSeries(user.id).catch((e) => {
                 logger.error(
                     { error: e },
                     'Failed to fetch series from Sonarr',

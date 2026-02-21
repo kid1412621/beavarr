@@ -60,8 +60,8 @@ export class TraktOAuthService {
 
     // === Authorization Code Flow (for advanced users with custom credentials) ===
 
-    async getCredentials() {
-        const settings = await getSettings();
+    async getCredentials(userId: number) {
+        const settings = await getSettings(userId);
         if (!settings?.traktClientId || !settings?.traktClientSecret) {
             throw new Error('Trakt OAuth credentials not configured');
         }
@@ -81,8 +81,8 @@ export class TraktOAuthService {
         return `${TRAKT_AUTH_URL}?${params.toString()}`;
     }
 
-    async exchangeCodeForTokens(code: string): Promise<TokenResponse> {
-        await this.getCredentials();
+    async exchangeCodeForTokens(userId: number, code: string): Promise<TokenResponse> {
+        await this.getCredentials(userId);
 
         const response = await fetch(TRAKT_TOKEN_URL, {
             method: 'POST',
@@ -106,8 +106,8 @@ export class TraktOAuthService {
         return (await response.json()) as TokenResponse;
     }
 
-    async refreshAccessToken(refreshToken: string): Promise<TokenResponse> {
-        await this.getCredentials();
+    async refreshAccessToken(userId: number, refreshToken: string): Promise<TokenResponse> {
+        await this.getCredentials(userId);
 
         const response = await fetch(TRAKT_TOKEN_URL, {
             method: 'POST',
@@ -154,7 +154,7 @@ export class TraktOAuthService {
         return (await response.json()) as DeviceCodeResponse;
     }
 
-    async pollForToken(deviceCode: string): Promise<TokenResponse | null> {
+    async pollForToken(userId: number, deviceCode: string): Promise<TokenResponse | null> {
         const clientId = this.getClientId();
         const clientSecret = this.getClientSecret();
 
@@ -194,7 +194,7 @@ export class TraktOAuthService {
         // The code was consumed, but tokens should already be saved
         if (response.status === 409) {
             // Check if tokens were already saved
-            const settings = await getSettings();
+            const settings = await getSettings(userId);
             if (settings?.traktAccessToken) {
                 return null; // Tokens exist, authorization is complete
             }
@@ -246,23 +246,23 @@ export class TraktOAuthService {
 
     // === Token Management ===
 
-    async saveTokens(tokens: TokenResponse) {
+    async saveTokens(userId: number, tokens: TokenResponse) {
         const expiresAt = new Date(
             (tokens.created_at + tokens.expires_in) * 1000,
         );
-        await updateSettings({
+        await updateSettings(userId, {
             traktAccessToken: tokens.access_token,
             traktRefreshToken: tokens.refresh_token,
             traktTokenExpiresAt: expiresAt,
         });
     }
 
-    async disconnect() {
-        const settings = await getSettings();
+    async disconnect(userId: number) {
+        const settings = await getSettings(userId);
         if (settings?.traktAccessToken) {
             await this.revokeToken(settings.traktAccessToken);
         }
-        await updateSettings({
+        await updateSettings(userId, {
             traktAccessToken: null,
             traktRefreshToken: null,
             traktTokenExpiresAt: null,
@@ -277,8 +277,8 @@ export class TraktOAuthService {
     }
 
     // Check if using custom credentials (advanced mode)
-    async isUsingCustomCredentials(): Promise<boolean> {
-        const settings = await getSettings();
+    async isUsingCustomCredentials(userId: number): Promise<boolean> {
+        const settings = await getSettings(userId);
         return !!(settings?.traktClientId && settings?.traktClientSecret);
     }
 }

@@ -84,8 +84,8 @@ export interface TraktHistoryItem {
 }
 
 export class TraktService {
-    private async getValidToken(): Promise<string> {
-        const settings = await getSettings();
+    private async getValidToken(userId: number): Promise<string> {
+        const settings = await getSettings(userId);
 
         if (!settings?.traktAccessToken) {
             throw new Error(
@@ -107,9 +107,10 @@ export class TraktService {
 
             // Refresh the token
             const tokens = await traktOAuthService.refreshAccessToken(
+                userId,
                 settings.traktRefreshToken,
             );
-            await traktOAuthService.saveTokens(tokens);
+            await traktOAuthService.saveTokens(userId, tokens);
             return tokens.access_token;
         }
 
@@ -125,8 +126,8 @@ export class TraktService {
         };
     }
 
-    async getTrendingMovies(): Promise<TraktTrendingMovie[]> {
-        const accessToken = await this.getValidToken();
+    async getTrendingMovies(userId: number): Promise<TraktTrendingMovie[]> {
+        const accessToken = await this.getValidToken(userId);
         const response = await fetch(
             'https://api.trakt.tv/movies/trending?extended=full,images',
             {
@@ -141,8 +142,8 @@ export class TraktService {
         return (await response.json()) as TraktTrendingMovie[];
     }
 
-    async getTrendingShows(): Promise<TraktTrendingShow[]> {
-        const accessToken = await this.getValidToken();
+    async getTrendingShows(userId: number): Promise<TraktTrendingShow[]> {
+        const accessToken = await this.getValidToken(userId);
         const response = await fetch(
             'https://api.trakt.tv/shows/trending?extended=full,images',
             {
@@ -157,8 +158,8 @@ export class TraktService {
         return (await response.json()) as TraktTrendingShow[];
     }
 
-    async getUser(): Promise<TraktUser> {
-        const accessToken = await this.getValidToken();
+    async getUser(userId: number): Promise<TraktUser> {
+        const accessToken = await this.getValidToken(userId);
         const response = await fetch(
             'https://api.trakt.tv/users/me?extended=full',
             {
@@ -174,9 +175,10 @@ export class TraktService {
     }
 
     async getWatchlist(
+        userId: number,
         type: 'movies' | 'shows' | 'all' = 'all',
     ): Promise<TraktWatchlistItem[]> {
-        const accessToken = await this.getValidToken();
+        const accessToken = await this.getValidToken(userId);
         const url = new URL('https://api.trakt.tv/users/me/watchlist');
         if (type !== 'all') {
             url.searchParams.set('type', type);
@@ -195,10 +197,11 @@ export class TraktService {
     }
 
     async getHistory(
+        userId: number,
         type: 'movies' | 'shows' | 'all' = 'all',
         limit: number = 20,
     ): Promise<TraktHistoryItem[]> {
-        const accessToken = await this.getValidToken();
+        const accessToken = await this.getValidToken(userId);
         const url = new URL('https://api.trakt.tv/users/me/history');
         if (type !== 'all') {
             url.pathname += `/${type}`;

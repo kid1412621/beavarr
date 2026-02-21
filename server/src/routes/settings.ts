@@ -3,12 +3,21 @@ import { type SettingsForm } from 'shared';
 
 import { getOrCreateSettings, updateSettings } from '../db/repo/settings';
 import { createLogger } from '../lib/logger';
+import { type Env } from '../lib/auth';
 
 const logger = createLogger('settings');
-const settingsRoute = new Hono()
+const settingsRoute = new Hono<Env>()
     .get('/', async (c) => {
         try {
-            const currentSettings = await getOrCreateSettings();
+            const user = c.get('user');
+            // If user is not in context (should be if auth middleware is running correctly), 
+            // we should probably error or fallback. 
+            // Given the setup, auth middleware runs before API routes.
+            if (!user) {
+                return c.json({ error: 'Unauthorized' }, 401);
+            }
+
+            const currentSettings = await getOrCreateSettings(user.id);
             return c.json(currentSettings);
         } catch (error) {
             logger.error(error, 'Error fetching settings');
@@ -17,8 +26,13 @@ const settingsRoute = new Hono()
     })
     .post('/', async (c) => {
         try {
+            const user = c.get('user');
+            if (!user) {
+                return c.json({ error: 'Unauthorized' }, 401);
+            }
+
             const body = await c.req.json<SettingsForm>();
-            const updated = await updateSettings(body);
+            const updated = await updateSettings(user.id, body);
             return c.json(updated);
         } catch (error) {
             logger.error(error, 'Error updating settings');

@@ -4,9 +4,10 @@ import { type ChatRequest, type ChatResponse, type ChatMessage } from 'shared';
 import { createMediaAgent } from '../agents/media_agent';
 import { getSettings } from '../db/repo/settings';
 import { createLogger } from '../lib/logger';
+import { type Env } from '../lib/auth';
 
 const logger = createLogger('chat');
-const chatRoute = new Hono().post('/', async (c) => {
+const chatRoute = new Hono<Env>().post('/', async (c) => {
     try {
         const { message } = await c.req.json<ChatRequest>();
         if (!message) {
@@ -14,7 +15,12 @@ const chatRoute = new Hono().post('/', async (c) => {
         }
 
         logger.info('Creating agent...');
-        const settings = await getSettings();
+        const user = c.get('user');
+        if (!user) {
+            return c.json({ error: 'Unauthorized' }, 401);
+        }
+
+        const settings = await getSettings(user.id);
 
         if (!settings?.openaiApiKey) {
             return c.json(
@@ -26,6 +32,7 @@ const chatRoute = new Hono().post('/', async (c) => {
         }
 
         const agent = await createMediaAgent({
+            userId: user.id,
             openaiApiKey: settings.openaiApiKey,
             openaiBaseUrl: settings.openaiBaseUrl,
             openaiModel: settings.openaiModel,

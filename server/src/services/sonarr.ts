@@ -45,16 +45,16 @@ export interface SonarrSeries {
 }
 
 export class SonarrService {
-    private async getBaseUrl() {
-        const settings = await getSettings();
+    private async getBaseUrl(userId: number) {
+        const settings = await getSettings(userId);
         if (!settings?.sonarrUrl || !settings?.sonarrApiKey) {
             throw new Error('Sonarr is not configured');
         }
         return { url: settings.sonarrUrl, key: settings.sonarrApiKey };
     }
 
-    async getSeries(): Promise<SonarrSeries[]> {
-        const { url, key } = await this.getBaseUrl();
+    async getSeries(userId: number): Promise<SonarrSeries[]> {
+        const { url, key } = await this.getBaseUrl(userId);
         const response = await fetch(`${url}/api/v3/series`, {
             headers: { 'X-Api-Key': key },
         });
@@ -62,8 +62,8 @@ export class SonarrService {
         return (await response.json()) as SonarrSeries[];
     }
 
-    async search(term: string): Promise<SonarrSeries[]> {
-        const { url, key } = await this.getBaseUrl();
+    async search(userId: number, term: string): Promise<SonarrSeries[]> {
+        const { url, key } = await this.getBaseUrl(userId);
         const response = await fetch(
             `${url}/api/v3/series/lookup?term=${encodeURIComponent(term)}`,
             {
@@ -74,8 +74,8 @@ export class SonarrService {
         return (await response.json()) as SonarrSeries[];
     }
 
-    async addSeries(series: Partial<SonarrSeries>): Promise<SonarrSeries> {
-        const { url, key } = await this.getBaseUrl();
+    async addSeries(userId: number, series: Partial<SonarrSeries>): Promise<SonarrSeries> {
+        const { url, key } = await this.getBaseUrl(userId);
         const response = await fetch(`${url}/api/v3/series`, {
             method: 'POST',
             headers: {
@@ -95,8 +95,8 @@ export class SonarrService {
         return (await response.json()) as SonarrSeries;
     }
 
-    async getRootFolders() {
-        const { url, key } = await this.getBaseUrl();
+    async getRootFolders(userId: number) {
+        const { url, key } = await this.getBaseUrl(userId);
         const response = await fetch(`${url}/api/v3/rootfolder`, {
             headers: { 'X-Api-Key': key },
         });
@@ -104,8 +104,8 @@ export class SonarrService {
         return await response.json();
     }
 
-    async getQualityProfiles() {
-        const { url, key } = await this.getBaseUrl();
+    async getQualityProfiles(userId: number) {
+        const { url, key } = await this.getBaseUrl(userId);
         const response = await fetch(`${url}/api/v3/qualityprofile`, {
             headers: { 'X-Api-Key': key },
         });

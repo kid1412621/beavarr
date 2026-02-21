@@ -54,16 +54,16 @@ export interface RadarrMovie {
 }
 
 export class RadarrService {
-    private async getBaseUrl() {
-        const settings = await getSettings();
+    private async getBaseUrl(userId: number) {
+        const settings = await getSettings(userId);
         if (!settings?.radarrUrl || !settings?.radarrApiKey) {
             throw new Error('Radarr is not configured');
         }
         return { url: settings.radarrUrl, key: settings.radarrApiKey };
     }
 
-    async getMovies(): Promise<RadarrMovie[]> {
-        const { url, key } = await this.getBaseUrl();
+    async getMovies(userId: number): Promise<RadarrMovie[]> {
+        const { url, key } = await this.getBaseUrl(userId);
         const response = await fetch(`${url}/api/v3/movie`, {
             headers: { 'X-Api-Key': key },
         });
@@ -71,8 +71,8 @@ export class RadarrService {
         return (await response.json()) as RadarrMovie[];
     }
 
-    async search(term: string): Promise<RadarrMovie[]> {
-        const { url, key } = await this.getBaseUrl();
+    async search(userId: number, term: string): Promise<RadarrMovie[]> {
+        const { url, key } = await this.getBaseUrl(userId);
         const response = await fetch(
             `${url}/api/v3/movie/lookup?term=${encodeURIComponent(term)}`,
             {
@@ -83,8 +83,8 @@ export class RadarrService {
         return (await response.json()) as RadarrMovie[];
     }
 
-    async addMovie(movie: Partial<RadarrMovie>): Promise<RadarrMovie> {
-        const { url, key } = await this.getBaseUrl();
+    async addMovie(userId: number, movie: Partial<RadarrMovie>): Promise<RadarrMovie> {
+        const { url, key } = await this.getBaseUrl(userId);
         const response = await fetch(`${url}/api/v3/movie`, {
             method: 'POST',
             headers: {

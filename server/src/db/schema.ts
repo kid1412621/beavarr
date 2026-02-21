@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 
 export const settings = sqliteTable('settings', {
@@ -21,7 +22,28 @@ export const settings = sqliteTable('settings', {
     updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(
         () => new Date(),
     ),
+    userId: integer('user_id')
+        .references(() => users.id)
+        .unique(),
+});
+
+export const users = sqliteTable('users', {
+    id: integer('id').primaryKey(),
+    username: text('username').unique().notNull(),
+    password: text('password').notNull(),
+    isPasswordChanged: integer('is_password_changed', { mode: 'boolean' })
+        .default(false)
+        .notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' })
+        .default(sql`(strftime('%s', 'now'))`)
+        .notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(
+        () => new Date(),
+    ),
 });
 
 export type Settings = typeof settings.$inferSelect;
 export type InsertSettings = typeof settings.$inferInsert;
+
+export type User = typeof users.$inferSelect;
+export type InsertUser = typeof users.$inferInsert;
