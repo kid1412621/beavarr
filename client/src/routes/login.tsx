@@ -32,7 +32,8 @@ function LoginPage() {
         try {
             await login(username, password);
             navigate({ to: '/' });
-        } catch (_err) {
+        } catch (err) {
+            console.error(err);
             setError('Invalid credentials');
         }
     };
@@ -46,7 +47,7 @@ function LoginPage() {
                         Enter your credentials to access the account.
                     </CardDescription>
                 </CardHeader>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className="grid gap-6">
                     <CardContent className="grid gap-4">
                         {error && (
                             <div className="text-sm text-red-500">{error}</div>

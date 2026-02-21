@@ -89,7 +89,6 @@ function InnerForm({ initialValues }: { initialValues: any }) {
                 <CardContent>
                     <form
                         onSubmit={(e) => {
-                            console.log('-----');
                             e.preventDefault();
                             e.stopPropagation();
                             form.handleSubmit();

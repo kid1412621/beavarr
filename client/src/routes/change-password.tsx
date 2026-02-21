@@ -60,7 +60,7 @@ function ChangePasswordPage() {
                         You must change your password to continue.
                     </CardDescription>
                 </CardHeader>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className="grid gap-6">
                     <CardContent className="grid gap-4">
                         {error && (
                             <div className="text-sm text-red-500">{error}</div>
