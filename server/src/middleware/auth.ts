@@ -1,6 +1,6 @@
 import type { MiddlewareHandler } from 'hono';
 
-import { getCookie } from 'hono/cookie';
+import { getCookie, deleteCookie } from 'hono/cookie';
 import { verify } from 'hono/jwt';
 
 import { findUserByUsername } from '../db/repo/user';
@@ -20,9 +20,10 @@ export const authMiddleware: MiddlewareHandler<Env> = async (c, next) => {
                     return await next();
                 }
             }
-        } catch (error) {
-            // Token invalid or expired, fall through to Basic Auth
-            console.error('JWT verification failed', error);
+        } catch (error: any) {
+            // Token invalid or expired, clear the cookie and fall through to Basic Auth
+            // We use logger or console without passing the error object to avoid huge stack traces
+            deleteCookie(c, 'auth_token', { path: '/' });
         }
     }
 
