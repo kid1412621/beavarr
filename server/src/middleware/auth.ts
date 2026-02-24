@@ -6,7 +6,13 @@ import { verify } from 'hono/jwt';
 import { findUserByUsername } from '../db/repo/user';
 import { type Env, JWT_SECRET } from '../lib/auth';
 
+const WHITELIST = ['/api/health'];
+
 export const authMiddleware: MiddlewareHandler<Env> = async (c, next) => {
+    if (WHITELIST.includes(c.req.path)) {
+        return await next();
+    }
+
     // 1. Try JWT from cookie
     const token = getCookie(c, 'auth_token');
     if (token) {
@@ -66,6 +72,10 @@ export const requirePasswordChange: MiddlewareHandler<Env> = async (
     c,
     next,
 ) => {
+    if (WHITELIST.includes(c.req.path)) {
+        return await next();
+    }
+
     const user = c.get('user');
 
     if (!user) {

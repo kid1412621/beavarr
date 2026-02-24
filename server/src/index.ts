@@ -59,9 +59,9 @@ export const route = app
         return c.text('Hello Hono!');
     })
 
-    .get('/hello', async (c) => {
+    .get('/health', async (c) => {
         const data: ApiResponse = {
-            message: 'Hello BHVR!',
+            message: 'Server is healthy',
             success: true,
         };
 
