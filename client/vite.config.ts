@@ -27,4 +27,19 @@ export default defineConfig({
             },
         },
     },
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    vendor: ['react', 'react-dom'],
+                    router: [
+                        '@tanstack/react-router',
+                        '@tanstack/react-query',
+                        '@tanstack/react-router-devtools',
+                    ],
+                    ui: ['@base-ui/react', 'lucide-react', 'sonner'],
+                },
+            },
+        },
+    },
 });

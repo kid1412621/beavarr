@@ -1,29 +1,8 @@
-import {
-    createContext,
-    useContext,
-    useState,
-    useEffect,
-    ReactNode,
-} from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 
+import { AuthContext, type User } from '@/hooks/use-auth';
 import { client } from '@/lib/api';
 import { router } from '@/router';
-
-interface User {
-    username: string;
-    isPasswordChanged: boolean;
-}
-
-interface AuthContextType {
-    user: User | null;
-    isAuthenticated: boolean;
-    isLoading: boolean;
-    login: (username: string, password: string) => Promise<void>;
-    logout: () => void;
-    changePassword: (newPassword: string) => Promise<void>;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
@@ -94,7 +73,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (!res.ok) {
             const data = await res.json();
-            const message = 'error' in data ? data.error : 'Failed to change password';
+            const message =
+                'error' in data ? data.error : 'Failed to change password';
             throw new Error(message);
         }
 
@@ -118,12 +98,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             {children}
         </AuthContext.Provider>
     );
-}
-
-export function useAuth() {
-    const context = useContext(AuthContext);
-    if (context === undefined) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
-    return context;
 }

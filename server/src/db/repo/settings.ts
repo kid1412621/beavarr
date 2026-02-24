@@ -18,14 +18,14 @@ export async function getOrCreateSettings(userId: number) {
     const current = await getSettings(userId);
     if (current) return current;
 
-    const inserted = await db
-        .insert(settings)
-        .values({ userId })
-        .returning();
+    const inserted = await db.insert(settings).values({ userId }).returning();
     return inserted[0];
 }
 
-export async function updateSettings(userId: number, updates: Partial<InsertSettings>) {
+export async function updateSettings(
+    userId: number,
+    updates: Partial<InsertSettings>,
+) {
     const existing = await getSettings(userId);
     if (existing) {
         const updated = await db

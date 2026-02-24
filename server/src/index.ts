@@ -30,16 +30,16 @@ if (process.env.NODE_ENV !== 'production') {
     );
 }
 
+import { initAdminUser } from './db/repo/user';
+import { authMiddleware, requirePasswordChange } from './middleware/auth';
+import authRoute from './routes/auth';
 import chatRoute from './routes/chat';
 import libraryRoute from './routes/library';
 import settingsRoute from './routes/settings';
 import traktRoute from './routes/trakt';
-import authRoute from './routes/auth';
-import { authMiddleware, requirePasswordChange } from './middleware/auth';
-import { initAdminUser } from './db/repo/user';
 
 // Init default admin user
-initAdminUser().catch(err => {
+initAdminUser().catch((err) => {
     logger.error({ err }, 'Failed to initialize admin user');
 });
 
@@ -69,11 +69,9 @@ export const route = app
     });
 
 // ui
-app
-    .use('*', serveStatic({ root: './static' }))
-    .get('*', async (c, next) => {
-        return serveStatic({ root: './static', path: 'index.html' })(c, next);
-    });
+app.use('*', serveStatic({ root: './static' })).get('*', async (c, next) => {
+    return serveStatic({ root: './static', path: 'index.html' })(c, next);
+});
 
 export default {
     port,

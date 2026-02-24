@@ -1,6 +1,8 @@
-import { getCookie } from 'hono/cookie';
-import { verify } from 'hono/jwt';
 import type { MiddlewareHandler } from 'hono';
+
+import { getCookie, deleteCookie } from 'hono/cookie';
+import { verify } from 'hono/jwt';
+
 import { findUserByUsername } from '../db/repo/user';
 import { type Env, JWT_SECRET } from '../lib/auth';
 
@@ -18,9 +20,10 @@ export const authMiddleware: MiddlewareHandler<Env> = async (c, next) => {
                     return await next();
                 }
             }
-        } catch (error) {
-            // Token invalid or expired, fall through to Basic Auth
-            console.error('JWT verification failed', error);
+        } catch (error: any) {
+            // Token invalid or expired, clear the cookie and fall through to Basic Auth
+            // We use logger or console without passing the error object to avoid huge stack traces
+            deleteCookie(c, 'auth_token', { path: '/' });
         }
     }
 
@@ -59,7 +62,10 @@ export const authMiddleware: MiddlewareHandler<Env> = async (c, next) => {
     await next();
 };
 
-export const requirePasswordChange: MiddlewareHandler<Env> = async (c, next) => {
+export const requirePasswordChange: MiddlewareHandler<Env> = async (
+    c,
+    next,
+) => {
     const user = c.get('user');
 
     if (!user) {
@@ -67,12 +73,21 @@ export const requirePasswordChange: MiddlewareHandler<Env> = async (c, next) => 
     }
 
     if (!user.isPasswordChanged) {
-        // Allow access to change-password and verify endpoints 
-        if (c.req.path === '/api/auth/change-password' || c.req.path === '/api/auth/verify') {
+        // Allow access to change-password and verify endpoints
+        if (
+            c.req.path === '/api/auth/change-password' ||
+            c.req.path === '/api/auth/verify'
+        ) {
             return next();
         }
 
-        return c.json({ error: 'Password change required', code: 'PASSWORD_CHANGE_REQUIRED' }, 403);
+        return c.json(
+            {
+                error: 'Password change required',
+                code: 'PASSWORD_CHANGE_REQUIRED',
+            },
+            403,
+        );
     }
 
     await next();

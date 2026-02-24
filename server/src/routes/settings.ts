@@ -2,16 +2,16 @@ import { Hono } from 'hono';
 import { type SettingsForm } from 'shared';
 
 import { getOrCreateSettings, updateSettings } from '../db/repo/settings';
-import { createLogger } from '../lib/logger';
 import { type Env } from '../lib/auth';
+import { createLogger } from '../lib/logger';
 
 const logger = createLogger('settings');
 const settingsRoute = new Hono<Env>()
     .get('/', async (c) => {
         try {
             const user = c.get('user');
-            // If user is not in context (should be if auth middleware is running correctly), 
-            // we should probably error or fallback. 
+            // If user is not in context (should be if auth middleware is running correctly),
+            // we should probably error or fallback.
             // Given the setup, auth middleware runs before API routes.
             if (!user) {
                 return c.json({ error: 'Unauthorized' }, 401);

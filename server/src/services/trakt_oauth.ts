@@ -81,7 +81,10 @@ export class TraktOAuthService {
         return `${TRAKT_AUTH_URL}?${params.toString()}`;
     }
 
-    async exchangeCodeForTokens(userId: number, code: string): Promise<TokenResponse> {
+    async exchangeCodeForTokens(
+        userId: number,
+        code: string,
+    ): Promise<TokenResponse> {
         await this.getCredentials(userId);
 
         const response = await fetch(TRAKT_TOKEN_URL, {
@@ -106,7 +109,10 @@ export class TraktOAuthService {
         return (await response.json()) as TokenResponse;
     }
 
-    async refreshAccessToken(userId: number, refreshToken: string): Promise<TokenResponse> {
+    async refreshAccessToken(
+        userId: number,
+        refreshToken: string,
+    ): Promise<TokenResponse> {
         await this.getCredentials(userId);
 
         const response = await fetch(TRAKT_TOKEN_URL, {
@@ -154,7 +160,10 @@ export class TraktOAuthService {
         return (await response.json()) as DeviceCodeResponse;
     }
 
-    async pollForToken(userId: number, deviceCode: string): Promise<TokenResponse | null> {
+    async pollForToken(
+        userId: number,
+        deviceCode: string,
+    ): Promise<TokenResponse | null> {
         const clientId = this.getClientId();
         const clientSecret = this.getClientSecret();
 

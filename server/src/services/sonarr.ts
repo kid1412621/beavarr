@@ -74,7 +74,10 @@ export class SonarrService {
         return (await response.json()) as SonarrSeries[];
     }
 
-    async addSeries(userId: number, series: Partial<SonarrSeries>): Promise<SonarrSeries> {
+    async addSeries(
+        userId: number,
+        series: Partial<SonarrSeries>,
+    ): Promise<SonarrSeries> {
         const { url, key } = await this.getBaseUrl(userId);
         const response = await fetch(`${url}/api/v3/series`, {
             method: 'POST',

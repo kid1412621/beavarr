@@ -1,6 +1,7 @@
 import { useForm } from '@tanstack/react-form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
+import { toast } from 'sonner';
 
 import { AiSettings } from '@/components/settings/ai-settings';
 import { GeneralSettings } from '@/components/settings/general-settings';
@@ -49,7 +50,7 @@ function InnerForm({ initialValues }: { initialValues: any }) {
             return await res.json();
         },
         onSuccess: (data) => {
-            alert('Settings saved!');
+            toast.success('Settings saved!');
             queryClient.setQueryData(['settings'], data);
         },
     });
@@ -77,18 +78,17 @@ function InnerForm({ initialValues }: { initialValues: any }) {
     });
 
     return (
-        <div className="mx-auto max-w-4xl p-4">
+        <div className="mx-auto max-w-4xl">
             <Card className="border-none bg-transparent shadow-none">
-                <CardHeader className="px-0">
+                <CardHeader className="px-8">
                     <CardTitle className="text-2xl">Settings</CardTitle>
                     <CardDescription>
                         Configure your specific services.
                     </CardDescription>
                 </CardHeader>
-                <CardContent className="px-0">
+                <CardContent className="px-8">
                     <form
                         onSubmit={(e) => {
-                            console.log('-----');
                             e.preventDefault();
                             e.stopPropagation();
                             form.handleSubmit();

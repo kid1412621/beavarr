@@ -1,8 +1,9 @@
 import { randomBytes } from 'crypto';
 import { eq } from 'drizzle-orm';
+
+import { logger } from '../../lib/logger';
 import { db } from '../index';
 import { users, type InsertUser } from '../schema';
-import { logger } from '../../lib/logger';
 
 export async function findUserByUsername(username: string) {
     const result = await db

@@ -7,11 +7,11 @@
     "trailingComma": "all",
     "printWidth": 80,
     "ignorePatterns": [
-        "server/drizzle/**",
         "client/dist/**",
+        "client/src/routeTree.gen.ts",
+        "server/drizzle/**",
         "server/dist/**",
         "server/static/**",
-        "server/client/src/routeTree.gen.ts",
         ".turbo/**"
     ],
     "experimentalSortImports": {},
