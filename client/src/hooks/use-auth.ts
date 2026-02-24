@@ -14,7 +14,9 @@ export interface AuthContextType {
     changePassword: (newPassword: string) => Promise<void>;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(
+    undefined,
+);
 
 export function useAuth() {
     const context = useContext(AuthContext);

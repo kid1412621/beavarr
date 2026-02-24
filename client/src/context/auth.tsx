@@ -1,9 +1,8 @@
 import { useState, useEffect, ReactNode } from 'react';
 
+import { AuthContext, type User } from '@/hooks/use-auth';
 import { client } from '@/lib/api';
 import { router } from '@/router';
-
-import { AuthContext, type User } from '@/hooks/use-auth';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
@@ -100,4 +99,3 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         </AuthContext.Provider>
     );
 }
-
