@@ -8,12 +8,17 @@ import * as schema from './schema';
 
 const logger = createLogger('db');
 
-const sqlite = new Database(resolve(import.meta.dir, '../../sqlite.db'));
+// Resolve relative to the custom DATA_DIR, falling back to the current working directory.
+const dataDir = process.env.DATA_DIR || process.cwd();
+const dbPath = resolve(dataDir, 'sqlite.db');
+const migrationsFolder = resolve(dataDir, 'drizzle');
+
+const sqlite = new Database(dbPath);
 export const db = drizzle(sqlite, { schema });
 
 // Initialize database - run migrations
 await migrate(db, {
-    migrationsFolder: resolve(import.meta.dir, '../../drizzle'),
+    migrationsFolder,
 });
 
 logger.info('Database initialized');
