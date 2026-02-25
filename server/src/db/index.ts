@@ -13,12 +13,14 @@ const dataDir = process.env.DATA_DIR || process.cwd();
 const dbPath = resolve(dataDir, 'sqlite.db');
 const migrationsFolder = resolve(dataDir, 'drizzle');
 
+import { getLogger } from '@logtape/drizzle-orm';
+
 const sqlite = new Database(dbPath);
-export const db = drizzle(sqlite, { schema });
+export const db = drizzle(sqlite, { schema, logger: getLogger() });
 
 // Initialize database - run migrations
 await migrate(db, {
     migrationsFolder,
 });
 
-logger.info('Database initialized');
+logger.info("Database initialized");

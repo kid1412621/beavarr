@@ -1,29 +1,40 @@
-import pino from 'pino';
+import { configure, getConsoleSink, getLogger, type LogLevel } from '@logtape/logtape';
 
-const isProduction = process.env.NODE_ENV === 'production';
+// Extract the log level safely from the environment
+const getLogLevel = (): LogLevel => {
+    const level = process.env.LOG_LEVEL?.toLowerCase();
+    const validLevels = ['debug', 'info', 'warning', 'error', 'fatal'];
+    return validLevels.includes(level as string) ? (level as LogLevel) : 'info';
+};
 
-export const logger = isProduction
-    ? pino({
-          level: process.env.LOG_LEVEL || 'info',
-      })
-    : pino(
-          {
-              level: process.env.LOG_LEVEL || 'info',
-          },
-          pino.transport({
-              target: 'pino-pretty',
-              options: {
-                  colorize: true,
-                  translateTime: 'SYS:standard',
-                  ignore: 'pid,hostname',
-                  singleLine: false,
-              },
-          }),
-      );
+// Initialize LogTape
+await configure({
+    sinks: {
+        console: getConsoleSink(),
+    },
+    filters: {},
+    loggers: [
+        {
+            category: ['logtape', 'meta'],
+            lowestLevel: 'warning',
+            sinks: ['console'],
+        },
+        {
+            category: [],
+            lowestLevel: getLogLevel(),
+            sinks: ['console'],
+        },
+    ],
+});
 
-// Create child loggers for different modules
-export const createLogger = (module: string) => {
-    return logger.child({ module });
+export const logger = getLogger([]);
+
+/**
+ * Creates a new logger with the given module names as logtape categories.
+ * Example: createLogger('agents', 'tools') -> creates logger for category ['agents', 'tools']
+ */
+export const createLogger = (...modules: string[]) => {
+    return getLogger(modules);
 };
 
 export default logger;

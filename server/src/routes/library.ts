@@ -10,7 +10,7 @@ const logger = createLogger('library');
 
 const libraryRoute = new Hono<Env>().get('/', async (c) => {
     try {
-        logger.info('Fetching library content');
+        logger.info("Fetching library content");
         const user = c.get('user');
         if (!user) {
             return c.json({ error: 'Unauthorized' }, 401);
@@ -20,25 +20,16 @@ const libraryRoute = new Hono<Env>().get('/', async (c) => {
         // We do this in parallel
         const [movies, series] = await Promise.all([
             radarrService.getMovies(user.id).catch((e) => {
-                logger.error(
-                    { error: e },
-                    'Failed to fetch movies from Radarr',
-                );
+                logger.error("Failed to fetch movies from Radarr: {e}", { e });
                 return [];
             }),
             sonarrService.getSeries(user.id).catch((e) => {
-                logger.error(
-                    { error: e },
-                    'Failed to fetch series from Sonarr',
-                );
+                logger.error("Failed to fetch series from Sonarr: {e}", { e });
                 return [];
             }),
         ]);
 
-        logger.info(
-            { movies: movies.length, series: series.length },
-            'Library fetched',
-        );
+        logger.info("Library fetched", { movies: movies.length, series: series.length });
 
         // Transform to unified format
         const libraryMovies: LibraryItem[] = movies.map((m) => {
@@ -87,7 +78,7 @@ const libraryRoute = new Hono<Env>().get('/', async (c) => {
 
         return c.json<LibraryItem[]>(combined);
     } catch (error) {
-        logger.error(error, 'Get library error');
+        logger.error("Get library error: {error}", { error });
         return c.json({ error: 'Failed to get library' }, 500);
     }
 });

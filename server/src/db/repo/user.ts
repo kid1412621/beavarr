@@ -41,7 +41,7 @@ export async function initAdminUser() {
     const existingAdmin = await findUserByUsername(adminUsername);
 
     if (!existingAdmin) {
-        logger.info('Creating default admin user...');
+        logger.info("Creating default admin user...");
 
         let password = process.env.ADMIN_PASSWORD;
         let isRandom = false;
@@ -58,7 +58,7 @@ export async function initAdminUser() {
                 cost: 10,
             });
         } catch (e) {
-            logger.error('Failed to hash password');
+            logger.error("Failed to hash password");
             throw e;
         }
 
@@ -69,14 +69,14 @@ export async function initAdminUser() {
         });
 
         if (isRandom) {
-            logger.warn('**************************************************');
-            logger.warn(`INITIAL ADMIN PASSWORD: ${password}`);
-            logger.warn('Please log in and change this password immediately.');
-            logger.warn('**************************************************');
+            logger.warn("**************************************************");
+            logger.warn("INITIAL ADMIN PASSWORD: {password}", { password });
+            logger.warn("Please log in and change this password immediately.");
+            logger.warn("**************************************************");
         } else {
-            logger.info('Admin user created with password from environment.');
+            logger.info("Admin user created with password from environment.");
         }
     } else {
-        logger.info('Admin user already exists.');
+        logger.info("Admin user already exists.");
     }
 }

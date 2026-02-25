@@ -249,7 +249,7 @@ export class TraktOAuthService {
                 client_secret: clientSecret,
             }),
         }).catch((err) => {
-            logger.error(err, 'Failed to revoke token');
+            logger.error("Failed to revoke token: {err}", { err });
         });
     }
 

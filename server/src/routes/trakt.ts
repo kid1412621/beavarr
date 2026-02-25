@@ -71,10 +71,10 @@ const traktRoute = new Hono<Env>()
                 state,
             );
             const redirectUri = traktOAuthService.getRedirectUri();
-            logger.info({ redirectUri }, 'Trakt OAuth redirect URI:');
+            logger.info("Trakt OAuth redirect URI", { redirectUri });
             return c.json({ authUrl, state });
         } catch (error) {
-            logger.error(error, 'Error generating auth URL');
+            logger.error("Error generating auth URL: {error}", { error });
             return c.json(
                 { error: 'Failed to generate authorization URL' },
                 500,
@@ -137,7 +137,7 @@ const traktRoute = new Hono<Env>()
                 message: 'Successfully connected to Trakt',
             });
         } catch (err) {
-            logger.error(err, 'OAuth callback error');
+            logger.error("OAuth callback error: {err}", { err });
             return c.json(
                 {
                     error: 'Failed to connect Trakt. Please try again.',
@@ -166,7 +166,7 @@ const traktRoute = new Hono<Env>()
 
             return c.json({ success: true });
         } catch (error) {
-            logger.error(error, 'Token refresh error');
+            logger.error("Token refresh error: {error}", { error });
             return c.json({ error: 'Failed to refresh token' }, 500);
         }
     })
@@ -178,7 +178,7 @@ const traktRoute = new Hono<Env>()
             await traktOAuthService.disconnect(user.id);
             return c.json({ success: true });
         } catch (error) {
-            logger.error(error, 'Disconnect error');
+            logger.error("Disconnect error: {error}", { error });
             return c.json({ error: 'Failed to disconnect' }, 500);
         }
     })
@@ -195,7 +195,7 @@ const traktRoute = new Hono<Env>()
                 interval: deviceCode.interval,
             });
         } catch (error) {
-            logger.error(error, 'Device code error');
+            logger.error("Device code error: {error}", { error });
             return c.json(
                 { error: 'Failed to start device authorization' },
                 500,
@@ -239,7 +239,7 @@ const traktRoute = new Hono<Env>()
                 },
             });
         } catch (error) {
-            logger.error(error, 'Device poll error');
+            logger.error("Device poll error: {error}", { error });
             return c.json({ error: 'Failed to poll for authorization' }, 500);
         }
     })
@@ -251,7 +251,7 @@ const traktRoute = new Hono<Env>()
             await traktOAuthService.disconnect(user.id);
             return c.json({ success: true });
         } catch (error) {
-            logger.error(error, 'Device disconnect error');
+            logger.error("Device disconnect error: {error}", { error });
             return c.json({ error: 'Failed to disconnect' }, 500);
         }
     })
@@ -267,7 +267,7 @@ const traktRoute = new Hono<Env>()
                 mode: isCustom ? 'authorization_code' : 'device',
             });
         } catch (error) {
-            logger.error(error, 'Auth mode check error');
+            logger.error("Auth mode check error: {error}", { error });
             return c.json({ error: 'Failed to check auth mode' }, 500);
         }
     })
@@ -289,7 +289,7 @@ const traktRoute = new Hono<Env>()
                 needsTokenRefresh: isConnected && isExpired,
             });
         } catch (error) {
-            logger.error(error, 'Status check error');
+            logger.error("Status check error: {error}", { error });
             return c.json({ error: 'Failed to check status' }, 500);
         }
     })
@@ -309,7 +309,7 @@ const traktRoute = new Hono<Env>()
                 joined: user.joined_at,
             });
         } catch (error) {
-            logger.error(error, 'Get user error');
+            logger.error("Get user error: {error}", { error });
             return c.json({ error: 'Failed to get user' }, 500);
         }
     })
@@ -339,7 +339,7 @@ const traktRoute = new Hono<Env>()
             const arrayBuffer = await response.arrayBuffer();
             return c.body(arrayBuffer);
         } catch (error) {
-            logger.error(error, 'Avatar proxy error');
+            logger.error("Avatar proxy error: {error}", { error });
             return c.json({ error: 'Failed to fetch avatar' }, 500);
         }
     })
@@ -353,7 +353,7 @@ const traktRoute = new Hono<Env>()
             const watchlist = await traktService.getWatchlist(user.id, type);
             return c.json(watchlist);
         } catch (error) {
-            logger.error(error, 'Get watchlist error');
+            logger.error("Get watchlist error: {error}", { error });
             return c.json({ error: 'Failed to get watchlist' }, 500);
         }
     })
@@ -373,7 +373,7 @@ const traktRoute = new Hono<Env>()
                 'all',
                 fetchLimit,
             );
-            logger.info({ count: rawHistory.length }, 'Trakt history fetched');
+            logger.info("Trakt history fetched", { count: rawHistory.length });
 
             // Deduplicate: Keep only the first occurrence (most recent) of each show/movie
             const seenIds = new Set<string>();
@@ -426,10 +426,7 @@ const traktRoute = new Hono<Env>()
                             tvdbId,
                         } as LibraryItem;
                     } catch (e) {
-                        logger.error(
-                            { error: e },
-                            'Error enriching history item',
-                        );
+                        logger.error("Error enriching history item: {e}", { e });
                         return null;
                     }
                 }),
@@ -441,14 +438,11 @@ const traktRoute = new Hono<Env>()
             );
 
             const withPosters = validHistory.filter((i) => i.poster_url).length;
-            logger.info(
-                { total: validHistory.length, withPosters },
-                'History enrichment complete',
-            );
+            logger.info("History enrichment complete", { total: validHistory.length, withPosters });
 
             return c.json<LibraryItem[]>(validHistory.slice(0, requestedLimit));
         } catch (error) {
-            logger.error(error, 'Get history error');
+            logger.error("Get history error: {error}", { error });
             return c.json({ error: 'Failed to get history' }, 500);
         }
     })
@@ -510,7 +504,7 @@ const traktRoute = new Hono<Env>()
 
             return c.json<LibraryItem[]>(result);
         } catch (error) {
-            logger.error(error, 'Get trending error');
+            logger.error("Get trending error: {error}", { error });
             return c.json({ error: 'Failed to get trending' }, 500);
         }
     });
