@@ -1,4 +1,11 @@
-import { configure, getConsoleSink, getLogger } from '@logtape/logtape';
+import { configure, getConsoleSink, getLogger, type LogLevel } from '@logtape/logtape';
+
+// Extract the log level safely from the environment
+const getLogLevel = (): LogLevel => {
+    const level = process.env.LOG_LEVEL?.toLowerCase();
+    const validLevels = ['debug', 'info', 'warning', 'error', 'fatal'];
+    return validLevels.includes(level as string) ? (level as LogLevel) : 'info';
+};
 
 // Initialize LogTape
 await configure({
@@ -8,36 +15,26 @@ await configure({
     filters: {},
     loggers: [
         {
+            category: ['logtape', 'meta'],
+            lowestLevel: 'warning',
+            sinks: ['console'],
+        },
+        {
             category: [],
-            lowestLevel: (process.env.LOG_LEVEL as any) || 'info',
+            lowestLevel: getLogLevel(),
             sinks: ['console'],
         },
     ],
 });
 
-const baseLogger = getLogger([]);
+export const logger = getLogger([]);
 
-// Wrapper to match previous logger API if needed
-export const logger = {
-    info: (msg: any, ...args: any[]) => baseLogger.info(typeof msg === 'object' ? '{msg}' : msg, { msg, args }),
-    error: (msg: any, ...args: any[]) => baseLogger.error(typeof msg === 'object' ? '{msg}' : msg, { msg, args }),
-    warn: (msg: any, ...args: any[]) => baseLogger.warn(typeof msg === 'object' ? '{msg}' : msg, { msg, args }),
-    debug: (msg: any, ...args: any[]) => baseLogger.debug(typeof msg === 'object' ? '{msg}' : msg, { msg, args }),
-    child: (bindings: Record<string, any>) => {
-        const category = bindings.module ? [bindings.module] : [];
-        const childBase = getLogger(category);
-        return {
-            info: (msg: any, ...args: any[]) => childBase.info(typeof msg === 'object' ? '{msg}' : msg, { ...bindings, msg, args }),
-            error: (msg: any, ...args: any[]) => childBase.error(typeof msg === 'object' ? '{msg}' : msg, { ...bindings, msg, args }),
-            warn: (msg: any, ...args: any[]) => childBase.warn(typeof msg === 'object' ? '{msg}' : msg, { ...bindings, msg, args }),
-            debug: (msg: any, ...args: any[]) => childBase.debug(typeof msg === 'object' ? '{msg}' : msg, { ...bindings, msg, args }),
-            child: (moreBindings: Record<string, any>) => logger.child({ ...bindings, ...moreBindings }),
-        };
-    },
-};
-
-export const createLogger = (module: string) => {
-    return logger.child({ module });
+/**
+ * Creates a new logger with the given module names as logtape categories.
+ * Example: createLogger('agents', 'tools') -> creates logger for category ['agents', 'tools']
+ */
+export const createLogger = (...modules: string[]) => {
+    return getLogger(modules);
 };
 
 export default logger;

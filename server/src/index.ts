@@ -8,17 +8,13 @@ import { logger } from './lib/logger';
 
 const port = parseInt(process.env.PORT || '4242');
 
+import { honoLogger } from '@logtape/hono';
+
 const app = new Hono();
 
-// Debug middleware - log all outgoing responses
-// app.use("*", async (c, next) => {
-// 	await next();
-// 	const status = c.res.status;
-
-// 	logger.info(
-// 		`[${new Date().toISOString()}] ${c.req.method} ${c.req.url} -> ${status}`,
-// 	);
-// });
+app.use(honoLogger({
+    skip: (c) => c.req.path === '/api/health', // optional, don't clog up health checks
+}));
 
 // api
 if (process.env.NODE_ENV !== 'production') {
@@ -40,7 +36,7 @@ import traktRoute from './routes/trakt';
 
 // Init default admin user
 initAdminUser().catch((err) => {
-    logger.error({ err }, 'Failed to initialize admin user');
+    logger.error("Failed to initialize admin user", { err });
 });
 
 // Protect all API routes with Basic Auth
@@ -78,4 +74,4 @@ export default {
     fetch: app.fetch,
 };
 
-logger.info({ port }, 'Server starting');
+logger.info("Server starting", { port });

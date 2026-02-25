@@ -15,6 +15,8 @@
     "dependencies": {
         "@langchain/core": "^1.1.27",
         "@langchain/openai": "^1.2.9",
+        "@logtape/drizzle-orm": "^2.0.2",
+        "@logtape/hono": "^2.0.2",
         "@logtape/logtape": "^2.0.2",
         "drizzle-orm": "^0.45.1",
         "hono": "^4.12.2",
