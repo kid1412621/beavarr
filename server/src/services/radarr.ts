@@ -104,6 +104,24 @@ export class RadarrService {
         if (!response.ok) throw new Error('Failed to add movie to Radarr');
         return (await response.json()) as RadarrMovie;
     }
+
+    async getSystemStatus(userId: number) {
+        const { url, key } = await this.getBaseUrl(userId);
+        const response = await fetch(`${url}/api/v3/system/status`, {
+            headers: { 'X-Api-Key': key },
+        });
+        if (!response.ok)
+            throw new Error('Failed to get system status from Radarr');
+        return await response.json();
+    }
+
+    async testConnection(url: string, apiKey: string) {
+        const response = await fetch(`${url}/api/v3/system/status`, {
+            headers: { 'X-Api-Key': apiKey },
+        });
+        if (!response.ok) return false;
+        return true;
+    }
 }
 
 export const radarrService = new RadarrService();

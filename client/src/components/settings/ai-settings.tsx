@@ -3,16 +3,9 @@ import { Clipboard } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-export function AiSettings({ form }: { form: any }) {
-    const pasteFromClipboard = async (field: any) => {
-        try {
-            const text = await navigator.clipboard.readText();
-            field.handleChange(text);
-        } catch (err) {
-            console.error('Failed to read clipboard', err);
-        }
-    };
+import { pasteFromClipboard } from './connectable-settings';
 
+export function AiSettings({ form }: { form: any }) {
     return (
         <div className="space-y-4">
             <form.Field

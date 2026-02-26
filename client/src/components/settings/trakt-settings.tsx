@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { client } from '@/lib/api';
 
+import { ConnectableHeader, pasteFromClipboard } from './connectable-settings';
+
 export function TraktSettings({ form }: { form: any }) {
     const queryClient = useQueryClient();
     const [isConnecting, setIsConnecting] = useState(false);
@@ -144,15 +146,6 @@ export function TraktSettings({ form }: { form: any }) {
         },
     });
 
-    const pasteFromClipboard = async (field: any) => {
-        try {
-            const text = await navigator.clipboard.readText();
-            field.handleChange(text);
-        } catch (err) {
-            console.error('Failed to read clipboard', err);
-        }
-    };
-
     const isConnected = status?.connected;
     const isDeviceFlow = authMode?.mode !== 'authorization_code';
 
@@ -175,59 +168,59 @@ export function TraktSettings({ form }: { form: any }) {
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-medium">Trakt</h3>
-                    {isConnected && isDeviceFlow && (
-                        <span className="rounded bg-green-100 px-2 py-0.5 text-xs text-green-800">
-                            Device Flow
-                        </span>
-                    )}
-                </div>
-                {isConnected ? (
-                    <div className="flex items-center gap-2">
-                        {user?.avatar ? (
-                            <img
-                                src={`/api/trakt/avatar?url=${encodeURIComponent(user.avatar)}`}
-                                alt={user.name || user.username}
-                                className="h-6 w-6 rounded-full"
-                            />
-                        ) : null}
-                        <span className="text-sm text-green-600">
-                            {user?.name || user?.username}
-                        </span>
+            <ConnectableHeader
+                title="Trakt"
+                serviceName="Trakt"
+                status={
+                    isConnected
+                        ? 'success'
+                        : isConnecting || startDeviceCode.isPending
+                          ? 'testing'
+                          : 'idle'
+                }
+                onConnect={handleConnect}
+                disabled={isConnected || !!deviceCodeInfo}
+                action={
+                    isConnected ? (
+                        <div className="flex items-center gap-2">
+                            {user?.avatar ? (
+                                <img
+                                    src={`/api/trakt/avatar?url=${encodeURIComponent(user.avatar)}`}
+                                    alt={user.name || user.username}
+                                    className="h-6 w-6 rounded-full"
+                                />
+                            ) : null}
+                            <span className="text-sm font-medium">
+                                {user?.name || user?.username}
+                            </span>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDisconnect.mutate()}
+                                disabled={handleDisconnect.isPending}
+                            >
+                                {handleDisconnect.isPending
+                                    ? 'Disconnecting...'
+                                    : 'Disconnect'}
+                            </Button>
+                        </div>
+                    ) : deviceCodeInfo ? (
                         <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleDisconnect.mutate()}
-                            disabled={handleDisconnect.isPending}
+                            onClick={handleCancelDevice}
                         >
-                            {handleDisconnect.isPending
-                                ? 'Disconnecting...'
-                                : 'Disconnect'}
+                            Cancel
                         </Button>
-                    </div>
-                ) : deviceCodeInfo ? (
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleCancelDevice}
-                    >
-                        Cancel
-                    </Button>
-                ) : (
-                    <Button
-                        variant="default"
-                        size="sm"
-                        onClick={handleConnect}
-                        disabled={isConnecting || startDeviceCode.isPending}
-                    >
-                        {isConnecting || startDeviceCode.isPending
-                            ? 'Connecting...'
-                            : 'Connect Trakt'}
-                    </Button>
+                    ) : null
+                }
+            >
+                {isConnected && isDeviceFlow && (
+                    <span className="rounded bg-green-100 px-2 py-0.5 text-xs text-green-800">
+                        Device Flow
+                    </span>
                 )}
-            </div>
+            </ConnectableHeader>
 
             {/* Device Flow UI */}
             {!isConnected && deviceCodeInfo && (

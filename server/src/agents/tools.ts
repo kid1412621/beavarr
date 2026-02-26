@@ -189,3 +189,47 @@ export const createTmdbSearchTool = (userId: number) =>
             }
         },
     });
+
+export const createSonarrListTool = (userId: number) =>
+    new DynamicStructuredTool({
+        name: 'sonarr_list',
+        description: 'List all TV shows currently in the Sonarr library.',
+        schema: z.object({}),
+        func: async () => {
+            try {
+                const results = await sonarrService.getSeries(userId);
+                return JSON.stringify(
+                    results.map((s) => ({
+                        title: s.title,
+                        status: s.status,
+                        year: s.year,
+                        tvdbId: s.tvdbId,
+                    })),
+                );
+            } catch (error) {
+                return `Error listing Sonarr series: ${error}`;
+            }
+        },
+    });
+
+export const createRadarrListTool = (userId: number) =>
+    new DynamicStructuredTool({
+        name: 'radarr_list',
+        description: 'List all movies currently in the Radarr library.',
+        schema: z.object({}),
+        func: async () => {
+            try {
+                const results = await radarrService.getMovies(userId);
+                return JSON.stringify(
+                    results.map((m) => ({
+                        title: m.title,
+                        status: m.status,
+                        year: m.year,
+                        tmdbId: m.tmdbId,
+                    })),
+                );
+            } catch (error) {
+                return `Error listing Radarr movies: ${error}`;
+            }
+        },
+    });

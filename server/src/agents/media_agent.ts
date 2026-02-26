@@ -3,8 +3,10 @@ import { createAgent } from 'langchain';
 
 import {
     createRadarrAddTool,
+    createRadarrListTool,
     createRadarrSearchTool,
     createSonarrAddTool,
+    createSonarrListTool,
     createSonarrSearchTool,
     createTmdbSearchTool,
     createTraktTrendingTool,
@@ -40,8 +42,10 @@ export async function createMediaAgent({
     const tools = [
         createSonarrSearchTool(userId),
         createSonarrAddTool(userId),
+        createSonarrListTool(userId),
         createRadarrSearchTool(userId),
         createRadarrAddTool(userId),
+        createRadarrListTool(userId),
         createTraktTrendingTool(userId),
         createTraktWatchlistTool(userId),
         createTmdbSearchTool(userId),

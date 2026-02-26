@@ -34,10 +34,12 @@ function Settings() {
     }
 
     return (
-        <InnerForm
-            key={initialSettings ? 'loaded' : 'empty'}
-            initialValues={initialSettings}
-        />
+        <div className="p-4">
+            <InnerForm
+                key={initialSettings ? 'loaded' : 'empty'}
+                initialValues={initialSettings}
+            />
+        </div>
     );
 }
 

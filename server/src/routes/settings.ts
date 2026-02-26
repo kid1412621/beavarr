@@ -4,6 +4,8 @@ import { type SettingsForm } from 'shared';
 import { getOrCreateSettings, updateSettings } from '../db/repo/settings';
 import { type Env } from '../lib/auth';
 import { createLogger } from '../lib/logger';
+import { radarrService } from '../services/radarr';
+import { sonarrService } from '../services/sonarr';
 
 const logger = createLogger('settings');
 const settingsRoute = new Hono<Env>()
@@ -37,6 +39,27 @@ const settingsRoute = new Hono<Env>()
         } catch (error) {
             logger.error("Error updating settings: {error}", { error });
             return c.json({ error: 'Failed to update settings' }, 500);
+        }
+    })
+    .post('/test-connection', async (c) => {
+        try {
+            const { type, url, apiKey } = await c.req.json<{
+                type: 'sonarr' | 'radarr';
+                url: string;
+                apiKey: string;
+            }>();
+
+            let success = false;
+            if (type === 'sonarr') {
+                success = await sonarrService.testConnection(url, apiKey);
+            } else if (type === 'radarr') {
+                success = await radarrService.testConnection(url, apiKey);
+            }
+
+            return c.json({ success });
+        } catch (error) {
+            logger.error("Error testing connection: {error}", { error });
+            return c.json({ success: false, error: 'Connection test failed' });
         }
     });
 
