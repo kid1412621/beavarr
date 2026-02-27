@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import {
     CheckCircle2,
     XCircle,
@@ -183,6 +184,8 @@ export function useConnectableTest(
 ) {
     const [status, setStatus] = useState<ConnectableStatus>('idle');
 
+    const queryClient = useQueryClient();
+
     const testConnection = async () => {
         const url = form.getFieldValue(urlName);
         const apiKey = form.getFieldValue(apiKeyName);
@@ -196,7 +199,18 @@ export function useConnectableTest(
             const data = await res.json();
             if (data.success) {
                 setStatus('success');
-                form.handleSubmit();
+                // Auto-save only the relevant fields
+                try {
+                    await client.api.settings.$post({
+                        json: {
+                            [urlName]: url,
+                            [apiKeyName]: apiKey,
+                        } as any,
+                    });
+                    queryClient.invalidateQueries({ queryKey: ['settings'] });
+                } catch (saveErr) {
+                    console.error('Failed to auto-save settings:', saveErr);
+                }
             } else {
                 setStatus('failed');
             }
