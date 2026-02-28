@@ -107,22 +107,15 @@ export class SonarrService {
         return await response.json();
     }
 
-    async getQualityProfiles(userId: number) {
-        const { url, key } = await this.getBaseUrl(userId);
-        const response = await fetch(`${url}/api/v3/qualityprofile`, {
-            headers: { 'X-Api-Key': key },
-        });
-        if (!response.ok) throw new Error('Failed to get quality profiles');
-        return await response.json();
-    }
-
     async getSystemStatus(userId: number) {
         const { url, key } = await this.getBaseUrl(userId);
         const response = await fetch(`${url}/api/v3/system/status`, {
             headers: { 'X-Api-Key': key },
         });
-        if (!response.ok)
-            throw new Error('Failed to get system status from Sonarr');
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Failed to get system status from Sonarr: ${response.status} - ${errorText}`);
+        }
         return await response.json();
     }
 

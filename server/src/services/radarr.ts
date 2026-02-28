@@ -110,8 +110,10 @@ export class RadarrService {
         const response = await fetch(`${url}/api/v3/system/status`, {
             headers: { 'X-Api-Key': key },
         });
-        if (!response.ok)
-            throw new Error('Failed to get system status from Radarr');
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Failed to get system status from Radarr: ${response.status} - ${errorText}`);
+        }
         return await response.json();
     }
 

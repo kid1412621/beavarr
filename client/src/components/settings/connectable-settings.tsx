@@ -219,7 +219,8 @@ export function useConnectableTest(
             } else {
                 setStatus('failed');
             }
-        } catch {
+        } catch (err) {
+            console.error('Failed to test connection:', err);
             setStatus('failed');
         }
     };

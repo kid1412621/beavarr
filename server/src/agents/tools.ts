@@ -207,6 +207,7 @@ export const createSonarrListTool = (userId: number) =>
                     })),
                 );
             } catch (error) {
+                logger.error("failed to call sonarr list: {error}", { error });
                 return `Error listing Sonarr series: ${error}`;
             }
         },
@@ -229,6 +230,7 @@ export const createRadarrListTool = (userId: number) =>
                     })),
                 );
             } catch (error) {
+                logger.error("failed to call radarr list: {error}", { error });
                 return `Error listing Radarr movies: ${error}`;
             }
         },
