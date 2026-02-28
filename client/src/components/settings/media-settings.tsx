@@ -1,10 +1,15 @@
-import { Clipboard } from 'lucide-react';
+import { Clipboard as ClipboardIcon } from 'lucide-react';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useAppFormContext } from '@/lib/form';
+import { type SettingsForm } from '@/lib/types';
 
-export function MediaSettings({ form }: { form: any }) {
-    const pasteFromClipboard = async (field: any) => {
+export function MediaSettings() {
+    const form = useAppFormContext<SettingsForm>();
+    const pasteFromClipboard = async (field: {
+        handleChange: (value: string) => void;
+    }) => {
         try {
             const text = await navigator.clipboard.readText();
             field.handleChange(text);
@@ -15,9 +20,9 @@ export function MediaSettings({ form }: { form: any }) {
 
     return (
         <div className="space-y-4">
-            <form.Field
+            <form.AppField
                 name="tmdbApiKey"
-                children={(field: any) => (
+                children={(field) => (
                     <div className="space-y-2">
                         <Label htmlFor={field.name}>TMDB API Key</Label>
                         <div className="relative">
@@ -25,7 +30,7 @@ export function MediaSettings({ form }: { form: any }) {
                                 id={field.name}
                                 name={field.name}
                                 type="password"
-                                value={field.state.value}
+                                value={field.state.value || ''}
                                 onBlur={field.handleBlur}
                                 onChange={(e) =>
                                     field.handleChange(e.target.value)
@@ -37,7 +42,7 @@ export function MediaSettings({ form }: { form: any }) {
                                 className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
                                 title="Paste from clipboard"
                             >
-                                <Clipboard className="h-4 w-4" />
+                                <ClipboardIcon className="h-4 w-4" />
                             </button>
                         </div>
                     </div>

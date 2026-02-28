@@ -12,8 +12,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { client } from '@/lib/api';
+import { useAppFormContext } from '@/lib/form';
+import { type SettingsForm } from '@/lib/types';
 
-export const pasteFromClipboard = async (field: any) => {
+export const pasteFromClipboard = async (field: {
+    handleChange: (value: string) => void;
+}) => {
     try {
         const text = await navigator.clipboard.readText();
         field.handleChange(text);
@@ -82,9 +86,8 @@ export function ConnectableHeader({
 }
 
 interface ConnectableFieldsProps {
-    form: any;
-    urlName: string;
-    apiKeyName: string;
+    urlName: keyof SettingsForm;
+    apiKeyName: keyof SettingsForm;
     serviceName: string;
     urlPlaceholder?: string;
     apiKeyHelperUrl?: string; // Optional URL to help find the API key
@@ -92,7 +95,6 @@ interface ConnectableFieldsProps {
 }
 
 export function ConnectableFields({
-    form,
     urlName,
     apiKeyName,
     serviceName,
@@ -100,18 +102,20 @@ export function ConnectableFields({
     apiKeyHelperUrl,
     onResetStatus,
 }: ConnectableFieldsProps) {
+    const form = useAppFormContext<SettingsForm>();
+
     return (
         <div className="grid grid-cols-2 gap-4">
-            <form.Field
+            <form.AppField
                 name={urlName}
-                children={(field: any) => (
+                children={(field) => (
                     <div className="space-y-2">
                         <Label htmlFor={field.name}>{serviceName} URL</Label>
                         <div className="relative">
                             <Input
                                 id={field.name}
                                 name={field.name}
-                                value={field.state.value}
+                                value={field.state.value || ''}
                                 onBlur={field.handleBlur}
                                 onChange={(e) => {
                                     field.handleChange(e.target.value);
@@ -131,17 +135,18 @@ export function ConnectableFields({
                                 </a>
                             )}
                         </div>
-                        {field.state.meta.touchedErrors?.length > 0 && (
-                            <em className="text-xs text-red-500">
-                                {field.state.meta.touchedErrors.join(', ')}
-                            </em>
-                        )}
+                        {field.state.meta.errors &&
+                            field.state.meta.errors.length > 0 && (
+                                <em className="text-xs text-red-500">
+                                    {field.state.meta.errors.join(', ')}
+                                </em>
+                            )}
                     </div>
                 )}
             />
-            <form.Field
+            <form.AppField
                 name={apiKeyName}
-                children={(field: any) => (
+                children={(field) => (
                     <div className="space-y-2">
                         <Label htmlFor={field.name}>
                             {serviceName} API Key
@@ -151,7 +156,7 @@ export function ConnectableFields({
                                 id={field.name}
                                 name={field.name}
                                 type="password"
-                                value={field.state.value}
+                                value={field.state.value || ''}
                                 onBlur={field.handleBlur}
                                 onChange={(e) => {
                                     field.handleChange(e.target.value);
@@ -177,11 +182,11 @@ export function ConnectableFields({
 export type ConnectableStatus = 'idle' | 'testing' | 'success' | 'failed';
 
 export function useConnectableTest(
-    form: any,
     serviceType: 'sonarr' | 'radarr',
-    urlName: string,
-    apiKeyName: string,
+    urlName: keyof SettingsForm,
+    apiKeyName: keyof SettingsForm,
 ) {
+    const form = useAppFormContext<SettingsForm>();
     const [status, setStatus] = useState<ConnectableStatus>('idle');
 
     const queryClient = useQueryClient();

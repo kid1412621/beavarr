@@ -1,15 +1,21 @@
+import { useAppFormContext } from '@/lib/form';
+import { type SettingsForm } from '@/lib/types';
+
 import {
     ConnectableFields,
     ConnectableHeader,
     useConnectableTest,
 } from './connectable-settings';
 
-export function SonarrSettings({ form }: { form: any }) {
+export function SonarrSettings() {
+    const form = useAppFormContext<SettingsForm>();
     const {
         status: testStatus,
         setStatus: setTestStatus,
         testConnection,
-    } = useConnectableTest(form, 'sonarr', 'sonarrUrl', 'sonarrApiKey');
+    } = useConnectableTest('sonarr', 'sonarrUrl', 'sonarrApiKey');
+
+    const sonarrUrl = form.getFieldValue('sonarrUrl');
 
     return (
         <div className="space-y-4">
@@ -18,21 +24,17 @@ export function SonarrSettings({ form }: { form: any }) {
                 serviceName="Sonarr"
                 status={testStatus}
                 onConnect={testConnection}
-                disabled={
-                    !form.getFieldValue('sonarrUrl') ||
-                    !form.getFieldValue('sonarrApiKey')
-                }
+                disabled={!sonarrUrl || !form.getFieldValue('sonarrApiKey')}
             />
 
             <ConnectableFields
-                form={form}
                 serviceName="Sonarr"
                 urlName="sonarrUrl"
                 apiKeyName="sonarrApiKey"
                 urlPlaceholder="http://localhost:8989"
                 apiKeyHelperUrl={
-                    form.getFieldValue('sonarrUrl')
-                        ? `${form.getFieldValue('sonarrUrl').replace(/\/$/, '')}/settings/general`
+                    sonarrUrl
+                        ? `${sonarrUrl.replace(/\/$/, '')}/settings/general`
                         : undefined
                 }
                 onResetStatus={() => setTestStatus('idle')}

@@ -1,17 +1,24 @@
 import type { TraktDeviceCodeResponse } from 'shared';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Clipboard, ExternalLink, RefreshCw } from 'lucide-react';
+import {
+    Clipboard as ClipboardIcon,
+    ExternalLink,
+    RefreshCw,
+} from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { client } from '@/lib/api';
+import { useAppFormContext } from '@/lib/form';
+import { type SettingsForm } from '@/lib/types';
 
 import { ConnectableHeader, pasteFromClipboard } from './connectable-settings';
 
-export function TraktSettings({ form }: { form: any }) {
+export function TraktSettings() {
+    const form = useAppFormContext<SettingsForm>();
     const queryClient = useQueryClient();
     const [isConnecting, setIsConnecting] = useState(false);
     const [showAdvanced, setShowAdvanced] = useState(false);
@@ -254,7 +261,7 @@ export function TraktSettings({ form }: { form: any }) {
                                     className="text-muted-foreground hover:text-foreground p-1"
                                     title="Copy to clipboard"
                                 >
-                                    <Clipboard className="h-5 w-5" />
+                                    <ClipboardIcon className="h-5 w-5" />
                                 </button>
                             </div>
                         </div>
@@ -301,9 +308,9 @@ export function TraktSettings({ form }: { form: any }) {
                         </p>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        <form.Field
+                        <form.AppField
                             name="traktClientId"
-                            children={(field: any) => (
+                            children={(field) => (
                                 <div className="space-y-2">
                                     <Label htmlFor={field.name}>
                                         Trakt Client ID
@@ -312,7 +319,7 @@ export function TraktSettings({ form }: { form: any }) {
                                         <Input
                                             id={field.name}
                                             name={field.name}
-                                            value={field.state.value}
+                                            value={field.state.value || ''}
                                             onBlur={field.handleBlur}
                                             onChange={(e) =>
                                                 field.handleChange(
@@ -328,15 +335,15 @@ export function TraktSettings({ form }: { form: any }) {
                                             className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
                                             title="Paste from clipboard"
                                         >
-                                            <Clipboard className="h-4 w-4" />
+                                            <ClipboardIcon className="h-4 w-4" />
                                         </button>
                                     </div>
                                 </div>
                             )}
                         />
-                        <form.Field
+                        <form.AppField
                             name="traktClientSecret"
-                            children={(field: any) => (
+                            children={(field) => (
                                 <div className="space-y-2">
                                     <Label htmlFor={field.name}>
                                         Trakt Client Secret
@@ -346,7 +353,7 @@ export function TraktSettings({ form }: { form: any }) {
                                             id={field.name}
                                             name={field.name}
                                             type="password"
-                                            value={field.state.value}
+                                            value={field.state.value || ''}
                                             onBlur={field.handleBlur}
                                             onChange={(e) =>
                                                 field.handleChange(
@@ -362,7 +369,7 @@ export function TraktSettings({ form }: { form: any }) {
                                             className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
                                             title="Paste from clipboard"
                                         >
-                                            <Clipboard className="h-4 w-4" />
+                                            <ClipboardIcon className="h-4 w-4" />
                                         </button>
                                     </div>
                                 </div>

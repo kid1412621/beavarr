@@ -1,15 +1,21 @@
+import { useAppFormContext } from '@/lib/form';
+import { type SettingsForm } from '@/lib/types';
+
 import {
     ConnectableFields,
     ConnectableHeader,
     useConnectableTest,
 } from './connectable-settings';
 
-export function RadarrSettings({ form }: { form: any }) {
+export function RadarrSettings() {
+    const form = useAppFormContext<SettingsForm>();
     const {
         status: testStatus,
         setStatus: setTestStatus,
         testConnection,
-    } = useConnectableTest(form, 'radarr', 'radarrUrl', 'radarrApiKey');
+    } = useConnectableTest('radarr', 'radarrUrl', 'radarrApiKey');
+
+    const radarrUrl = form.getFieldValue('radarrUrl');
 
     return (
         <div className="space-y-4">
@@ -18,21 +24,17 @@ export function RadarrSettings({ form }: { form: any }) {
                 serviceName="Radarr"
                 status={testStatus}
                 onConnect={testConnection}
-                disabled={
-                    !form.getFieldValue('radarrUrl') ||
-                    !form.getFieldValue('radarrApiKey')
-                }
+                disabled={!radarrUrl || !form.getFieldValue('radarrApiKey')}
             />
 
             <ConnectableFields
-                form={form}
                 serviceName="Radarr"
                 urlName="radarrUrl"
                 apiKeyName="radarrApiKey"
                 urlPlaceholder="http://localhost:7878"
                 apiKeyHelperUrl={
-                    form.getFieldValue('radarrUrl')
-                        ? `${form.getFieldValue('radarrUrl').replace(/\/$/, '')}/settings/general`
+                    radarrUrl
+                        ? `${radarrUrl.replace(/\/$/, '')}/settings/general`
                         : undefined
                 }
                 onResetStatus={() => setTestStatus('idle')}

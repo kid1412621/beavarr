@@ -1,4 +1,3 @@
-import { useForm } from '@tanstack/react-form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { toast } from 'sonner';
@@ -20,6 +19,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { client, settingsQueryOptions } from '@/lib/api';
+import { useAppForm } from '@/lib/form';
 import { type SettingsForm, settingsSchema } from '@/lib/types';
 
 export const Route = createFileRoute('/settings')({
@@ -57,7 +57,7 @@ function InnerForm({ initialValues }: { initialValues: any }) {
         },
     });
 
-    const form: any = useForm({
+    const form = useAppForm({
         defaultValues: {
             sonarrUrl: initialValues?.sonarrUrl || '',
             sonarrApiKey: initialValues?.sonarrApiKey || '',
@@ -89,100 +89,105 @@ function InnerForm({ initialValues }: { initialValues: any }) {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="px-8">
-                    <form
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            form.handleSubmit();
-                        }}
-                        className="space-y-4"
-                    >
-                        <Tabs defaultValue="general" className="w-full">
-                            <TabsList className="grid w-full grid-cols-3">
-                                <TabsTrigger value="general">
-                                    General
-                                </TabsTrigger>
-                                <TabsTrigger value="ai">
-                                    AI Settings
-                                </TabsTrigger>
-                                <TabsTrigger value="media">
-                                    Media Services
-                                </TabsTrigger>
-                            </TabsList>
+                    <form.AppForm>
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                form.handleSubmit();
+                            }}
+                            className="space-y-4"
+                        >
+                            <Tabs defaultValue="general" className="w-full">
+                                <TabsList className="grid w-full grid-cols-3">
+                                    <TabsTrigger value="general">
+                                        General
+                                    </TabsTrigger>
+                                    <TabsTrigger value="ai">
+                                        AI Settings
+                                    </TabsTrigger>
+                                    <TabsTrigger value="media">
+                                        Media Services
+                                    </TabsTrigger>
+                                </TabsList>
 
-                            <TabsContent value="general" className="mt-4">
-                                <GeneralSettings form={form} />
-                            </TabsContent>
+                                <TabsContent value="general" className="mt-4">
+                                    <GeneralSettings />
+                                </TabsContent>
 
-                            <TabsContent value="ai" className="mt-4">
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>AI Configuration</CardTitle>
-                                        <CardDescription>
-                                            Configure OpenAI or compatible LLM
-                                            settings.
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <AiSettings form={form} />
-                                    </CardContent>
-                                </Card>
-                            </TabsContent>
+                                <TabsContent value="ai" className="mt-4">
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>
+                                                AI Configuration
+                                            </CardTitle>
+                                            <CardDescription>
+                                                Configure OpenAI or compatible
+                                                LLM settings.
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <AiSettings />
+                                        </CardContent>
+                                    </Card>
+                                </TabsContent>
 
-                            <TabsContent
-                                value="media"
-                                className="mt-4 space-y-4"
-                            >
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>
-                                            Library Management
-                                        </CardTitle>
-                                        <CardDescription>
-                                            Connect to your Sonarr and Radarr
-                                            instances.
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <SonarrSettings form={form} />
-                                        <Separator />
-                                        <RadarrSettings form={form} />
-                                    </CardContent>
-                                </Card>
+                                <TabsContent
+                                    value="media"
+                                    className="mt-4 space-y-4"
+                                >
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>
+                                                Library Management
+                                            </CardTitle>
+                                            <CardDescription>
+                                                Connect to your Sonarr and
+                                                Radarr instances.
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="space-y-4">
+                                            <SonarrSettings />
+                                            <Separator />
+                                            <RadarrSettings />
+                                        </CardContent>
+                                    </Card>
 
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Watch History</CardTitle>
-                                        <CardDescription>
-                                            Sync your watch history with Trakt.
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <TraktSettings form={form} />
-                                    </CardContent>
-                                </Card>
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Watch History</CardTitle>
+                                            <CardDescription>
+                                                Sync your watch history with
+                                                Trakt.
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <TraktSettings />
+                                        </CardContent>
+                                    </Card>
 
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Metadata</CardTitle>
-                                        <CardDescription>
-                                            Configure metadata providers like
-                                            TMDB.
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <MediaSettings form={form} />
-                                    </CardContent>
-                                </Card>
-                            </TabsContent>
-                        </Tabs>
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Metadata</CardTitle>
+                                            <CardDescription>
+                                                Configure metadata providers
+                                                like TMDB.
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <MediaSettings />
+                                        </CardContent>
+                                    </Card>
+                                </TabsContent>
+                            </Tabs>
 
-                        <div className="flex justify-end pt-4">
-                            <Button type="submit" disabled={isSaving}>
-                                {isSaving ? 'Saving...' : 'Save Settings'}
-                            </Button>
-                        </div>
-                    </form>
+                            <div className="flex justify-end pt-4">
+                                <Button type="submit" disabled={isSaving}>
+                                    {isSaving ? 'Saving...' : 'Save Settings'}
+                                </Button>
+                            </div>
+                        </form>
+                    </form.AppForm>
                 </CardContent>
             </Card>
         </div>
