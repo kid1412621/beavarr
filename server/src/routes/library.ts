@@ -41,7 +41,7 @@ const libraryRoute = new Hono<Env>().get('/', async (c) => {
                 if (poster) poster_url = poster.remoteUrl;
             }
             return {
-                type: 'movie',
+                type: 'movie' as const,
                 title: m.title,
                 year: m.year,
                 poster_url,
@@ -59,7 +59,7 @@ const libraryRoute = new Hono<Env>().get('/', async (c) => {
                 if (poster) poster_url = poster.remoteUrl;
             }
             return {
-                type: 'show',
+                type: 'show' as const,
                 title: s.title,
                 year: s.year,
                 poster_url,

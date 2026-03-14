@@ -6,7 +6,7 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
     plugins: [
-        // Please make sure that '@tanstack/router-plugin' is passed before '@vitejs/plugin-react'
+        // need to make sure that '@tanstack/router-plugin' is passed before '@vitejs/plugin-react'
         tanstackRouter({
             target: 'react',
             autoCodeSplitting: true,
@@ -30,14 +30,21 @@ export default defineConfig({
     build: {
         rollupOptions: {
             output: {
-                manualChunks: {
-                    vendor: ['react', 'react-dom'],
-                    router: [
-                        '@tanstack/react-router',
-                        '@tanstack/react-query',
-                        '@tanstack/react-router-devtools',
+                codeSplitting: {
+                    groups: [
+                        {
+                            name: 'vendor',
+                            test: /[\\/]node_modules[\\/].*(react|react-dom)[\\/]/,
+                        },
+                        {
+                            name: 'router',
+                            test: /[\\/]node_modules[\\/].*@tanstack[\\/]/,
+                        },
+                        {
+                            name: 'ui',
+                            test: /[\\/]node_modules[\\/].*(@base-ui|lucide-react|sonner)[\\/]/,
+                        },
                     ],
-                    ui: ['@base-ui/react', 'lucide-react', 'sonner'],
                 },
             },
         },

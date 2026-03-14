@@ -1,19 +1,25 @@
 import type { ApiResponse } from 'shared/dist';
 
+import { honoLogger } from '@logtape/hono';
 import { Hono } from 'hono';
 import { serveStatic } from 'hono/bun';
 import { cors } from 'hono/cors';
 
+import { initAdminUser } from './db/repo/user';
 import { logger } from './lib/logger';
+import { authMiddleware, requirePasswordChange } from './middleware/auth';
+import authRoute from './routes/auth';
+import chatRoute from './routes/chat';
+import libraryRoute from './routes/library';
+import settingsRoute from './routes/settings';
+import traktRoute from './routes/trakt';
 
 const port = parseInt(process.env.PORT || '4242');
-
-import { honoLogger } from '@logtape/hono';
 
 const app = new Hono();
 
 app.use(honoLogger({
-    skip: (c) => c.req.path === '/api/health', // optional, don't clog up health checks
+    skip: (c) => c.req.path === '/api/health',
 }));
 
 // api
@@ -26,17 +32,9 @@ if (process.env.NODE_ENV !== 'production') {
     );
 }
 
-import { initAdminUser } from './db/repo/user';
-import { authMiddleware, requirePasswordChange } from './middleware/auth';
-import authRoute from './routes/auth';
-import chatRoute from './routes/chat';
-import libraryRoute from './routes/library';
-import settingsRoute from './routes/settings';
-import traktRoute from './routes/trakt';
-
 // Init default admin user
 initAdminUser().catch((err) => {
-    logger.error("Failed to initialize admin user", { err });
+    logger.error('Failed to initialize admin user', { err });
 });
 
 // Protect all API routes with Basic Auth
@@ -54,7 +52,6 @@ export const route = app
     .get('/', (c) => {
         return c.text('Hello Hono!');
     })
-
     .get('/health', async (c) => {
         const data: ApiResponse = {
             message: 'Server is healthy',
@@ -74,4 +71,4 @@ export default {
     fetch: app.fetch,
 };
 
-logger.info("Server starting", { port });
+logger.info('Server starting', { port });
