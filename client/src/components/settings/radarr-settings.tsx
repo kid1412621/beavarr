@@ -15,30 +15,37 @@ export function RadarrSettings() {
         testConnection,
     } = useConnectableTest('radarr', 'radarrUrl', 'radarrApiKey');
 
-    const radarrUrl = form.getFieldValue('radarrUrl');
-
     return (
-        <div className="space-y-4">
-            <ConnectableHeader
-                title="Radarr"
-                serviceName="Radarr"
-                status={testStatus}
-                onConnect={testConnection}
-                disabled={!radarrUrl || !form.getFieldValue('radarrApiKey')}
-            />
+        <form.Subscribe
+            selector={(state) => [
+                state.values.radarrUrl,
+                state.values.radarrApiKey,
+            ]}
+        >
+            {([radarrUrl, radarrApiKey]) => (
+                <div className="space-y-4">
+                    <ConnectableHeader
+                        title="Radarr"
+                        serviceName="Radarr"
+                        status={testStatus}
+                        onConnect={testConnection}
+                        disabled={!radarrUrl || !radarrApiKey}
+                    />
 
-            <ConnectableFields
-                serviceName="Radarr"
-                urlName="radarrUrl"
-                apiKeyName="radarrApiKey"
-                urlPlaceholder="http://localhost:7878"
-                apiKeyHelperUrl={
-                    radarrUrl
-                        ? `${radarrUrl.replace(/\/$/, '')}/settings/general`
-                        : undefined
-                }
-                onResetStatus={() => setTestStatus('idle')}
-            />
-        </div>
+                    <ConnectableFields
+                        serviceName="Radarr"
+                        urlName="radarrUrl"
+                        apiKeyName="radarrApiKey"
+                        urlPlaceholder="http://localhost:7878"
+                        apiKeyHelperUrl={
+                            radarrUrl
+                                ? `${radarrUrl.replace(/\/$/, '')}/settings/general`
+                                : undefined
+                        }
+                        onResetStatus={() => setTestStatus('idle')}
+                    />
+                </div>
+            )}
+        </form.Subscribe>
     );
 }

@@ -222,9 +222,7 @@ function InnerForm({ initialValues }: { initialValues: any }) {
                                                 : 'Complete Setup'}
                                         </Button>
                                         <form.Subscribe
-                                            selector={(state: any) =>
-                                                state.errors
-                                            }
+                                            selector={(state) => state.errors}
                                             children={(errors: any) => (
                                                 <>
                                                     {errors.length > 0 && (

@@ -15,30 +15,37 @@ export function SonarrSettings() {
         testConnection,
     } = useConnectableTest('sonarr', 'sonarrUrl', 'sonarrApiKey');
 
-    const sonarrUrl = form.getFieldValue('sonarrUrl');
-
     return (
-        <div className="space-y-4">
-            <ConnectableHeader
-                title="Sonarr"
-                serviceName="Sonarr"
-                status={testStatus}
-                onConnect={testConnection}
-                disabled={!sonarrUrl || !form.getFieldValue('sonarrApiKey')}
-            />
+        <form.Subscribe
+            selector={(state) => [
+                state.values.sonarrUrl,
+                state.values.sonarrApiKey,
+            ]}
+        >
+            {([sonarrUrl, sonarrApiKey]) => (
+                <div className="space-y-4">
+                    <ConnectableHeader
+                        title="Sonarr"
+                        serviceName="Sonarr"
+                        status={testStatus}
+                        onConnect={testConnection}
+                        disabled={!sonarrUrl || !sonarrApiKey}
+                    />
 
-            <ConnectableFields
-                serviceName="Sonarr"
-                urlName="sonarrUrl"
-                apiKeyName="sonarrApiKey"
-                urlPlaceholder="http://localhost:8989"
-                apiKeyHelperUrl={
-                    sonarrUrl
-                        ? `${sonarrUrl.replace(/\/$/, '')}/settings/general`
-                        : undefined
-                }
-                onResetStatus={() => setTestStatus('idle')}
-            />
-        </div>
+                    <ConnectableFields
+                        serviceName="Sonarr"
+                        urlName="sonarrUrl"
+                        apiKeyName="sonarrApiKey"
+                        urlPlaceholder="http://localhost:8989"
+                        apiKeyHelperUrl={
+                            sonarrUrl
+                                ? `${sonarrUrl.replace(/\/$/, '')}/settings/general`
+                                : undefined
+                        }
+                        onResetStatus={() => setTestStatus('idle')}
+                    />
+                </div>
+            )}
+        </form.Subscribe>
     );
 }
