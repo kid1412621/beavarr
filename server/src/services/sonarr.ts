@@ -1,3 +1,4 @@
+import { config } from '../lib/config';
 import { getSettings } from '../db/repo/settings';
 
 interface SonarrImage {
@@ -119,12 +120,16 @@ export class SonarrService {
         return await response.json();
     }
 
-    async testConnection(url: string, apiKey: string) {
-        const response = await fetch(`${url}/api/v3/system/status`, {
-            headers: { 'X-Api-Key': apiKey },
-        });
-        if (!response.ok) return false;
-        return true;
+    async testConnection(url: string, apiKey: string, timeoutMs = config.arrConnectionTimeoutMs) {
+        try {
+            const response = await fetch(`${url}/api/v3/system/status`, {
+                headers: { 'X-Api-Key': apiKey },
+                signal: AbortSignal.timeout(timeoutMs),
+            });
+            return response.ok;
+        } catch {
+            return false;
+        }
     }
 }
 

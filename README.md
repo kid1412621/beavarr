@@ -200,7 +200,37 @@ By running `bun run dev` or `bun run build` it will compile and export the packa
 import { ApiResponse } from 'shared';
 ```
 
+### Configuration
+
+Environment variables are split by package because each has a different runtime:
+
+| Package | Env file | Loaded by |
+|---------|----------|-----------|
+| `server/` | `server/.env` | Bun (from the server's CWD) |
+| `client/` | `client/.env` | Vite (only `VITE_*` vars are exposed to the browser) |
+
+#### Server (`server/.env`)
+
+Copy `server/.env.example` to `server/.env` and adjust as needed:
+
+```bash
+cp server/.env.example server/.env
+```
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `4242` | Port the Hono server listens on |
+| `ARR_CONNECTION_TIMEOUT_MS` | `5000` | Timeout (ms) for Radarr/Sonarr connection tests |
+
+#### Client (`client/.env`)
+
+```bash
+# client/.env
+VITE_SERVER_URL=http://localhost:4242   # URL of the Hono backend (dev only)
+```
+
 ### Getting Started
+
 
 #### Quick Start
 
