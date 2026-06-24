@@ -30,6 +30,11 @@ While built on the solid foundation of the BHVR stack, beavarr extends it to cre
 
 - explore the franchise/timeline
 - explore what's the references in the show/movie, like poster in the scene, etc
+- **[performance]** cache Sonarr/Radarr library data in local SQLite (via Drizzle) and sync
+  periodically or on-demand, so `sonarr_list`/`radarr_list` agent tools can query locally
+  with real pagination instead of fetching the entire library into memory on every LLM call.
+  Neither the Sonarr `GET /api/v3/series` nor the Radarr `GET /api/v3/movie` endpoint supports
+  server-side pagination, making a local cache the only way to avoid full in-memory loads.
 
 ## Tech statck
 
