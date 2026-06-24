@@ -3,15 +3,21 @@ import { createAgent } from 'langchain';
 
 import {
     createRadarrAddTool,
+    createRadarrListTool,
     createRadarrSearchTool,
     createSonarrAddTool,
+    createSonarrListTool,
     createSonarrSearchTool,
     createTmdbSearchTool,
     createTraktTrendingTool,
     createTraktWatchlistTool,
 } from './tools';
 
-const SYSTEM_PROMPT = `You are a helpful media assistant named Beavarr. You can manage user's media library via Sonarr and Radarr. You can also recommend content via Trakt and TMDB. Always search before adding content. Use the tools provided.`;
+const SYSTEM_PROMPT = `You are a helpful media assistant named Beavarr.
+    You can manage user's media library via Sonarr and Radarr.
+    You can also recommend content via Trakt and TMDB.
+    Always search before adding content.
+    Use the tools provided.`;
 
 export async function createMediaAgent({
     userId,
@@ -40,8 +46,10 @@ export async function createMediaAgent({
     const tools = [
         createSonarrSearchTool(userId),
         createSonarrAddTool(userId),
+        createSonarrListTool(userId),
         createRadarrSearchTool(userId),
         createRadarrAddTool(userId),
+        createRadarrListTool(userId),
         createTraktTrendingTool(userId),
         createTraktWatchlistTool(userId),
         createTmdbSearchTool(userId),

@@ -30,6 +30,11 @@ While built on the solid foundation of the BHVR stack, beavarr extends it to cre
 
 - explore the franchise/timeline
 - explore what's the references in the show/movie, like poster in the scene, etc
+- **[performance]** cache Sonarr/Radarr library data in local SQLite (via Drizzle) and sync
+  periodically or on-demand, so `sonarr_list`/`radarr_list` agent tools can query locally
+  with real pagination instead of fetching the entire library into memory on every LLM call.
+  Neither the Sonarr `GET /api/v3/series` nor the Radarr `GET /api/v3/movie` endpoint supports
+  server-side pagination, making a local cache the only way to avoid full in-memory loads.
 
 ## Tech statck
 
@@ -200,7 +205,37 @@ By running `bun run dev` or `bun run build` it will compile and export the packa
 import { ApiResponse } from 'shared';
 ```
 
+### Configuration
+
+Environment variables are split by package because each has a different runtime:
+
+| Package | Env file | Loaded by |
+|---------|----------|-----------|
+| `server/` | `server/.env` | Bun (from the server's CWD) |
+| `client/` | `client/.env` | Vite (only `VITE_*` vars are exposed to the browser) |
+
+#### Server (`server/.env`)
+
+Copy `server/.env.example` to `server/.env` and adjust as needed:
+
+```bash
+cp server/.env.example server/.env
+```
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `4242` | Port the Hono server listens on |
+| `ARR_CONNECTION_TIMEOUT_MS` | `5000` | Timeout (ms) for Radarr/Sonarr connection tests |
+
+#### Client (`client/.env`)
+
+```bash
+# client/.env
+VITE_SERVER_URL=http://localhost:4242   # URL of the Hono backend (dev only)
+```
+
 ### Getting Started
+
 
 #### Quick Start
 

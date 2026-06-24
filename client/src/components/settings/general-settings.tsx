@@ -9,8 +9,11 @@ import {
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { settingsQueryOptions } from '@/lib/api';
+import { useAppFormContext } from '@/lib/form';
+import { type SettingsForm } from '@/lib/types';
 
-export function GeneralSettings({ form }: { form: any }) {
+export function GeneralSettings() {
+    const form = useAppFormContext<SettingsForm>();
     // We need real settings data to validation availability of services
     // Since we are inside the form, initialValues might be stale if user just typed something but didn't save?
     // Actually, rely on saved settings for availability check is safer/easier.
@@ -25,16 +28,16 @@ export function GeneralSettings({ form }: { form: any }) {
             </CardHeader>
             <CardContent className="space-y-4">
                 <form.Subscribe
-                    selector={(state: any) => state.values}
-                    children={(values: any) => {
+                    selector={(state) => state.values}
+                    children={(values) => {
                         const hasSonarr = !!values.sonarrUrl;
                         const hasRadarr = !!values.radarrUrl;
                         const hasLibrary = hasSonarr || hasRadarr;
 
                         return (
-                            <form.Field
+                            <form.AppField
                                 name="posterSource"
-                                children={(field: any) => (
+                                children={(field) => (
                                     <div className="space-y-2">
                                         <Label htmlFor={field.name}>
                                             Home Page Poster Source
@@ -46,7 +49,8 @@ export function GeneralSettings({ form }: { form: any }) {
                                             onBlur={field.handleBlur}
                                             onChange={(e) =>
                                                 field.handleChange(
-                                                    e.target.value,
+                                                    e.target
+                                                        .value as SettingsForm['posterSource'],
                                                 )
                                             }
                                             className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"

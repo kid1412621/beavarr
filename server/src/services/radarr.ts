@@ -1,3 +1,4 @@
+import { config } from '../lib/config';
 import { getSettings } from '../db/repo/settings';
 
 interface RadarrImage {
@@ -103,6 +104,30 @@ export class RadarrService {
         });
         if (!response.ok) throw new Error('Failed to add movie to Radarr');
         return (await response.json()) as RadarrMovie;
+    }
+
+    async getSystemStatus(userId: number) {
+        const { url, key } = await this.getBaseUrl(userId);
+        const response = await fetch(`${url}/api/v3/system/status`, {
+            headers: { 'X-Api-Key': key },
+        });
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Failed to get system status from Radarr: ${response.status} - ${errorText}`);
+        }
+        return await response.json();
+    }
+
+    async testConnection(url: string, apiKey: string, timeoutMs = config.arrConnectionTimeoutMs) {
+        try {
+            const response = await fetch(`${url}/api/v3/system/status`, {
+                headers: { 'X-Api-Key': apiKey },
+                signal: AbortSignal.timeout(timeoutMs),
+            });
+            return response.ok;
+        } catch {
+            return false;
+        }
     }
 }
 

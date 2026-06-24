@@ -189,3 +189,71 @@ export const createTmdbSearchTool = (userId: number) =>
             }
         },
     });
+
+export const createSonarrListTool = (userId: number) =>
+    new DynamicStructuredTool({
+        name: 'sonarr_list',
+        description:
+            'List TV shows currently in the Sonarr library. Use the limit parameter to avoid returning the entire library at once — the Sonarr API has no server-side pagination so all items are always fetched and sliced in memory.',
+        schema: z.object({
+            limit: z
+                .number()
+                .int()
+                .positive()
+                .optional()
+                .describe(
+                    'Maximum number of shows to return. Omit to return all (not recommended for large libraries).',
+                ),
+        }),
+        func: async ({ limit }: { limit?: number }) => {
+            try {
+                const results = await sonarrService.getSeries(userId);
+                const mapped = results.map((s) => ({
+                    title: s.title,
+                    status: s.status,
+                    year: s.year,
+                    tvdbId: s.tvdbId,
+                }));
+                return JSON.stringify(
+                    limit !== undefined ? mapped.slice(0, limit) : mapped,
+                );
+            } catch (error) {
+                logger.error('failed to call sonarr list: {error}', { error });
+                return `Error listing Sonarr series: ${error}`;
+            }
+        },
+    });
+
+export const createRadarrListTool = (userId: number) =>
+    new DynamicStructuredTool({
+        name: 'radarr_list',
+        description:
+            'List movies currently in the Radarr library. Use the limit parameter to avoid returning the entire library at once — the Radarr API has no server-side pagination so all items are always fetched and sliced in memory.',
+        schema: z.object({
+            limit: z
+                .number()
+                .int()
+                .positive()
+                .optional()
+                .describe(
+                    'Maximum number of movies to return. Omit to return all (not recommended for large libraries).',
+                ),
+        }),
+        func: async ({ limit }: { limit?: number }) => {
+            try {
+                const results = await radarrService.getMovies(userId);
+                const mapped = results.map((m) => ({
+                    title: m.title,
+                    status: m.status,
+                    year: m.year,
+                    tmdbId: m.tmdbId,
+                }));
+                return JSON.stringify(
+                    limit !== undefined ? mapped.slice(0, limit) : mapped,
+                );
+            } catch (error) {
+                logger.error('failed to call radarr list: {error}', { error });
+                return `Error listing Radarr movies: ${error}`;
+            }
+        },
+    });

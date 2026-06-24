@@ -1,4 +1,3 @@
-import { useForm } from '@tanstack/react-form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
@@ -21,6 +20,7 @@ import {
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { client, settingsQueryOptions } from '@/lib/api';
+import { useAppForm, getErrorMessage } from '@/lib/form';
 import { type SettingsForm, settingsSchema } from '@/lib/types';
 
 const onboardingSearchSchema = z.object({
@@ -42,12 +42,16 @@ function Onboarding() {
     return (
         <InnerForm
             key={initialSettings ? 'loaded' : 'empty'}
-            initialValues={initialSettings}
+            initialValues={initialSettings as SettingsForm | null | undefined}
         />
     );
 }
 
-function InnerForm({ initialValues }: { initialValues: any }) {
+function InnerForm({
+    initialValues,
+}: {
+    initialValues: SettingsForm | null | undefined;
+}) {
     const navigate = useNavigate({ from: '/onboarding' });
     const { step } = Route.useSearch();
     const queryClient = useQueryClient();
@@ -68,7 +72,7 @@ function InnerForm({ initialValues }: { initialValues: any }) {
         },
     });
 
-    const form: any = useForm({
+    const form = useAppForm({
         defaultValues: {
             sonarrUrl: initialValues?.sonarrUrl || '',
             sonarrApiKey: initialValues?.sonarrApiKey || '',
@@ -138,102 +142,111 @@ function InnerForm({ initialValues }: { initialValues: any }) {
                 </CardHeader>
 
                 <CardContent>
-                    <form
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            form.handleSubmit();
-                        }}
-                        className="space-y-6"
-                    >
-                        {step === 1 && (
-                            <div className="animate-in fade-in slide-in-from-right-4 space-y-4 duration-300">
-                                <Alert className="bg-muted/50 border-none">
-                                    <AlertDescription>
-                                        We currently support OpenAI and
-                                        compatible providers (like LocalAI,
-                                        Ollama).
-                                    </AlertDescription>
-                                </Alert>
-                                <AiSettings form={form} />
-                            </div>
-                        )}
-
-                        {step === 2 && (
-                            <div className="animate-in fade-in slide-in-from-right-4 space-y-6 duration-300">
-                                <div className="space-y-4">
-                                    <h3 className="text-muted-foreground text-sm font-medium tracking-wider uppercase">
-                                        Library
-                                    </h3>
-                                    <SonarrSettings form={form} />
-                                    <RadarrSettings form={form} />
+                    <form.AppForm>
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                form.handleSubmit();
+                            }}
+                            className="space-y-6"
+                        >
+                            {step === 1 && (
+                                <div className="animate-in fade-in slide-in-from-right-4 space-y-4 duration-300">
+                                    <Alert className="bg-muted/50 border-none">
+                                        <AlertDescription>
+                                            We currently support OpenAI and
+                                            compatible providers (like LocalAI,
+                                            Ollama).
+                                        </AlertDescription>
+                                    </Alert>
+                                    <AiSettings />
                                 </div>
-                                <Separator />
-                                <div className="space-y-4">
-                                    <h3 className="text-muted-foreground text-sm font-medium tracking-wider uppercase">
-                                        General
-                                    </h3>
-                                    <GeneralSettings form={form} />
-                                </div>
-                                <Separator />
-                                <div className="space-y-4">
-                                    <h3 className="text-muted-foreground text-sm font-medium tracking-wider uppercase">
-                                        History & Metadata
-                                    </h3>
-                                    <TraktSettings form={form} />
-                                    <MediaSettings form={form} />
-                                </div>
-                            </div>
-                        )}
-
-                        <div className="flex justify-between pt-6">
-                            {step === 2 ? (
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={handleBack}
-                                    disabled={isSaving}
-                                >
-                                    Back
-                                </Button>
-                            ) : (
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    onClick={() => navigate({ to: '/' })}
-                                >
-                                    Skip Setup
-                                </Button>
                             )}
 
-                            {step === 1 ? (
-                                <Button type="button" onClick={handleNext}>
-                                    Next: Services
-                                </Button>
-                            ) : (
-                                <div className="flex flex-col items-end gap-2 text-right">
-                                    <Button type="submit" disabled={isSaving}>
-                                        {isSaving
-                                            ? 'Finishing...'
-                                            : 'Complete Setup'}
+                            {step === 2 && (
+                                <div className="animate-in fade-in slide-in-from-right-4 space-y-6 duration-300">
+                                    <div className="space-y-4">
+                                        <h3 className="text-muted-foreground text-sm font-medium tracking-wider uppercase">
+                                            Library
+                                        </h3>
+                                        <SonarrSettings />
+                                        <RadarrSettings />
+                                    </div>
+                                    <Separator />
+                                    <div className="space-y-4">
+                                        <h3 className="text-muted-foreground text-sm font-medium tracking-wider uppercase">
+                                            General
+                                        </h3>
+                                        <GeneralSettings />
+                                    </div>
+                                    <Separator />
+                                    <div className="space-y-4">
+                                        <h3 className="text-muted-foreground text-sm font-medium tracking-wider uppercase">
+                                            History & Metadata
+                                        </h3>
+                                        <TraktSettings />
+                                        <MediaSettings />
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="flex justify-between pt-6">
+                                {step === 2 ? (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={handleBack}
+                                        disabled={isSaving}
+                                    >
+                                        Back
                                     </Button>
-                                    <form.Subscribe
-                                        selector={(state: any) => state.errors}
-                                        children={(errors: any) => (
-                                            <>
-                                                {errors.length > 0 && (
-                                                    <p className="text-destructive text-xs font-medium">
-                                                        {errors[0]?.message ||
-                                                            'Please fix errors above'}
-                                                    </p>
-                                                )}
-                                            </>
-                                        )}
-                                    />
-                                </div>
-                            )}
-                        </div>
-                    </form>
+                                ) : (
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        onClick={() => navigate({ to: '/' })}
+                                    >
+                                        Skip Setup
+                                    </Button>
+                                )}
+
+                                {step === 1 ? (
+                                    <Button type="button" onClick={handleNext}>
+                                        Next: Services
+                                    </Button>
+                                ) : (
+                                    <div className="flex flex-col items-end gap-2 text-right">
+                                        <Button
+                                            type="submit"
+                                            disabled={isSaving}
+                                        >
+                                            {isSaving
+                                                ? 'Finishing...'
+                                                : 'Complete Setup'}
+                                        </Button>
+                                        <form.Subscribe
+                                            selector={(state) => state.errors}
+                                            children={(errors) => {
+                                                const message = errors[0]
+                                                    ? getErrorMessage(errors[0])
+                                                    : undefined;
+                                                return (
+                                                    <>
+                                                        {message && (
+                                                            <p className="text-destructive text-xs font-medium">
+                                                                {message}
+                                                            </p>
+                                                        )}
+                                                    </>
+                                                );
+                                            }}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </form>
+                    </form.AppForm>
                 </CardContent>
             </Card>
         </div>

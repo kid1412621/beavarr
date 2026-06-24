@@ -4,20 +4,20 @@ export type ApiResponse = {
 };
 
 export interface AiSettingsForm {
-    openaiApiKey?: string;
-    openaiBaseUrl?: string;
-    openaiModel?: string;
+    openaiApiKey?: string | null;
+    openaiBaseUrl?: string | null;
+    openaiModel?: string | null;
 }
 
 export interface MediaSettingsForm {
-    sonarrUrl?: string;
-    sonarrApiKey?: string;
-    radarrUrl?: string;
-    radarrApiKey?: string;
-    traktClientId?: string;
-    traktClientSecret?: string;
-    tmdbApiKey?: string;
-    posterSource?: 'history' | 'trending' | 'library' | '';
+    sonarrUrl?: string | null;
+    sonarrApiKey?: string | null;
+    radarrUrl?: string | null;
+    radarrApiKey?: string | null;
+    traktClientId?: string | null;
+    traktClientSecret?: string | null;
+    tmdbApiKey?: string | null;
+    posterSource?: 'history' | 'trending' | 'library' | '' | null;
 }
 
 export type SettingsForm = AiSettingsForm & MediaSettingsForm;

@@ -1,3 +1,4 @@
+import { config } from '../lib/config';
 import { getSettings } from '../db/repo/settings';
 
 interface SonarrImage {
@@ -107,13 +108,28 @@ export class SonarrService {
         return await response.json();
     }
 
-    async getQualityProfiles(userId: number) {
+    async getSystemStatus(userId: number) {
         const { url, key } = await this.getBaseUrl(userId);
-        const response = await fetch(`${url}/api/v3/qualityprofile`, {
+        const response = await fetch(`${url}/api/v3/system/status`, {
             headers: { 'X-Api-Key': key },
         });
-        if (!response.ok) throw new Error('Failed to get quality profiles');
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Failed to get system status from Sonarr: ${response.status} - ${errorText}`);
+        }
         return await response.json();
+    }
+
+    async testConnection(url: string, apiKey: string, timeoutMs = config.arrConnectionTimeoutMs) {
+        try {
+            const response = await fetch(`${url}/api/v3/system/status`, {
+                headers: { 'X-Api-Key': apiKey },
+                signal: AbortSignal.timeout(timeoutMs),
+            });
+            return response.ok;
+        } catch {
+            return false;
+        }
     }
 }
 
