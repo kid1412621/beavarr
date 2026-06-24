@@ -51,3 +51,29 @@ export type AppFormApi<
 export function useAppFormContext<TFormData>() {
     return useFormContext() as unknown as AppFormApi<TFormData>;
 }
+
+export function getErrorMessage(error: unknown): string | undefined {
+    if (!error) return undefined;
+    if (typeof error === 'string') return error;
+    if (typeof error === 'object') {
+        const errObj = error as Record<string, any>;
+
+        // Standard message property
+        if (typeof errObj.message === 'string') {
+            return errObj.message;
+        }
+
+        // Zod error records (map of issues) from StandardSchemaV1
+        for (const key in errObj) {
+            const val = errObj[key];
+            if (Array.isArray(val) && val[0]?.message) {
+                const innerMsg = getErrorMessage(val[0]);
+                if (innerMsg) return innerMsg;
+            }
+        }
+
+        // Final safe fallbacks
+        if (errObj.message) return String(errObj.message);
+    }
+    return undefined;
+}

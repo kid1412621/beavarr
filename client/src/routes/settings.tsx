@@ -19,7 +19,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { client, settingsQueryOptions } from '@/lib/api';
-import { useAppForm } from '@/lib/form';
+import { useAppForm, getErrorMessage } from '@/lib/form';
 import { type SettingsForm, settingsSchema } from '@/lib/types';
 
 export const Route = createFileRoute('/settings')({
@@ -37,13 +37,19 @@ function Settings() {
         <div className="p-4">
             <InnerForm
                 key={initialSettings ? 'loaded' : 'empty'}
-                initialValues={initialSettings}
+                initialValues={
+                    initialSettings as SettingsForm | null | undefined
+                }
             />
         </div>
     );
 }
 
-function InnerForm({ initialValues }: { initialValues: any }) {
+function InnerForm({
+    initialValues,
+}: {
+    initialValues: SettingsForm | null | undefined;
+}) {
     const queryClient = useQueryClient();
     const { mutate: saveSettings, isPending: isSaving } = useMutation({
         mutationFn: async (values: SettingsForm) => {
@@ -181,10 +187,27 @@ function InnerForm({ initialValues }: { initialValues: any }) {
                                 </TabsContent>
                             </Tabs>
 
-                            <div className="flex justify-end pt-4">
+                            <div className="flex flex-col items-end gap-2 pt-4">
                                 <Button type="submit" disabled={isSaving}>
                                     {isSaving ? 'Saving...' : 'Save Settings'}
                                 </Button>
+                                <form.Subscribe
+                                    selector={(state) => state.errors}
+                                    children={(errors) => {
+                                        const message = errors[0]
+                                            ? getErrorMessage(errors[0])
+                                            : undefined;
+                                        return (
+                                            <>
+                                                {message && (
+                                                    <p className="text-destructive text-xs font-medium">
+                                                        {message}
+                                                    </p>
+                                                )}
+                                            </>
+                                        );
+                                    }}
+                                />
                             </div>
                         </form>
                     </form.AppForm>

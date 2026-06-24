@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { client, settingsQueryOptions } from '@/lib/api';
-import { useAppForm } from '@/lib/form';
+import { useAppForm, getErrorMessage } from '@/lib/form';
 import { type SettingsForm, settingsSchema } from '@/lib/types';
 
 const onboardingSearchSchema = z.object({
@@ -42,12 +42,16 @@ function Onboarding() {
     return (
         <InnerForm
             key={initialSettings ? 'loaded' : 'empty'}
-            initialValues={initialSettings}
+            initialValues={initialSettings as SettingsForm | null | undefined}
         />
     );
 }
 
-function InnerForm({ initialValues }: { initialValues: any }) {
+function InnerForm({
+    initialValues,
+}: {
+    initialValues: SettingsForm | null | undefined;
+}) {
     const navigate = useNavigate({ from: '/onboarding' });
     const { step } = Route.useSearch();
     const queryClient = useQueryClient();
@@ -223,17 +227,20 @@ function InnerForm({ initialValues }: { initialValues: any }) {
                                         </Button>
                                         <form.Subscribe
                                             selector={(state) => state.errors}
-                                            children={(errors: any) => (
-                                                <>
-                                                    {errors.length > 0 && (
-                                                        <p className="text-destructive text-xs font-medium">
-                                                            {errors[0]
-                                                                ?.message ||
-                                                                'Please fix errors above'}
-                                                        </p>
-                                                    )}
-                                                </>
-                                            )}
+                                            children={(errors) => {
+                                                const message = errors[0]
+                                                    ? getErrorMessage(errors[0])
+                                                    : undefined;
+                                                return (
+                                                    <>
+                                                        {message && (
+                                                            <p className="text-destructive text-xs font-medium">
+                                                                {message}
+                                                            </p>
+                                                        )}
+                                                    </>
+                                                );
+                                            }}
                                         />
                                     </div>
                                 )}
