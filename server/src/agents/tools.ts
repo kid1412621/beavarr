@@ -143,7 +143,7 @@ export const createTraktTrendingTool = (userId: number) =>
                     return JSON.stringify(results.slice(0, 10));
                 }
             } catch (error) {
-                logger.error("failed to call trakt: {error}", { error });
+                logger.error('failed to call trakt: {error}', { error });
                 return `Error fetching trending from Trakt: ${error}`;
             }
         },
@@ -166,7 +166,9 @@ export const createTraktWatchlistTool = (userId: number) =>
                 const results = await traktService.getWatchlist(userId, type);
                 return JSON.stringify(results.slice(0, 20));
             } catch (error) {
-                logger.error("failed to call trakt watchlist: {error}", { error });
+                logger.error('failed to call trakt watchlist: {error}', {
+                    error,
+                });
                 return `Error fetching watchlist from Trakt: ${error}`;
             }
         },

@@ -14,7 +14,7 @@ const chatRoute = new Hono<Env>().post('/', async (c) => {
             return c.json({ error: 'Message is required' }, 400);
         }
 
-        logger.info("Creating agent...");
+        logger.info('Creating agent...');
         const user = c.get('user');
         if (!user) {
             return c.json({ error: 'Unauthorized' }, 401);
@@ -37,13 +37,13 @@ const chatRoute = new Hono<Env>().post('/', async (c) => {
             openaiBaseUrl: settings.openaiBaseUrl,
             openaiModel: settings.openaiModel,
         });
-        logger.info("Agent created. Invoking...");
+        logger.info('Agent created. Invoking...');
 
         const result = await agent.invoke({
             messages: [{ role: 'user', content: message }],
         });
 
-        logger.debug("Agent result", { result });
+        logger.debug('Agent result', { result });
 
         // Extract the last assistant message from the result
         const messages = result.messages ?? [];
@@ -77,7 +77,7 @@ const chatRoute = new Hono<Env>().post('/', async (c) => {
             messages: mappedMessages,
         });
     } catch (error: any) {
-        logger.error("Chat error: {error}", { error });
+        logger.error('Chat error: {error}', { error });
         const errorMessage = error.message || 'Unknown error';
         if (errorMessage.includes('OpenAI API Key not configured')) {
             return c.json(

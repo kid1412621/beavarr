@@ -1,5 +1,5 @@
-import { config } from '../lib/config';
 import { getSettings } from '../db/repo/settings';
+import { config } from '../lib/config';
 
 interface SonarrImage {
     coverType: string;
@@ -115,12 +115,18 @@ export class SonarrService {
         });
         if (!response.ok) {
             const errorText = await response.text();
-            throw new Error(`Failed to get system status from Sonarr: ${response.status} - ${errorText}`);
+            throw new Error(
+                `Failed to get system status from Sonarr: ${response.status} - ${errorText}`,
+            );
         }
         return await response.json();
     }
 
-    async testConnection(url: string, apiKey: string, timeoutMs = config.arrConnectionTimeoutMs) {
+    async testConnection(
+        url: string,
+        apiKey: string,
+        timeoutMs = config.arrConnectionTimeoutMs,
+    ) {
         try {
             const response = await fetch(`${url}/api/v3/system/status`, {
                 headers: { 'X-Api-Key': apiKey },

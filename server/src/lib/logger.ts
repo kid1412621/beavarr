@@ -1,4 +1,9 @@
-import { configure, getConsoleSink, getLogger, type LogLevel } from '@logtape/logtape';
+import {
+    configure,
+    getConsoleSink,
+    getLogger,
+    type LogLevel,
+} from '@logtape/logtape';
 
 // Extract the log level safely from the environment
 const getLogLevel = (): LogLevel => {

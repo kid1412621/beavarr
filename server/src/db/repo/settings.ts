@@ -1,8 +1,7 @@
 import { eq } from 'drizzle-orm';
 
-import type { InsertSettings } from '../schema';
-
 import { db } from '../index';
+import type { InsertSettings } from '../schema';
 import { settings } from '../schema';
 
 export async function getSettings(userId: number) {

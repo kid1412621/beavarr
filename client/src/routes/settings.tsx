@@ -117,11 +117,19 @@ function InnerForm({
                                     </TabsTrigger>
                                 </TabsList>
 
-                                <TabsContent value="general" className="mt-4">
+                                <TabsContent
+                                    value="general"
+                                    className="mt-4"
+                                    keepMounted
+                                >
                                     <GeneralSettings />
                                 </TabsContent>
 
-                                <TabsContent value="ai" className="mt-4">
+                                <TabsContent
+                                    value="ai"
+                                    className="mt-4"
+                                    keepMounted
+                                >
                                     <Card>
                                         <CardHeader>
                                             <CardTitle>
@@ -141,6 +149,7 @@ function InnerForm({
                                 <TabsContent
                                     value="media"
                                     className="mt-4 space-y-4"
+                                    keepMounted
                                 >
                                     <Card>
                                         <CardHeader>

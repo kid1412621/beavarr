@@ -1,8 +1,7 @@
-import type { LibraryItem } from 'shared';
-
 import { useQuery } from '@tanstack/react-query';
 import { Film } from 'lucide-react';
 import { useState, useRef, useLayoutEffect } from 'react';
+import type { LibraryItem } from 'shared';
 
 import { client, settingsQueryOptions } from '@/lib/api';
 import { cn } from '@/lib/utils';

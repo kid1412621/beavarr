@@ -1,9 +1,8 @@
-import type { ApiResponse } from 'shared/dist';
-
 import { honoLogger } from '@logtape/hono';
 import { Hono } from 'hono';
 import { serveStatic } from 'hono/bun';
 import { cors } from 'hono/cors';
+import type { ApiResponse } from 'shared/dist';
 
 import { initAdminUser } from './db/repo/user';
 import { logger } from './lib/logger';
@@ -18,9 +17,11 @@ const port = parseInt(process.env.PORT || '4242');
 
 const app = new Hono();
 
-app.use(honoLogger({
-    skip: (c) => c.req.path === '/api/health',
-}));
+app.use(
+    honoLogger({
+        skip: (c) => c.req.path === '/api/health',
+    }),
+);
 
 // api
 if (process.env.NODE_ENV !== 'production') {

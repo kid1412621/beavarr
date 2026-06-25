@@ -22,7 +22,7 @@ const settingsRoute = new Hono<Env>()
             const currentSettings = await getOrCreateSettings(user.id);
             return c.json(currentSettings);
         } catch (error) {
-            logger.error("Error fetching settings: {error}", { error });
+            logger.error('Error fetching settings: {error}', { error });
             return c.json({ error: 'Failed to fetch settings' }, 500);
         }
     })
@@ -37,7 +37,7 @@ const settingsRoute = new Hono<Env>()
             const updated = await updateSettings(user.id, body);
             return c.json(updated);
         } catch (error) {
-            logger.error("Error updating settings: {error}", { error });
+            logger.error('Error updating settings: {error}', { error });
             return c.json({ error: 'Failed to update settings' }, 500);
         }
     })
@@ -58,7 +58,7 @@ const settingsRoute = new Hono<Env>()
 
             return c.json({ success });
         } catch (error) {
-            logger.error("Error testing connection: {error}", { error });
+            logger.error('Error testing connection: {error}', { error });
             return c.json({ success: false, error: 'Connection test failed' });
         }
     });
