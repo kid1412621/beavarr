@@ -9,7 +9,6 @@
         "allowJs": true,
         "types": ["bun"],
         // Path resolution
-        "baseUrl": "./",
         "paths": {
             "@server/*": ["./server/src/*"],
             "@client/*": ["./client/src/*"],
