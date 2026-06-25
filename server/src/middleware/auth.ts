@@ -1,5 +1,4 @@
 import type { MiddlewareHandler } from 'hono';
-
 import { getCookie, deleteCookie } from 'hono/cookie';
 import { verify } from 'hono/jwt';
 

@@ -1,7 +1,8 @@
 import { Database } from 'bun:sqlite';
+import { resolve } from 'path';
+
 import { drizzle } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
-import { resolve } from 'path';
 
 import { createLogger } from '../lib/logger';
 import * as schema from './schema';
@@ -23,4 +24,4 @@ await migrate(db, {
     migrationsFolder,
 });
 
-logger.info("Database initialized");
+logger.info('Database initialized');

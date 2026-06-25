@@ -3,7 +3,10 @@
  * Set these in `server/.env` — Bun loads it automatically from the server's CWD.
  */
 
-function parsePositiveInt(value: string | undefined, defaultValue: number): number {
+function parsePositiveInt(
+    value: string | undefined,
+    defaultValue: number,
+): number {
     const parsed = parseInt(value ?? '', 10);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : defaultValue;
 }

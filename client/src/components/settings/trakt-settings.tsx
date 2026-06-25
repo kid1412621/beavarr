@@ -1,5 +1,3 @@
-import type { TraktDeviceCodeResponse } from 'shared';
-
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
     Clipboard as ClipboardIcon,
@@ -7,6 +5,7 @@ import {
     RefreshCw,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import type { TraktDeviceCodeResponse } from 'shared';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

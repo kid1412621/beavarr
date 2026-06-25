@@ -22,13 +22,17 @@ export type AppFormApi<
     TFormData,
     TOnMount extends undefined | FormValidateOrFn<TFormData> = undefined,
     TOnChange extends undefined | FormValidateOrFn<TFormData> = undefined,
-    TOnChangeAsync extends undefined | FormAsyncValidateOrFn<TFormData> = undefined,
+    TOnChangeAsync extends undefined | FormAsyncValidateOrFn<TFormData> =
+        undefined,
     TOnBlur extends undefined | FormValidateOrFn<TFormData> = undefined,
-    TOnBlurAsync extends undefined | FormAsyncValidateOrFn<TFormData> = undefined,
+    TOnBlurAsync extends undefined | FormAsyncValidateOrFn<TFormData> =
+        undefined,
     TOnSubmit extends undefined | FormValidateOrFn<TFormData> = undefined,
-    TOnSubmitAsync extends undefined | FormAsyncValidateOrFn<TFormData> = undefined,
+    TOnSubmitAsync extends undefined | FormAsyncValidateOrFn<TFormData> =
+        undefined,
     TOnDynamic extends undefined | FormValidateOrFn<TFormData> = undefined,
-    TOnDynamicAsync extends undefined | FormAsyncValidateOrFn<TFormData> = undefined,
+    TOnDynamicAsync extends undefined | FormAsyncValidateOrFn<TFormData> =
+        undefined,
     TOnServer extends undefined | FormAsyncValidateOrFn<TFormData> = undefined,
     TSubmitMeta = undefined,
 > = AppFieldExtendedReactFormApi<

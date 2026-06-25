@@ -63,10 +63,10 @@ function InnerForm({
             return await res.json();
         },
         onSuccess: (data) => {
+            queryClient.setQueryData(['settings'], data);
             // Only navigate away if we are finishing the last step
             if (step === 2) {
                 toast.success('Settings saved!');
-                queryClient.setQueryData(['settings'], data);
                 navigate({ to: '/' });
             }
         },
@@ -151,45 +151,45 @@ function InnerForm({
                             }}
                             className="space-y-6"
                         >
-                            {step === 1 && (
-                                <div className="animate-in fade-in slide-in-from-right-4 space-y-4 duration-300">
-                                    <Alert className="bg-muted/50 border-none">
-                                        <AlertDescription>
-                                            We currently support OpenAI and
-                                            compatible providers (like LocalAI,
-                                            Ollama).
-                                        </AlertDescription>
-                                    </Alert>
-                                    <AiSettings />
-                                </div>
-                            )}
+                            <div
+                                className={`animate-in fade-in slide-in-from-right-4 space-y-4 duration-300 ${step !== 1 ? 'hidden' : ''}`}
+                            >
+                                <Alert className="bg-muted/50 border-none">
+                                    <AlertDescription>
+                                        We currently support OpenAI and
+                                        compatible providers (like LocalAI,
+                                        Ollama).
+                                    </AlertDescription>
+                                </Alert>
+                                <AiSettings />
+                            </div>
 
-                            {step === 2 && (
-                                <div className="animate-in fade-in slide-in-from-right-4 space-y-6 duration-300">
-                                    <div className="space-y-4">
-                                        <h3 className="text-muted-foreground text-sm font-medium tracking-wider uppercase">
-                                            Library
-                                        </h3>
-                                        <SonarrSettings />
-                                        <RadarrSettings />
-                                    </div>
-                                    <Separator />
-                                    <div className="space-y-4">
-                                        <h3 className="text-muted-foreground text-sm font-medium tracking-wider uppercase">
-                                            General
-                                        </h3>
-                                        <GeneralSettings />
-                                    </div>
-                                    <Separator />
-                                    <div className="space-y-4">
-                                        <h3 className="text-muted-foreground text-sm font-medium tracking-wider uppercase">
-                                            History & Metadata
-                                        </h3>
-                                        <TraktSettings />
-                                        <MediaSettings />
-                                    </div>
+                            <div
+                                className={`animate-in fade-in slide-in-from-right-4 space-y-6 duration-300 ${step !== 2 ? 'hidden' : ''}`}
+                            >
+                                <div className="space-y-4">
+                                    <h3 className="text-muted-foreground text-sm font-medium tracking-wider uppercase">
+                                        Library
+                                    </h3>
+                                    <SonarrSettings />
+                                    <RadarrSettings />
                                 </div>
-                            )}
+                                <Separator />
+                                <div className="space-y-4">
+                                    <h3 className="text-muted-foreground text-sm font-medium tracking-wider uppercase">
+                                        General
+                                    </h3>
+                                    <GeneralSettings />
+                                </div>
+                                <Separator />
+                                <div className="space-y-4">
+                                    <h3 className="text-muted-foreground text-sm font-medium tracking-wider uppercase">
+                                        History & Metadata
+                                    </h3>
+                                    <TraktSettings />
+                                    <MediaSettings />
+                                </div>
+                            </div>
 
                             <div className="flex justify-between pt-6">
                                 {step === 2 ? (
