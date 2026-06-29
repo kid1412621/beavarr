@@ -81,6 +81,7 @@ export class JellyfinService {
             const cleanUrl = url.replace(/\/$/, '');
             const response = await fetch(`${cleanUrl}/System/Info/Public`, {
                 headers: this.headers(apiKey),
+                signal: AbortSignal.timeout(5000),
             });
             return response.ok;
         } catch {
@@ -168,7 +169,7 @@ export class JellyfinService {
             year: item.ProductionYear || 0,
             poster_url: this.buildPosterUrl(item),
             tmdbId: item.ProviderIds?.Tmdb
-                ? parseInt(item.ProviderIds.Tmdb)
+                ? parseInt(item.ProviderIds.Tmdb, 10) || undefined
                 : undefined,
             jellyfinId: item.Id,
         }));
@@ -179,7 +180,7 @@ export class JellyfinService {
             year: item.ProductionYear || 0,
             poster_url: this.buildPosterUrl(item),
             tvdbId: item.ProviderIds?.Tvdb
-                ? parseInt(item.ProviderIds.Tvdb)
+                ? parseInt(item.ProviderIds.Tvdb, 10) || undefined
                 : undefined,
             jellyfinId: item.Id,
         }));
@@ -222,6 +223,37 @@ export class JellyfinService {
         const data = (await res.json()) as JellyfinItemsResponse;
         const items = data.Items || [];
 
+        // Bulk-fetch all unique series in one request to avoid N+1 fetches
+        const seriesIds = [
+            ...new Set(
+                items
+                    .filter((item) => item.Type === 'Episode' && item.SeriesId)
+                    .map((item) => item.SeriesId!),
+            ),
+        ];
+
+        const seriesMap = new Map<string, JellyfinMediaItem>();
+        if (seriesIds.length > 0) {
+            try {
+                const seriesParams = new URLSearchParams({
+                    Ids: seriesIds.join(','),
+                    Fields: 'ImageTags,ProviderIds,ProductionYear',
+                });
+                const seriesRes = await fetch(
+                    `${url}/Items?${seriesParams.toString()}`,
+                    { headers: this.headers(apiKey) },
+                );
+                if (seriesRes.ok) {
+                    const seriesData = (await seriesRes.json()) as JellyfinItemsResponse;
+                    for (const s of seriesData.Items || []) {
+                        seriesMap.set(s.Id, s);
+                    }
+                }
+            } catch (err) {
+                logger.error('Failed to bulk fetch series metadata: {err}', { err });
+            }
+        }
+
         const seenKeys = new Set<string>();
         const result: LibraryItem[] = [];
 
@@ -237,7 +269,7 @@ export class JellyfinService {
                     year: item.ProductionYear || 0,
                     poster_url: this.buildPosterUrl(item),
                     tmdbId: item.ProviderIds?.Tmdb
-                        ? parseInt(item.ProviderIds.Tmdb)
+                        ? parseInt(item.ProviderIds.Tmdb, 10) || undefined
                         : undefined,
                     jellyfinId: item.Id,
                 });
@@ -246,37 +278,27 @@ export class JellyfinService {
                 if (seenKeys.has(key)) continue;
                 seenKeys.add(key);
 
-                // Fetch series poster separately for a better thumbnail
-                try {
-                    const seriesRes = await fetch(
-                        `${url}/Items/${item.SeriesId}?Fields=ImageTags,ProviderIds,ProductionYear`,
-                        { headers: this.headers(apiKey) },
-                    );
-                    if (seriesRes.ok) {
-                        const series = (await seriesRes.json()) as JellyfinMediaItem;
-                        result.push({
-                            type: 'show',
-                            title: item.SeriesName,
-                            year: series.ProductionYear || 0,
-                            poster_url: this.buildPosterUrl(series),
-                            tvdbId: series.ProviderIds?.Tvdb
-                                ? parseInt(series.ProviderIds.Tvdb)
-                                : undefined,
-                            jellyfinId: item.SeriesId,
-                        });
-                        continue;
-                    }
-                } catch {
-                    // fall through to the minimal entry below
+                const seriesMeta = seriesMap.get(item.SeriesId);
+                if (seriesMeta) {
+                    result.push({
+                        type: 'show',
+                        title: item.SeriesName,
+                        year: seriesMeta.ProductionYear || 0,
+                        poster_url: this.buildPosterUrl(seriesMeta),
+                        tvdbId: seriesMeta.ProviderIds?.Tvdb
+                            ? parseInt(seriesMeta.ProviderIds.Tvdb, 10) || undefined
+                            : undefined,
+                        jellyfinId: item.SeriesId,
+                    });
+                } else {
+                    result.push({
+                        type: 'show',
+                        title: item.SeriesName,
+                        year: item.ProductionYear || 0,
+                        poster_url: null,
+                        jellyfinId: item.SeriesId,
+                    });
                 }
-
-                result.push({
-                    type: 'show',
-                    title: item.SeriesName,
-                    year: item.ProductionYear || 0,
-                    poster_url: null,
-                    jellyfinId: item.SeriesId,
-                });
             }
 
             if (result.length >= limit) break;

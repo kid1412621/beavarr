@@ -77,7 +77,9 @@ const jellyfinRoute = new Hono<Env>()
             const user = c.get('user');
             if (!user) return c.json({ error: 'Unauthorized' }, 401);
 
-            const limit = parseInt(c.req.query('limit') || '20');
+            const limitQuery = c.req.query('limit');
+            const parsedLimit = limitQuery ? parseInt(limitQuery, 10) : 20;
+            const limit = isNaN(parsedLimit) || parsedLimit <= 0 ? 20 : parsedLimit;
             const items = await jellyfinService.getHistory(user.id, limit);
             return c.json<LibraryItem[]>(items);
         } catch (error) {
@@ -109,8 +111,10 @@ const jellyfinRoute = new Hono<Env>()
             c.header('Content-Type', contentType);
             c.header('Cache-Control', 'public, max-age=86400');
 
-            const arrayBuffer = await response.arrayBuffer();
-            return c.body(arrayBuffer);
+            if (!response.body) {
+                return c.json({ error: 'Empty image body from Jellyfin' }, 502);
+            }
+            return c.body(response.body);
         } catch (error) {
             logger.error('Jellyfin image proxy error: {error}', { error });
             return c.json({ error: 'Failed to proxy Jellyfin image' }, 500);
