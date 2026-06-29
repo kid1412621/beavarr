@@ -137,30 +137,47 @@ export class JellyfinService {
     async getLibrary(userId: number): Promise<LibraryItem[]> {
         const { url, apiKey } = await this.getConfig(userId);
 
-        const fetchType = async (type: 'Movie' | 'Series'): Promise<JellyfinMediaItem[]> => {
-            const params = new URLSearchParams({
-                IncludeItemTypes: type,
-                Recursive: 'true',
-                Fields: 'ImageTags,ProviderIds,ProductionYear',
-                Limit: '1000',
-            });
-            const res = await fetch(`${url}/Items?${params.toString()}`, {
-                headers: this.headers(apiKey),
-            });
-            if (!res.ok) {
-                logger.error('Failed to fetch Jellyfin {type}: {status}', {
-                    type,
-                    status: res.statusText,
+        const PAGE_SIZE = 500;
+
+        // Fetches all items of a given type by paginating through the full library.
+        const fetchAllOfType = async (type: 'Movie' | 'Series'): Promise<JellyfinMediaItem[]> => {
+            const all: JellyfinMediaItem[] = [];
+            let startIndex = 0;
+
+            while (true) {
+                const params = new URLSearchParams({
+                    IncludeItemTypes: type,
+                    Recursive: 'true',
+                    Fields: 'ImageTags,ProviderIds,ProductionYear',
+                    Limit: String(PAGE_SIZE),
+                    StartIndex: String(startIndex),
                 });
-                return [];
+                const res = await fetch(`${url}/Items?${params.toString()}`, {
+                    headers: this.headers(apiKey),
+                });
+                if (!res.ok) {
+                    logger.error('Failed to fetch Jellyfin {type} page at {startIndex}: {status}', {
+                        type,
+                        startIndex,
+                        status: res.statusText,
+                    });
+                    break;
+                }
+                const data = (await res.json()) as JellyfinItemsResponse;
+                const page = data.Items || [];
+                all.push(...page);
+
+                // Stop when we've received all items
+                if (all.length >= data.TotalRecordCount || page.length < PAGE_SIZE) break;
+                startIndex += PAGE_SIZE;
             }
-            const data = (await res.json()) as JellyfinItemsResponse;
-            return data.Items || [];
+
+            return all;
         };
 
         const [movies, series] = await Promise.all([
-            fetchType('Movie'),
-            fetchType('Series'),
+            fetchAllOfType('Movie'),
+            fetchAllOfType('Series'),
         ]);
 
         const libraryMovies: LibraryItem[] = movies.map((item) => ({
