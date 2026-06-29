@@ -4,6 +4,7 @@ import { type SettingsForm } from 'shared';
 import { getOrCreateSettings, updateSettings } from '../db/repo/settings';
 import { type Env } from '../lib/auth';
 import { createLogger } from '../lib/logger';
+import { jellyfinService } from '../services/jellyfin';
 import { radarrService } from '../services/radarr';
 import { sonarrService } from '../services/sonarr';
 
@@ -44,7 +45,7 @@ const settingsRoute = new Hono<Env>()
     .post('/test-connection', async (c) => {
         try {
             const { type, url, apiKey } = await c.req.json<{
-                type: 'sonarr' | 'radarr';
+                type: 'sonarr' | 'radarr' | 'jellyfin';
                 url: string;
                 apiKey: string;
             }>();
@@ -54,6 +55,22 @@ const settingsRoute = new Hono<Env>()
                 success = await sonarrService.testConnection(url, apiKey);
             } else if (type === 'radarr') {
                 success = await radarrService.testConnection(url, apiKey);
+            } else if (type === 'jellyfin') {
+                success = await jellyfinService.testConnection(url, apiKey);
+            }
+
+            // If successful, also return server info for jellyfin
+            if (success && type === 'jellyfin') {
+                try {
+                    const info = await jellyfinService.getSystemInfo(url, apiKey);
+                    return c.json({
+                        success,
+                        serverName: info.ServerName,
+                        version: info.Version,
+                    });
+                } catch {
+                    // Return basic success if we can't get info
+                }
             }
 
             return c.json({ success });

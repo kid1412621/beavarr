@@ -17,7 +17,9 @@ export interface MediaSettingsForm {
     traktClientId?: string | null;
     traktClientSecret?: string | null;
     tmdbApiKey?: string | null;
-    posterSource?: 'history' | 'trending' | 'library' | '' | null;
+    jellyfinUrl?: string | null;
+    jellyfinApiKey?: string | null;
+    posterSource?: 'history' | 'trending' | 'library' | 'jellyfin' | '' | null;
 }
 
 export type SettingsForm = AiSettingsForm & MediaSettingsForm;
@@ -47,6 +49,7 @@ export interface LibraryItem {
     tvdbId?: number; // for shows
     sonarrId?: number;
     radarrId?: number;
+    jellyfinId?: string; // for Jellyfin-sourced items
 }
 
 // Trakt Types
@@ -75,6 +78,19 @@ export interface TraktStatusResponse {
     connected: boolean;
     hasValidToken: boolean;
     needsTokenRefresh: boolean;
+}
+
+// Jellyfin Types
+export interface JellyfinStatusResponse {
+    connected: boolean;
+    serverName?: string;
+    version?: string;
+}
+
+export interface JellyfinUserResponse {
+    id: string;
+    name: string;
+    serverId: string;
 }
 
 export interface TraktUserResponse {

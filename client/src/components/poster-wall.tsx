@@ -137,6 +137,10 @@ export function PosterWall() {
                 res = await client.api.trakt.trending.$get();
             } else if (source === 'library') {
                 res = await client.api.library.$get();
+            } else if (source === 'jellyfin') {
+                res = await client.api.jellyfin.history.$get({
+                    query: { limit: '100' },
+                });
             } else {
                 res = await client.api.trakt.history.$get({
                     query: { limit: '100' },

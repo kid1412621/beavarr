@@ -25,8 +25,13 @@ export const mediaSettingsSchema = z.object({
     traktClientId: z.string().nullable().optional(),
     traktClientSecret: z.string().nullable().optional(),
     tmdbApiKey: z.string().nullable().optional(),
+    jellyfinUrl: z
+        .union([z.url(), z.literal('')])
+        .nullable()
+        .optional(),
+    jellyfinApiKey: z.string().nullable().optional(),
     posterSource: z
-        .enum(['history', 'trending', 'library', ''])
+        .enum(['history', 'trending', 'library', 'jellyfin', ''])
         .nullable()
         .optional(),
 });

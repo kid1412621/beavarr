@@ -15,6 +15,8 @@ export const settings = sqliteTable('settings', {
         mode: 'timestamp',
     }),
     tmdbApiKey: text('tmdb_api_key'),
+    jellyfinUrl: text('jellyfin_url'),
+    jellyfinApiKey: text('jellyfin_api_key'),
     posterSource: text('poster_source'),
     openaiApiKey: text('openai_api_key'),
     openaiBaseUrl: text('openai_base_url'),

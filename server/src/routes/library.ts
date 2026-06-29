@@ -1,8 +1,10 @@
 import { Hono } from 'hono';
 import { type LibraryItem } from 'shared';
 
+import { getSettings } from '../db/repo/settings';
 import { type Env } from '../lib/auth';
 import { createLogger } from '../lib/logger';
+import { jellyfinService } from '../services/jellyfin';
 import { radarrService } from '../services/radarr';
 import { sonarrService } from '../services/sonarr';
 
@@ -16,9 +18,11 @@ const libraryRoute = new Hono<Env>().get('/', async (c) => {
             return c.json({ error: 'Unauthorized' }, 401);
         }
 
-        // Fetch validation
-        // We do this in parallel
-        const [movies, series] = await Promise.all([
+        const settings = await getSettings(user.id);
+        const hasJellyfin = !!(settings?.jellyfinUrl && settings?.jellyfinApiKey);
+
+        // Fetch all sources in parallel
+        const [movies, series, jellyfinItems] = await Promise.all([
             radarrService.getMovies(user.id).catch((e) => {
                 logger.error('Failed to fetch movies from Radarr: {e}', { e });
                 return [];
@@ -27,14 +31,21 @@ const libraryRoute = new Hono<Env>().get('/', async (c) => {
                 logger.error('Failed to fetch series from Sonarr: {e}', { e });
                 return [];
             }),
+            hasJellyfin
+                ? jellyfinService.getLibrary(user.id).catch((e) => {
+                      logger.error('Failed to fetch library from Jellyfin: {e}', { e });
+                      return [];
+                  })
+                : Promise.resolve([]),
         ]);
 
         logger.info('Library fetched', {
             movies: movies.length,
             series: series.length,
+            jellyfin: jellyfinItems.length,
         });
 
-        // Transform to unified format
+        // Transform Radarr movies to unified format
         const libraryMovies: LibraryItem[] = movies.map((m) => {
             let poster_url = null;
             if (m.images) {
@@ -53,6 +64,7 @@ const libraryRoute = new Hono<Env>().get('/', async (c) => {
             };
         });
 
+        // Transform Sonarr series to unified format
         const libraryShows: LibraryItem[] = series.map((s) => {
             let poster_url = null;
             if (s.images) {
@@ -71,13 +83,21 @@ const libraryRoute = new Hono<Env>().get('/', async (c) => {
             };
         });
 
-        // Combine and sort by added/year? Or just shuffle?
-        // User probably wants most recently added.
-        // Radarr has 'added', Sonarr has 'added'.
+        // Deduplicate Jellyfin items against Radarr/Sonarr by type+title+year
+        const existingKeys = new Set<string>([
+            ...libraryMovies.map((m) => `movie-${m.title.toLowerCase()}-${m.year}`),
+            ...libraryShows.map((s) => `show-${s.title.toLowerCase()}-${s.year}`),
+        ]);
 
-        const combined = [...libraryMovies, ...libraryShows].sort(
+        const uniqueJellyfinItems = jellyfinItems.filter((item) => {
+            const key = `${item.type}-${item.title.toLowerCase()}-${item.year}`;
+            return !existingKeys.has(key);
+        });
+
+        // Combine and shuffle for a randomized "Library Wall"
+        const combined = [...libraryMovies, ...libraryShows, ...uniqueJellyfinItems].sort(
             () => 0.5 - Math.random(),
-        ); // Shuffle for now as a "Library Wall"
+        );
 
         return c.json<LibraryItem[]>(combined);
     } catch (error) {

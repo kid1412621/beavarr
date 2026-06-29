@@ -2,6 +2,9 @@ import { ChatOpenAI } from '@langchain/openai';
 import { createAgent } from 'langchain';
 
 import {
+    createJellyfinHistoryTool,
+    createJellyfinLibraryTool,
+    createJellyfinSearchTool,
     createRadarrAddTool,
     createRadarrListTool,
     createRadarrSearchTool,
@@ -16,6 +19,7 @@ import {
 const SYSTEM_PROMPT = `You are a helpful media assistant named Beavarr.
     You can manage user's media library via Sonarr and Radarr.
     You can also recommend content via Trakt and TMDB.
+    You have access to the user's Jellyfin media server for library browsing, watch history, and searching local content.
     Always search before adding content.
     Use the tools provided.`;
 
@@ -53,6 +57,9 @@ export async function createMediaAgent({
         createTraktTrendingTool(userId),
         createTraktWatchlistTool(userId),
         createTmdbSearchTool(userId),
+        createJellyfinLibraryTool(userId),
+        createJellyfinHistoryTool(userId),
+        createJellyfinSearchTool(userId),
     ];
 
     const agent = createAgent({

@@ -19,6 +19,7 @@ export function GeneralSettings() {
     // Actually, rely on saved settings for availability check is safer/easier.
     const { data: settings } = useQuery(settingsQueryOptions);
     const hasTrakt = !!settings?.traktAccessToken;
+    const hasJellyfin = !!(settings?.jellyfinUrl && settings?.jellyfinApiKey);
 
     return (
         <Card>
@@ -82,12 +83,21 @@ export function GeneralSettings() {
                                                     ? 'Library (Sonarr/Radarr)'
                                                     : 'Library (Not Configured)'}
                                             </option>
+                                            <option
+                                                value="jellyfin"
+                                                disabled={!hasJellyfin}
+                                            >
+                                                {hasJellyfin
+                                                    ? 'History (Jellyfin)'
+                                                    : 'History (Jellyfin - Not Configured)'}
+                                            </option>
                                         </select>
                                         <p className="text-muted-foreground text-[0.8rem]">
                                             Choose what to display on the home
                                             page background wall.
                                             {!hasTrakt &&
                                                 !hasLibrary &&
+                                                !hasJellyfin &&
                                                 ' (Connect services to enable options)'}
                                         </p>
                                     </div>

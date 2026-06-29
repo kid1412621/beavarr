@@ -2,6 +2,7 @@ import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 
 import { createLogger } from '../lib/logger';
+import { jellyfinService } from '../services/jellyfin';
 import { radarrService } from '../services/radarr';
 import { sonarrService } from '../services/sonarr';
 import { tmdbService } from '../services/tmdb';
@@ -256,6 +257,97 @@ export const createRadarrListTool = (userId: number) =>
             } catch (error) {
                 logger.error('failed to call radarr list: {error}', { error });
                 return `Error listing Radarr movies: ${error}`;
+            }
+        },
+    });
+
+export const createJellyfinLibraryTool = (userId: number) =>
+    new DynamicStructuredTool({
+        name: 'jellyfin_library',
+        description:
+            'List movies and TV shows in the user\'s Jellyfin media server library.',
+        schema: z.object({
+            limit: z
+                .number()
+                .int()
+                .positive()
+                .optional()
+                .describe('Maximum number of items to return.'),
+        }),
+        func: async ({ limit }: { limit?: number }) => {
+            try {
+                const items = await jellyfinService.getLibrary(userId);
+                const mapped = items.map((i) => ({
+                    type: i.type,
+                    title: i.title,
+                    year: i.year,
+                    jellyfinId: i.jellyfinId,
+                    tmdbId: i.tmdbId,
+                    tvdbId: i.tvdbId,
+                }));
+                return JSON.stringify(
+                    limit !== undefined ? mapped.slice(0, limit) : mapped,
+                );
+            } catch (error) {
+                logger.error('failed to call jellyfin library: {error}', { error });
+                return `Error listing Jellyfin library: ${error}`;
+            }
+        },
+    });
+
+export const createJellyfinHistoryTool = (userId: number) =>
+    new DynamicStructuredTool({
+        name: 'jellyfin_history',
+        description:
+            "Get the user's recently played movies and TV shows from Jellyfin.",
+        schema: z.object({
+            limit: z
+                .number()
+                .int()
+                .positive()
+                .optional()
+                .default(20)
+                .describe('Number of recent items to return (default 20).'),
+        }),
+        func: async ({ limit }: { limit?: number }) => {
+            try {
+                const items = await jellyfinService.getHistory(userId, limit ?? 20);
+                return JSON.stringify(
+                    items.map((i) => ({
+                        type: i.type,
+                        title: i.title,
+                        year: i.year,
+                    })),
+                );
+            } catch (error) {
+                logger.error('failed to call jellyfin history: {error}', { error });
+                return `Error fetching Jellyfin history: ${error}`;
+            }
+        },
+    });
+
+export const createJellyfinSearchTool = (userId: number) =>
+    new DynamicStructuredTool({
+        name: 'jellyfin_search',
+        description:
+            'Search for movies or TV shows in the user\'s Jellyfin media server by title.',
+        schema: z.object({
+            query: z.string().describe('Title to search for'),
+        }),
+        func: async ({ query }: { query: string }) => {
+            try {
+                const results = await jellyfinService.searchMetadata(userId, query);
+                return JSON.stringify(
+                    results.slice(0, 10).map((r) => ({
+                        title: r.Name,
+                        type: r.Type,
+                        year: r.ProductionYear,
+                        jellyfinId: r.Id,
+                    })),
+                );
+            } catch (error) {
+                logger.error('failed to call jellyfin search: {error}', { error });
+                return `Error searching Jellyfin: ${error}`;
             }
         },
     });

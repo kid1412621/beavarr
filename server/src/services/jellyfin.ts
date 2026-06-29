@@ -1,0 +1,326 @@
+import type { LibraryItem } from 'shared/dist';
+
+import { getSettings } from '../db/repo/settings';
+import { createLogger } from '../lib/logger';
+
+const logger = createLogger('jellyfin');
+
+export interface JellyfinSystemInfo {
+    ServerName: string;
+    Version: string;
+    Id: string;
+    OperatingSystem: string;
+}
+
+export interface JellyfinUser {
+    Id: string;
+    Name: string;
+    ServerId: string;
+}
+
+interface JellyfinMediaItem {
+    Id: string;
+    Name: string;
+    Type: 'Movie' | 'Series' | 'Episode' | 'Season' | string;
+    ProductionYear?: number;
+    ImageTags?: {
+        Primary?: string;
+        [key: string]: string | undefined;
+    };
+    BackdropImageTags?: string[];
+    UserData?: {
+        LastPlayedDate?: string;
+        PlayCount?: number;
+        Played?: boolean;
+    };
+    ProviderIds?: {
+        Tmdb?: string;
+        Tvdb?: string;
+        Imdb?: string;
+        [key: string]: string | undefined;
+    };
+    SeriesId?: string;
+    SeriesName?: string;
+}
+
+interface JellyfinItemsResponse {
+    Items: JellyfinMediaItem[];
+    TotalRecordCount: number;
+}
+
+export class JellyfinService {
+    private authHeader(apiKey: string): string {
+        return `MediaBrowser Token="${apiKey}", Client="Beavarr", Device="Server", DeviceId="beavarr-server", Version="1.0"`;
+    }
+
+    private headers(apiKey: string): Record<string, string> {
+        return {
+            'X-Emby-Authorization': this.authHeader(apiKey),
+            'Content-Type': 'application/json',
+        };
+    }
+
+    private async getConfig(userId: number): Promise<{
+        url: string;
+        apiKey: string;
+    }> {
+        const settings = await getSettings(userId);
+        if (!settings?.jellyfinUrl || !settings?.jellyfinApiKey) {
+            throw new Error(
+                'Jellyfin is not configured. Please set URL and API key in settings.',
+            );
+        }
+        return {
+            url: settings.jellyfinUrl.replace(/\/$/, ''),
+            apiKey: settings.jellyfinApiKey,
+        };
+    }
+
+    async testConnection(url: string, apiKey: string): Promise<boolean> {
+        try {
+            const cleanUrl = url.replace(/\/$/, '');
+            const response = await fetch(`${cleanUrl}/System/Info/Public`, {
+                headers: this.headers(apiKey),
+            });
+            return response.ok;
+        } catch {
+            return false;
+        }
+    }
+
+    async getSystemInfo(url: string, apiKey: string): Promise<JellyfinSystemInfo> {
+        const cleanUrl = url.replace(/\/$/, '');
+        const response = await fetch(`${cleanUrl}/System/Info`, {
+            headers: this.headers(apiKey),
+        });
+        if (!response.ok) {
+            throw new Error(`Failed to get Jellyfin system info: ${response.statusText}`);
+        }
+        return (await response.json()) as JellyfinSystemInfo;
+    }
+
+    async getCurrentUser(userId: number): Promise<JellyfinUser> {
+        const { url, apiKey } = await this.getConfig(userId);
+
+        // API keys are server-level credentials with no user session,
+        // so /Users/Me is unavailable. /Users lists all server users instead.
+        const response = await fetch(`${url}/Users`, {
+            headers: this.headers(apiKey),
+        });
+        if (!response.ok) {
+            throw new Error(`Failed to get Jellyfin users: ${response.statusText}`);
+        }
+        const users = (await response.json()) as Array<{
+            Id: string;
+            Name: string;
+            ServerId: string;
+            Policy?: { IsAdministrator?: boolean };
+        }>;
+        if (!users.length) {
+            throw new Error('No users found on Jellyfin server');
+        }
+        // Prefer the first admin; fall back to whoever is first in the list
+        const admin = users.find((u) => u.Policy?.IsAdministrator) ?? users[0]!;
+        return { Id: admin.Id, Name: admin.Name, ServerId: admin.ServerId };
+    }
+
+    /**
+     * Build a poster URL for a Jellyfin item, routed through our proxy.
+     * Returns null if no Primary image tag is available.
+     */
+    private buildPosterUrl(item: JellyfinMediaItem): string | null {
+        if (!item.ImageTags?.Primary) return null;
+        return `/api/jellyfin/image?itemId=${item.Id}&tag=${item.ImageTags.Primary}`;
+    }
+
+    async getLibrary(userId: number): Promise<LibraryItem[]> {
+        const { url, apiKey } = await this.getConfig(userId);
+
+        const fetchType = async (type: 'Movie' | 'Series'): Promise<JellyfinMediaItem[]> => {
+            const params = new URLSearchParams({
+                IncludeItemTypes: type,
+                Recursive: 'true',
+                Fields: 'ImageTags,ProviderIds,ProductionYear',
+                Limit: '1000',
+            });
+            const res = await fetch(`${url}/Items?${params.toString()}`, {
+                headers: this.headers(apiKey),
+            });
+            if (!res.ok) {
+                logger.error('Failed to fetch Jellyfin {type}: {status}', {
+                    type,
+                    status: res.statusText,
+                });
+                return [];
+            }
+            const data = (await res.json()) as JellyfinItemsResponse;
+            return data.Items || [];
+        };
+
+        const [movies, series] = await Promise.all([
+            fetchType('Movie'),
+            fetchType('Series'),
+        ]);
+
+        const libraryMovies: LibraryItem[] = movies.map((item) => ({
+            type: 'movie' as const,
+            title: item.Name,
+            year: item.ProductionYear || 0,
+            poster_url: this.buildPosterUrl(item),
+            tmdbId: item.ProviderIds?.Tmdb
+                ? parseInt(item.ProviderIds.Tmdb)
+                : undefined,
+            jellyfinId: item.Id,
+        }));
+
+        const libraryShows: LibraryItem[] = series.map((item) => ({
+            type: 'show' as const,
+            title: item.Name,
+            year: item.ProductionYear || 0,
+            poster_url: this.buildPosterUrl(item),
+            tvdbId: item.ProviderIds?.Tvdb
+                ? parseInt(item.ProviderIds.Tvdb)
+                : undefined,
+            jellyfinId: item.Id,
+        }));
+
+        return [...libraryMovies, ...libraryShows];
+    }
+
+    async getHistory(userId: number, limit: number = 20): Promise<LibraryItem[]> {
+        const { url, apiKey } = await this.getConfig(userId);
+
+        // Resolve the Jellyfin user ID for user-scoped endpoints
+        let jellyfinUserId: string;
+        try {
+            const user = await this.getCurrentUser(userId);
+            jellyfinUserId = user.Id;
+        } catch (err) {
+            logger.error('Failed to get Jellyfin user for history: {err}', { err });
+            throw err;
+        }
+
+        const params = new URLSearchParams({
+            IncludeItemTypes: 'Movie,Episode',
+            Recursive: 'true',
+            Fields: 'ImageTags,ProviderIds,ProductionYear,SeriesName,SeriesId,UserData',
+            Filters: 'IsPlayed',
+            SortBy: 'DatePlayed',
+            SortOrder: 'Descending',
+            Limit: String(limit * 10), // over-fetch to deduplicate shows
+        });
+
+        const res = await fetch(
+            `${url}/Users/${jellyfinUserId}/Items?${params.toString()}`,
+            { headers: this.headers(apiKey) },
+        );
+
+        if (!res.ok) {
+            throw new Error(`Failed to fetch Jellyfin history: ${res.statusText}`);
+        }
+
+        const data = (await res.json()) as JellyfinItemsResponse;
+        const items = data.Items || [];
+
+        const seenKeys = new Set<string>();
+        const result: LibraryItem[] = [];
+
+        for (const item of items) {
+            if (item.Type === 'Movie') {
+                const key = `movie-${item.Id}`;
+                if (seenKeys.has(key)) continue;
+                seenKeys.add(key);
+
+                result.push({
+                    type: 'movie',
+                    title: item.Name,
+                    year: item.ProductionYear || 0,
+                    poster_url: this.buildPosterUrl(item),
+                    tmdbId: item.ProviderIds?.Tmdb
+                        ? parseInt(item.ProviderIds.Tmdb)
+                        : undefined,
+                    jellyfinId: item.Id,
+                });
+            } else if (item.Type === 'Episode' && item.SeriesId && item.SeriesName) {
+                const key = `show-${item.SeriesId}`;
+                if (seenKeys.has(key)) continue;
+                seenKeys.add(key);
+
+                // Fetch series poster separately for a better thumbnail
+                try {
+                    const seriesRes = await fetch(
+                        `${url}/Items/${item.SeriesId}?Fields=ImageTags,ProviderIds,ProductionYear`,
+                        { headers: this.headers(apiKey) },
+                    );
+                    if (seriesRes.ok) {
+                        const series = (await seriesRes.json()) as JellyfinMediaItem;
+                        result.push({
+                            type: 'show',
+                            title: item.SeriesName,
+                            year: series.ProductionYear || 0,
+                            poster_url: this.buildPosterUrl(series),
+                            tvdbId: series.ProviderIds?.Tvdb
+                                ? parseInt(series.ProviderIds.Tvdb)
+                                : undefined,
+                            jellyfinId: item.SeriesId,
+                        });
+                        continue;
+                    }
+                } catch {
+                    // fall through to the minimal entry below
+                }
+
+                result.push({
+                    type: 'show',
+                    title: item.SeriesName,
+                    year: item.ProductionYear || 0,
+                    poster_url: null,
+                    jellyfinId: item.SeriesId,
+                });
+            }
+
+            if (result.length >= limit) break;
+        }
+
+        return result.slice(0, limit);
+    }
+
+    async searchMetadata(userId: number, query: string): Promise<JellyfinMediaItem[]> {
+        const { url, apiKey } = await this.getConfig(userId);
+        const params = new URLSearchParams({
+            SearchTerm: query,
+            IncludeItemTypes: 'Movie,Series',
+            Recursive: 'true',
+            Fields: 'ImageTags,ProviderIds,ProductionYear',
+            Limit: '10',
+        });
+
+        const res = await fetch(`${url}/Items?${params.toString()}`, {
+            headers: this.headers(apiKey),
+        });
+
+        if (!res.ok) {
+            throw new Error(`Failed to search Jellyfin: ${res.statusText}`);
+        }
+
+        const data = (await res.json()) as JellyfinItemsResponse;
+        return data.Items || [];
+    }
+
+    /**
+     * Proxy a poster image from Jellyfin by item ID.
+     * Returns the raw Response so the route can stream it through.
+     */
+    async fetchImage(userId: number, itemId: string, tag?: string): Promise<Response> {
+        const { url, apiKey } = await this.getConfig(userId);
+        const params = new URLSearchParams({ quality: '90' });
+        if (tag) params.set('tag', tag);
+
+        return fetch(
+            `${url}/Items/${itemId}/Images/Primary?${params.toString()}`,
+            { headers: this.headers(apiKey) },
+        );
+    }
+}
+
+export const jellyfinService = new JellyfinService();

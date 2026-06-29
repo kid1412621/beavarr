@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 
 import { AiSettings } from '@/components/settings/ai-settings';
 import { GeneralSettings } from '@/components/settings/general-settings';
+import { JellyfinSettings } from '@/components/settings/jellyfin-settings';
 import { MediaSettings } from '@/components/settings/media-settings';
 import { RadarrSettings } from '@/components/settings/radarr-settings';
 import { SonarrSettings } from '@/components/settings/sonarr-settings';
@@ -72,6 +73,8 @@ function InnerForm({
             traktClientId: initialValues?.traktClientId || '',
             traktClientSecret: initialValues?.traktClientSecret || '',
             tmdbApiKey: initialValues?.tmdbApiKey || '',
+            jellyfinUrl: initialValues?.jellyfinUrl || '',
+            jellyfinApiKey: initialValues?.jellyfinApiKey || '',
             openaiApiKey: initialValues?.openaiApiKey || '',
             openaiBaseUrl: initialValues?.openaiBaseUrl || '',
             openaiModel: initialValues?.openaiModel || '',
@@ -178,6 +181,20 @@ function InnerForm({
                                         </CardHeader>
                                         <CardContent>
                                             <TraktSettings />
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Jellyfin</CardTitle>
+                                            <CardDescription>
+                                                Connect your self-hosted
+                                                Jellyfin media server for
+                                                library, history, and metadata.
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <JellyfinSettings />
                                         </CardContent>
                                     </Card>
 

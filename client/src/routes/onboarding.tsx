@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 import { AiSettings } from '@/components/settings/ai-settings';
 import { GeneralSettings } from '@/components/settings/general-settings';
+import { JellyfinSettings } from '@/components/settings/jellyfin-settings';
 import { MediaSettings } from '@/components/settings/media-settings';
 import { RadarrSettings } from '@/components/settings/radarr-settings';
 import { SonarrSettings } from '@/components/settings/sonarr-settings';
@@ -81,6 +82,8 @@ function InnerForm({
             traktClientId: initialValues?.traktClientId || '',
             traktClientSecret: initialValues?.traktClientSecret || '',
             tmdbApiKey: initialValues?.tmdbApiKey || '',
+            jellyfinUrl: initialValues?.jellyfinUrl || '',
+            jellyfinApiKey: initialValues?.jellyfinApiKey || '',
             openaiApiKey: initialValues?.openaiApiKey || '',
             openaiBaseUrl: initialValues?.openaiBaseUrl || '',
             openaiModel: initialValues?.openaiModel || '',
@@ -187,6 +190,9 @@ function InnerForm({
                                         History & Metadata
                                     </h3>
                                     <TraktSettings />
+                                    <Separator />
+                                    <JellyfinSettings />
+                                    <Separator />
                                     <MediaSettings />
                                 </div>
                             </div>
