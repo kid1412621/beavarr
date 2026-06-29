@@ -79,7 +79,7 @@ const jellyfinRoute = new Hono<Env>()
 
             const limitQuery = c.req.query('limit');
             const parsedLimit = limitQuery ? parseInt(limitQuery, 10) : 20;
-            const limit = isNaN(parsedLimit) || parsedLimit <= 0 ? 20 : parsedLimit;
+            const limit = isNaN(parsedLimit) || parsedLimit <= 0 ? 20 : Math.min(parsedLimit, 100);
             const items = await jellyfinService.getHistory(user.id, limit);
             return c.json<LibraryItem[]>(items);
         } catch (error) {
@@ -93,8 +93,8 @@ const jellyfinRoute = new Hono<Env>()
         const itemId = c.req.query('itemId');
         const tag = c.req.query('tag');
 
-        if (!itemId) {
-            return c.json({ error: 'Missing itemId parameter' }, 400);
+        if (!itemId || !/^[a-f0-9-]+$/i.test(itemId)) {
+            return c.json({ error: 'Invalid or missing itemId parameter' }, 400);
         }
 
         const user = c.get('user');

@@ -165,7 +165,7 @@ export class JellyfinService {
 
         const libraryMovies: LibraryItem[] = movies.map((item) => ({
             type: 'movie' as const,
-            title: item.Name,
+            title: item.Name || 'Unknown Movie',
             year: item.ProductionYear || 0,
             poster_url: this.buildPosterUrl(item),
             tmdbId: item.ProviderIds?.Tmdb
@@ -176,7 +176,7 @@ export class JellyfinService {
 
         const libraryShows: LibraryItem[] = series.map((item) => ({
             type: 'show' as const,
-            title: item.Name,
+            title: item.Name || 'Unknown Show',
             year: item.ProductionYear || 0,
             poster_url: this.buildPosterUrl(item),
             tvdbId: item.ProviderIds?.Tvdb
@@ -265,7 +265,7 @@ export class JellyfinService {
 
                 result.push({
                     type: 'movie',
-                    title: item.Name,
+                    title: item.Name || 'Unknown Movie',
                     year: item.ProductionYear || 0,
                     poster_url: this.buildPosterUrl(item),
                     tmdbId: item.ProviderIds?.Tmdb
