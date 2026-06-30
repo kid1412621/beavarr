@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { type SettingsForm } from 'shared';
+import { type ServiceStatusResponse, type SettingsForm } from 'shared';
 
 import { getOrCreateSettings, updateSettings } from '../db/repo/settings';
 import { type Env } from '../lib/auth';
@@ -42,6 +42,45 @@ const settingsRoute = new Hono<Env>()
             return c.json({ error: 'Failed to update settings' }, 500);
         }
     })
+    .get('/status', async (c) => {
+        try {
+            const user = c.get('user');
+            if (!user) return c.json({ error: 'Unauthorized' }, 401);
+
+            const service = c.req.query('service') as 'sonarr' | 'radarr' | undefined;
+            if (service !== 'sonarr' && service !== 'radarr') {
+                return c.json({ error: 'Invalid service. Use ?service=sonarr or ?service=radarr' }, 400);
+            }
+
+            const settings = await getOrCreateSettings(user.id);
+
+            if (service === 'sonarr') {
+                if (!settings?.sonarrUrl || !settings?.sonarrApiKey) {
+                    return c.json<ServiceStatusResponse>({ connected: false });
+                }
+                try {
+                    const result = await sonarrService.testConnection(settings.sonarrUrl, settings.sonarrApiKey);
+                    return c.json<ServiceStatusResponse>(result);
+                } catch {
+                    return c.json<ServiceStatusResponse>({ connected: false });
+                }
+            }
+
+            // radarr
+            if (!settings?.radarrUrl || !settings?.radarrApiKey) {
+                return c.json<ServiceStatusResponse>({ connected: false });
+            }
+            try {
+                const result = await radarrService.testConnection(settings.radarrUrl, settings.radarrApiKey);
+                return c.json<ServiceStatusResponse>(result);
+            } catch {
+                return c.json<ServiceStatusResponse>({ connected: false });
+            }
+        } catch (error) {
+            logger.error('Error checking service status: {error}', { error });
+            return c.json({ error: 'Failed to check service status' }, 500);
+        }
+    })
     .post('/test-connection', async (c) => {
         try {
             const { type, url, apiKey } = await c.req.json<{
@@ -50,30 +89,30 @@ const settingsRoute = new Hono<Env>()
                 apiKey: string;
             }>();
 
-            let success = false;
+            let result: { connected: boolean; version?: string } = { connected: false };
             if (type === 'sonarr') {
-                success = await sonarrService.testConnection(url, apiKey);
+                result = await sonarrService.testConnection(url, apiKey);
             } else if (type === 'radarr') {
-                success = await radarrService.testConnection(url, apiKey);
+                result = await radarrService.testConnection(url, apiKey);
             } else if (type === 'jellyfin') {
-                success = await jellyfinService.testConnection(url, apiKey);
+                result.connected = await jellyfinService.testConnection(url, apiKey);
             }
 
-            // If successful, also return server info for jellyfin
-            if (success && type === 'jellyfin') {
+            // Also return server name/version where available
+            if (result.connected && type === 'jellyfin') {
                 try {
                     const info = await jellyfinService.getSystemInfo(url, apiKey);
                     return c.json({
-                        success,
+                        success: true,
                         serverName: info.ServerName,
                         version: info.Version,
                     });
                 } catch {
-                    // Return basic success if we can't get info
+                    // Fall through to basic success
                 }
             }
 
-            return c.json({ success });
+            return c.json({ success: result.connected, version: result.version });
         } catch (error) {
             logger.error('Error testing connection: {error}', { error });
             return c.json({ success: false, error: 'Connection test failed' });

@@ -1,4 +1,3 @@
-import { useQueryClient } from '@tanstack/react-query';
 import {
     CheckCircle2,
     XCircle,
@@ -6,12 +5,10 @@ import {
     Clipboard,
     ExternalLink,
 } from 'lucide-react';
-import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { client } from '@/lib/api';
 import { useAppFormContext } from '@/lib/form';
 import { type SettingsForm } from '@/lib/types';
 
@@ -32,6 +29,7 @@ interface ConnectableHeaderProps {
     onConnect?: () => void;
     disabled?: boolean;
     serviceName?: string;
+    version?: string;
     action?: React.ReactNode;
     children?: React.ReactNode;
 }
@@ -42,6 +40,7 @@ export function ConnectableHeader({
     onConnect,
     disabled,
     serviceName,
+    version,
     action,
     children,
 }: ConnectableHeaderProps) {
@@ -53,6 +52,11 @@ export function ConnectableHeader({
                     {status === 'success' && (
                         <span className="flex items-center gap-1 text-xs text-green-500">
                             <CheckCircle2 className="h-3 w-3" /> Connected
+                            {version && (
+                                <span className="text-muted-foreground ml-1">
+                                    v{version}
+                                </span>
+                            )}
                         </span>
                     )}
                     {status === 'failed' && (
@@ -66,7 +70,7 @@ export function ConnectableHeader({
             {action || (
                 <Button
                     type="button"
-                    variant="default"
+                    variant={status === 'success' ? 'outline' : 'default'}
                     size="sm"
                     onClick={onConnect}
                     disabled={status === 'testing' || disabled}
@@ -76,6 +80,8 @@ export function ConnectableHeader({
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             Connecting...
                         </>
+                    ) : status === 'success' ? (
+                        'Test Connection'
                     ) : (
                         `Connect ${serviceName || title}`
                     )}
@@ -179,51 +185,3 @@ export function ConnectableFields({
     );
 }
 
-export type ConnectableStatus = 'idle' | 'testing' | 'success' | 'failed';
-
-export function useConnectableTest(
-    serviceType: 'sonarr' | 'radarr',
-    urlName: keyof SettingsForm,
-    apiKeyName: keyof SettingsForm,
-) {
-    const form = useAppFormContext<SettingsForm>();
-    const [status, setStatus] = useState<ConnectableStatus>('idle');
-
-    const queryClient = useQueryClient();
-
-    const testConnection = async () => {
-        const url = form.getFieldValue(urlName);
-        const apiKey = form.getFieldValue(apiKeyName);
-        if (!url || !apiKey) return;
-
-        setStatus('testing');
-        try {
-            const res = await client.api.settings['test-connection'].$post({
-                json: { type: serviceType, url, apiKey },
-            });
-            const data = await res.json();
-            if (data.success) {
-                setStatus('success');
-                // Auto-save only the relevant fields
-                try {
-                    await client.api.settings.$post({
-                        json: {
-                            [urlName]: url,
-                            [apiKeyName]: apiKey,
-                        } as any,
-                    });
-                    queryClient.invalidateQueries({ queryKey: ['settings'] });
-                } catch (saveErr) {
-                    console.error('Failed to auto-save settings:', saveErr);
-                }
-            } else {
-                setStatus('failed');
-            }
-        } catch (err) {
-            console.error('Failed to test connection:', err);
-            setStatus('failed');
-        }
-    };
-
-    return { status, setStatus, testConnection };
-}

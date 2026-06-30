@@ -126,15 +126,17 @@ export class SonarrService {
         url: string,
         apiKey: string,
         timeoutMs = config.arrConnectionTimeoutMs,
-    ) {
+    ): Promise<{ connected: boolean; version?: string }> {
         try {
             const response = await fetch(`${url}/api/v3/system/status`, {
                 headers: { 'X-Api-Key': apiKey },
                 signal: AbortSignal.timeout(timeoutMs),
             });
-            return response.ok;
+            if (!response.ok) return { connected: false };
+            const data = (await response.json()) as { version?: string };
+            return { connected: true, version: data.version };
         } catch {
-            return false;
+            return { connected: false };
         }
     }
 }

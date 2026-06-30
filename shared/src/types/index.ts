@@ -102,3 +102,8 @@ export interface TraktUserResponse {
     avatar?: string | null;
     joined?: string;
 }
+
+export interface ServiceStatusResponse {
+    connected: boolean;
+    version?: string;
+}
