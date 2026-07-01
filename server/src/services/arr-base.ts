@@ -25,6 +25,7 @@ export abstract class ArrBaseService {
         const { url, key } = await this.getBaseUrl(userId);
         const response = await fetch(`${url}/api/v3/system/status`, {
             headers: { 'X-Api-Key': key },
+            signal: AbortSignal.timeout(config.arrConnectionTimeoutMs),
         });
         if (!response.ok) {
             const errorText = await response.text();
