@@ -1,5 +1,10 @@
 import { Hono } from 'hono';
-import { type ServiceStatusResponse, type SettingsForm } from 'shared';
+import {
+    CONNECTABLE_SERVICES,
+    type ConnectableService,
+    type ServiceStatusResponse,
+    type SettingsForm,
+} from 'shared';
 
 import { getOrCreateSettings, updateSettings } from '../db/repo/settings';
 import { type Env } from '../lib/auth';
@@ -47,7 +52,7 @@ const settingsRoute = new Hono<Env>()
             const user = c.get('user');
             if (!user) return c.json({ error: 'Unauthorized' }, 401);
 
-            const service = c.req.query('service') as 'sonarr' | 'radarr' | undefined;
+            const service = c.req.query('service');
             if (service !== 'sonarr' && service !== 'radarr') {
                 return c.json({ error: 'Invalid service. Use ?service=sonarr or ?service=radarr' }, 400);
             }
@@ -84,10 +89,14 @@ const settingsRoute = new Hono<Env>()
     .post('/test-connection', async (c) => {
         try {
             const { type, url, apiKey } = await c.req.json<{
-                type: 'sonarr' | 'radarr' | 'jellyfin';
+                type: ConnectableService;
                 url: string;
                 apiKey: string;
             }>();
+
+            if (!CONNECTABLE_SERVICES.includes(type)) {
+                return c.json({ success: false, error: 'Invalid service type' }, 400);
+            }
 
             let result: { connected: boolean; version?: string } = { connected: false };
             if (type === 'sonarr') {

@@ -107,3 +107,6 @@ export interface ServiceStatusResponse {
     connected: boolean;
     version?: string;
 }
+
+export const CONNECTABLE_SERVICES = ['sonarr', 'radarr', 'jellyfin'] as const;
+export type ConnectableService = typeof CONNECTABLE_SERVICES[number];

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { client } from '@/lib/api';
 import { useAppFormContext } from '@/lib/form';
-import { type SettingsForm } from '@/lib/types';
+import { type ConnectableService, type SettingsForm } from '@/lib/types';
 
 export type ConnectionStatus = 'idle' | 'testing' | 'success' | 'failed';
 
@@ -14,7 +14,7 @@ export interface ConnectionMeta {
 }
 
 interface UseConnectionTestOptions {
-    serviceType: 'sonarr' | 'radarr' | 'jellyfin';
+    serviceType: ConnectableService;
     urlName: keyof SettingsForm;
     apiKeyName: keyof SettingsForm;
     invalidateKeys?: string[][];
