@@ -17,7 +17,8 @@ export abstract class ArrBaseService {
         if (!url || !apiKey) {
             throw new Error(`${this.serviceName} is not configured`);
         }
-        return { url, key: apiKey };
+        const normalizedUrl = url.endsWith('/') ? url.slice(0, -1) : url;
+        return { url: normalizedUrl, key: apiKey };
     }
 
     async getSystemStatus(userId: number) {
