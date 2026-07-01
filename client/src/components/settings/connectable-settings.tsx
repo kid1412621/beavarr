@@ -45,9 +45,9 @@ export function ConnectableHeader({
     children,
 }: ConnectableHeaderProps) {
     return (
-        <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <div className="flex flex-wrap items-center gap-2">
                     <h3 className="text-lg font-medium">{title}</h3>
                     {status === 'success' && (
                         <span className="flex items-center gap-1 text-xs text-green-500">
@@ -67,26 +67,29 @@ export function ConnectableHeader({
                 </div>
                 {children}
             </div>
-            {action || (
-                <Button
-                    type="button"
-                    variant={status === 'success' ? 'outline' : 'default'}
-                    size="sm"
-                    onClick={onConnect}
-                    disabled={status === 'testing' || disabled}
-                >
-                    {status === 'testing' ? (
-                        <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Connecting...
-                        </>
-                    ) : status === 'success' ? (
-                        'Test Connection'
-                    ) : (
-                        `Connect ${serviceName || title}`
-                    )}
-                </Button>
-            )}
+            <div className="flex w-full justify-start sm:w-auto sm:justify-end">
+                {action || (
+                    <Button
+                        type="button"
+                        variant={status === 'success' ? 'outline' : 'default'}
+                        size="sm"
+                        onClick={onConnect}
+                        disabled={status === 'testing' || disabled}
+                        className="w-full sm:w-auto"
+                    >
+                        {status === 'testing' ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Connecting...
+                            </>
+                        ) : status === 'success' ? (
+                            'Test Connection'
+                        ) : (
+                            `Connect ${serviceName || title}`
+                        )}
+                    </Button>
+                )}
+            </div>
         </div>
     );
 }
@@ -111,7 +114,7 @@ export function ConnectableFields({
     const form = useAppFormContext<SettingsForm>();
 
     return (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <form.AppField
                 name={urlName}
                 children={(field) => (
@@ -128,6 +131,7 @@ export function ConnectableFields({
                                     onResetStatus?.();
                                 }}
                                 placeholder={urlPlaceholder}
+                                className="pr-10"
                             />
                             {field.state.value && apiKeyHelperUrl && (
                                 <a
@@ -168,6 +172,7 @@ export function ConnectableFields({
                                     field.handleChange(e.target.value);
                                     onResetStatus?.();
                                 }}
+                                className="pr-10"
                             />
                             <button
                                 type="button"
@@ -184,4 +189,3 @@ export function ConnectableFields({
         </div>
     );
 }
-

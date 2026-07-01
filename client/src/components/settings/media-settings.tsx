@@ -35,6 +35,7 @@ export function MediaSettings() {
                                 onChange={(e) =>
                                     field.handleChange(e.target.value)
                                 }
+                                className="pr-10"
                             />
                             <button
                                 type="button"

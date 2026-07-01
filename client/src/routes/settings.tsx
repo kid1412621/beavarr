@@ -1,5 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
+import {
+    Sliders,
+    Sparkles,
+    Database,
+    Tv,
+    History,
+    Server,
+    Globe,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 import { AiSettings } from '@/components/settings/ai-settings';
@@ -91,13 +100,13 @@ function InnerForm({
     return (
         <div className="mx-auto max-w-4xl">
             <Card className="border-none bg-transparent shadow-none">
-                <CardHeader className="px-8">
+                <CardHeader className="px-4 sm:px-8">
                     <CardTitle className="text-2xl">Settings</CardTitle>
                     <CardDescription>
                         Configure your specific services.
                     </CardDescription>
                 </CardHeader>
-                <CardContent className="px-8">
+                <CardContent className="px-4 sm:px-8">
                     <form.AppForm>
                         <form
                             onSubmit={(e) => {
@@ -109,14 +118,32 @@ function InnerForm({
                         >
                             <Tabs defaultValue="general" className="w-full">
                                 <TabsList className="grid w-full grid-cols-3">
-                                    <TabsTrigger value="general">
-                                        General
+                                    <TabsTrigger
+                                        value="general"
+                                        className="flex items-center gap-2"
+                                    >
+                                        <Sliders className="h-4 w-4" />
+                                        <span>General</span>
                                     </TabsTrigger>
-                                    <TabsTrigger value="ai">
-                                        AI Settings
+                                    <TabsTrigger
+                                        value="ai"
+                                        className="flex items-center gap-2"
+                                    >
+                                        <Sparkles className="h-4 w-4" />
+                                        <span className="hidden sm:inline">
+                                            AI Settings
+                                        </span>
+                                        <span className="sm:hidden">AI</span>
                                     </TabsTrigger>
-                                    <TabsTrigger value="media">
-                                        Media Services
+                                    <TabsTrigger
+                                        value="media"
+                                        className="flex items-center gap-2"
+                                    >
+                                        <Database className="h-4 w-4" />
+                                        <span className="hidden sm:inline">
+                                            Media Services
+                                        </span>
+                                        <span className="sm:hidden">Media</span>
                                     </TabsTrigger>
                                 </TabsList>
 
@@ -156,12 +183,36 @@ function InnerForm({
                                 >
                                     <Card>
                                         <CardHeader>
-                                            <CardTitle>
-                                                Library Management
+                                            <CardTitle className="flex items-center gap-2">
+                                                <Server className="text-primary h-5 w-5" />
+                                                <span>Media Servers</span>
+                                            </CardTitle>
+                                            <CardDescription>
+                                                Connect your self-hosted
+                                                Jellyfin media server to sync
+                                                your library, watch history, and
+                                                metadata.
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <JellyfinSettings />
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <Tv className="text-primary h-5 w-5" />
+                                                <span>
+                                                    Library Managers &
+                                                    Automation
+                                                </span>
                                             </CardTitle>
                                             <CardDescription>
                                                 Connect to your Sonarr and
-                                                Radarr instances.
+                                                Radarr instances to index and
+                                                manage television series and
+                                                movies.
                                             </CardDescription>
                                         </CardHeader>
                                         <CardContent className="space-y-4">
@@ -173,9 +224,15 @@ function InnerForm({
 
                                     <Card>
                                         <CardHeader>
-                                            <CardTitle>Watch History</CardTitle>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <History className="text-primary h-5 w-5" />
+                                                <span>
+                                                    Watch History & Sync
+                                                </span>
+                                            </CardTitle>
                                             <CardDescription>
-                                                Sync your watch history with
+                                                Sync your watch history and
+                                                discover popular content with
                                                 Trakt.
                                             </CardDescription>
                                         </CardHeader>
@@ -186,21 +243,10 @@ function InnerForm({
 
                                     <Card>
                                         <CardHeader>
-                                            <CardTitle>Jellyfin</CardTitle>
-                                            <CardDescription>
-                                                Connect your self-hosted
-                                                Jellyfin media server for
-                                                library, history, and metadata.
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <JellyfinSettings />
-                                        </CardContent>
-                                    </Card>
-
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle>Metadata</CardTitle>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <Globe className="text-primary h-5 w-5" />
+                                                <span>Metadata Services</span>
+                                            </CardTitle>
                                             <CardDescription>
                                                 Configure metadata providers
                                                 like TMDB.
@@ -213,8 +259,12 @@ function InnerForm({
                                 </TabsContent>
                             </Tabs>
 
-                            <div className="flex flex-col items-end gap-2 pt-4">
-                                <Button type="submit" disabled={isSaving}>
+                            <div className="flex w-full flex-col items-end gap-2 pt-4">
+                                <Button
+                                    type="submit"
+                                    disabled={isSaving}
+                                    className="w-full sm:w-auto"
+                                >
                                     {isSaving ? 'Saving...' : 'Save Settings'}
                                 </Button>
                                 <form.Subscribe

@@ -19,7 +19,9 @@ const libraryRoute = new Hono<Env>().get('/', async (c) => {
         }
 
         const settings = await getSettings(user.id);
-        const hasJellyfin = !!(settings?.jellyfinUrl && settings?.jellyfinApiKey);
+        const hasJellyfin = !!(
+            settings?.jellyfinUrl && settings?.jellyfinApiKey
+        );
 
         // Fetch all sources in parallel
         const [movies, series, jellyfinItems] = await Promise.all([
@@ -33,7 +35,10 @@ const libraryRoute = new Hono<Env>().get('/', async (c) => {
             }),
             hasJellyfin
                 ? jellyfinService.getLibrary(user.id).catch((e) => {
-                      logger.error('Failed to fetch library from Jellyfin: {e}', { e });
+                      logger.error(
+                          'Failed to fetch library from Jellyfin: {e}',
+                          { e },
+                      );
                       return [];
                   })
                 : Promise.resolve([]),
@@ -85,8 +90,12 @@ const libraryRoute = new Hono<Env>().get('/', async (c) => {
 
         // Deduplicate Jellyfin items against Radarr/Sonarr by type+title+year
         const existingKeys = new Set<string>([
-            ...libraryMovies.map((m) => `movie-${m.title.toLowerCase()}-${m.year}`),
-            ...libraryShows.map((s) => `show-${s.title.toLowerCase()}-${s.year}`),
+            ...libraryMovies.map(
+                (m) => `movie-${m.title.toLowerCase()}-${m.year}`,
+            ),
+            ...libraryShows.map(
+                (s) => `show-${s.title.toLowerCase()}-${s.year}`,
+            ),
         ]);
 
         const uniqueJellyfinItems = jellyfinItems.filter((item) => {
@@ -95,9 +104,11 @@ const libraryRoute = new Hono<Env>().get('/', async (c) => {
         });
 
         // Combine and shuffle for a randomized "Library Wall"
-        const combined = [...libraryMovies, ...libraryShows, ...uniqueJellyfinItems].sort(
-            () => 0.5 - Math.random(),
-        );
+        const combined = [
+            ...libraryMovies,
+            ...libraryShows,
+            ...uniqueJellyfinItems,
+        ].sort(() => 0.5 - Math.random());
 
         return c.json<LibraryItem[]>(combined);
     } catch (error) {

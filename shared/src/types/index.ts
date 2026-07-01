@@ -19,7 +19,7 @@ export interface MediaSettingsForm {
     tmdbApiKey?: string | null;
     jellyfinUrl?: string | null;
     jellyfinApiKey?: string | null;
-    posterSource?: 'history' | 'trending' | 'library' | 'jellyfin' | '' | null;
+    posterSource?: 'history' | 'trending' | 'library' | '' | null;
 }
 
 export type SettingsForm = AiSettingsForm & MediaSettingsForm;
@@ -109,4 +109,4 @@ export interface ServiceStatusResponse {
 }
 
 export const CONNECTABLE_SERVICES = ['sonarr', 'radarr', 'jellyfin'] as const;
-export type ConnectableService = typeof CONNECTABLE_SERVICES[number];
+export type ConnectableService = (typeof CONNECTABLE_SERVICES)[number];

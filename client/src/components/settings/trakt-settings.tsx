@@ -188,22 +188,25 @@ export function TraktSettings() {
                 disabled={isConnected || !!deviceCodeInfo}
                 action={
                     isConnected ? (
-                        <div className="flex items-center gap-2">
-                            {user?.avatar ? (
-                                <img
-                                    src={`/api/trakt/avatar?url=${encodeURIComponent(user.avatar)}`}
-                                    alt={user.name || user.username}
-                                    className="h-6 w-6 rounded-full"
-                                />
-                            ) : null}
-                            <span className="text-sm font-medium">
-                                {user?.name || user?.username}
-                            </span>
+                        <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end">
+                            <div className="flex items-center gap-2">
+                                {user?.avatar ? (
+                                    <img
+                                        src={`/api/trakt/avatar?url=${encodeURIComponent(user.avatar)}`}
+                                        alt={user.name || user.username}
+                                        className="h-6 w-6 rounded-full"
+                                    />
+                                ) : null}
+                                <span className="text-sm font-medium">
+                                    {user?.name || user?.username}
+                                </span>
+                            </div>
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleDisconnect.mutate()}
                                 disabled={handleDisconnect.isPending}
+                                className="w-full sm:w-auto"
                             >
                                 {handleDisconnect.isPending
                                     ? 'Disconnecting...'
@@ -215,6 +218,7 @@ export function TraktSettings() {
                             variant="outline"
                             size="sm"
                             onClick={handleCancelDevice}
+                            className="w-full sm:w-auto"
                         >
                             Cancel
                         </Button>
@@ -306,7 +310,7 @@ export function TraktSettings() {
                             </a>
                         </p>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <form.AppField
                             name="traktClientId"
                             children={(field) => (
@@ -325,6 +329,7 @@ export function TraktSettings() {
                                                     e.target.value,
                                                 )
                                             }
+                                            className="pr-10"
                                         />
                                         <button
                                             type="button"
@@ -359,6 +364,7 @@ export function TraktSettings() {
                                                     e.target.value,
                                                 )
                                             }
+                                            className="pr-10"
                                         />
                                         <button
                                             type="button"

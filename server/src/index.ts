@@ -9,6 +9,7 @@ import { logger } from './lib/logger';
 import { authMiddleware, requirePasswordChange } from './middleware/auth';
 import authRoute from './routes/auth';
 import chatRoute from './routes/chat';
+import historyRoute from './routes/history';
 import jellyfinRoute from './routes/jellyfin';
 import libraryRoute from './routes/library';
 import settingsRoute from './routes/settings';
@@ -51,6 +52,7 @@ export const route = app
     .route('/trakt', traktRoute)
     .route('/jellyfin', jellyfinRoute)
     .route('/library', libraryRoute)
+    .route('/history', historyRoute)
     .route('/chat', chatRoute)
     .get('/', (c) => {
         return c.text('Hello Hono!');

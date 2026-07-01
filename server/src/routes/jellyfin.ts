@@ -1,5 +1,9 @@
 import { Hono } from 'hono';
-import { type JellyfinStatusResponse, type JellyfinUserResponse, type LibraryItem } from 'shared';
+import {
+    type JellyfinStatusResponse,
+    type JellyfinUserResponse,
+    type LibraryItem,
+} from 'shared';
 
 import { getSettings } from '../db/repo/settings';
 import { type Env } from '../lib/auth';
@@ -79,7 +83,10 @@ const jellyfinRoute = new Hono<Env>()
 
             const limitQuery = c.req.query('limit');
             const parsedLimit = limitQuery ? parseInt(limitQuery, 10) : 20;
-            const limit = isNaN(parsedLimit) || parsedLimit <= 0 ? 20 : Math.min(parsedLimit, 100);
+            const limit =
+                isNaN(parsedLimit) || parsedLimit <= 0
+                    ? 20
+                    : Math.min(parsedLimit, 100);
             const items = await jellyfinService.getHistory(user.id, limit);
             return c.json<LibraryItem[]>(items);
         } catch (error) {
@@ -94,20 +101,31 @@ const jellyfinRoute = new Hono<Env>()
         const tag = c.req.query('tag');
 
         if (!itemId || !/^[a-f0-9-]+$/i.test(itemId)) {
-            return c.json({ error: 'Invalid or missing itemId parameter' }, 400);
+            return c.json(
+                { error: 'Invalid or missing itemId parameter' },
+                400,
+            );
         }
 
         const user = c.get('user');
         if (!user) return c.json({ error: 'Unauthorized' }, 401);
 
         try {
-            const response = await jellyfinService.fetchImage(user.id, itemId, tag ?? undefined);
+            const response = await jellyfinService.fetchImage(
+                user.id,
+                itemId,
+                tag ?? undefined,
+            );
 
             if (!response.ok) {
-                return c.json({ error: 'Failed to fetch image from Jellyfin' }, 502);
+                return c.json(
+                    { error: 'Failed to fetch image from Jellyfin' },
+                    502,
+                );
             }
 
-            const contentType = response.headers.get('content-type') || 'image/jpeg';
+            const contentType =
+                response.headers.get('content-type') || 'image/jpeg';
             c.header('Content-Type', contentType);
             c.header('Cache-Control', 'public, max-age=86400');
 

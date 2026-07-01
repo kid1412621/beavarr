@@ -54,7 +54,12 @@ const settingsRoute = new Hono<Env>()
 
             const service = c.req.query('service');
             if (service !== 'sonarr' && service !== 'radarr') {
-                return c.json({ error: 'Invalid service. Use ?service=sonarr or ?service=radarr' }, 400);
+                return c.json(
+                    {
+                        error: 'Invalid service. Use ?service=sonarr or ?service=radarr',
+                    },
+                    400,
+                );
             }
 
             const settings = await getOrCreateSettings(user.id);
@@ -64,7 +69,10 @@ const settingsRoute = new Hono<Env>()
                     return c.json<ServiceStatusResponse>({ connected: false });
                 }
                 try {
-                    const result = await sonarrService.testConnection(settings.sonarrUrl, settings.sonarrApiKey);
+                    const result = await sonarrService.testConnection(
+                        settings.sonarrUrl,
+                        settings.sonarrApiKey,
+                    );
                     return c.json<ServiceStatusResponse>(result);
                 } catch {
                     return c.json<ServiceStatusResponse>({ connected: false });
@@ -76,7 +84,10 @@ const settingsRoute = new Hono<Env>()
                 return c.json<ServiceStatusResponse>({ connected: false });
             }
             try {
-                const result = await radarrService.testConnection(settings.radarrUrl, settings.radarrApiKey);
+                const result = await radarrService.testConnection(
+                    settings.radarrUrl,
+                    settings.radarrApiKey,
+                );
                 return c.json<ServiceStatusResponse>(result);
             } catch {
                 return c.json<ServiceStatusResponse>({ connected: false });
@@ -95,22 +106,33 @@ const settingsRoute = new Hono<Env>()
             }>();
 
             if (!CONNECTABLE_SERVICES.includes(type)) {
-                return c.json({ success: false, error: 'Invalid service type' }, 400);
+                return c.json(
+                    { success: false, error: 'Invalid service type' },
+                    400,
+                );
             }
 
-            let result: { connected: boolean; version?: string } = { connected: false };
+            let result: { connected: boolean; version?: string } = {
+                connected: false,
+            };
             if (type === 'sonarr') {
                 result = await sonarrService.testConnection(url, apiKey);
             } else if (type === 'radarr') {
                 result = await radarrService.testConnection(url, apiKey);
             } else if (type === 'jellyfin') {
-                result.connected = await jellyfinService.testConnection(url, apiKey);
+                result.connected = await jellyfinService.testConnection(
+                    url,
+                    apiKey,
+                );
             }
 
             // Also return server name/version where available
             if (result.connected && type === 'jellyfin') {
                 try {
-                    const info = await jellyfinService.getSystemInfo(url, apiKey);
+                    const info = await jellyfinService.getSystemInfo(
+                        url,
+                        apiKey,
+                    );
                     return c.json({
                         success: true,
                         serverName: info.ServerName,
@@ -121,7 +143,10 @@ const settingsRoute = new Hono<Env>()
                 }
             }
 
-            return c.json({ success: result.connected, version: result.version });
+            return c.json({
+                success: result.connected,
+                version: result.version,
+            });
         } catch (error) {
             logger.error('Error testing connection: {error}', { error });
             return c.json({ success: false, error: 'Connection test failed' });

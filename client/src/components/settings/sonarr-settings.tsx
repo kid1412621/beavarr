@@ -3,10 +3,7 @@ import { client } from '@/lib/api';
 import { useAppFormContext } from '@/lib/form';
 import { type SettingsForm } from '@/lib/types';
 
-import {
-    ConnectableFields,
-    ConnectableHeader,
-} from './connectable-settings';
+import { ConnectableFields, ConnectableHeader } from './connectable-settings';
 
 export function SonarrSettings() {
     const form = useAppFormContext<SettingsForm>();
@@ -63,8 +60,8 @@ export function SonarrSettings() {
                     {testStatus === 'idle' && (
                         <p className="text-muted-foreground text-sm">
                             Enter your Sonarr URL and API key, then click{' '}
-                            <span className="font-medium">Connect Sonarr</span>. You can
-                            find the API key in Sonarr under{' '}
+                            <span className="font-medium">Connect Sonarr</span>.
+                            You can find the API key in Sonarr under{' '}
                             <span className="font-medium">
                                 Settings → General → Security
                             </span>
@@ -74,8 +71,8 @@ export function SonarrSettings() {
 
                     {testStatus === 'failed' && (
                         <p className="text-sm text-red-500">
-                            Could not connect to Sonarr. Check the URL and API key and try
-                            again.
+                            Could not connect to Sonarr. Check the URL and API
+                            key and try again.
                         </p>
                     )}
                 </div>

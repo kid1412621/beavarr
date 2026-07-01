@@ -265,7 +265,7 @@ export const createJellyfinLibraryTool = (userId: number) =>
     new DynamicStructuredTool({
         name: 'jellyfin_library',
         description:
-            'List movies and TV shows in the user\'s Jellyfin media server library.',
+            "List movies and TV shows in the user's Jellyfin media server library.",
         schema: z.object({
             limit: z
                 .number()
@@ -289,7 +289,9 @@ export const createJellyfinLibraryTool = (userId: number) =>
                     limit !== undefined ? mapped.slice(0, limit) : mapped,
                 );
             } catch (error) {
-                logger.error('failed to call jellyfin library: {error}', { error });
+                logger.error('failed to call jellyfin library: {error}', {
+                    error,
+                });
                 return `Error listing Jellyfin library: ${error}`;
             }
         },
@@ -311,7 +313,10 @@ export const createJellyfinHistoryTool = (userId: number) =>
         }),
         func: async ({ limit }: { limit?: number }) => {
             try {
-                const items = await jellyfinService.getHistory(userId, limit ?? 20);
+                const items = await jellyfinService.getHistory(
+                    userId,
+                    limit ?? 20,
+                );
                 return JSON.stringify(
                     items.map((i) => ({
                         type: i.type,
@@ -320,7 +325,9 @@ export const createJellyfinHistoryTool = (userId: number) =>
                     })),
                 );
             } catch (error) {
-                logger.error('failed to call jellyfin history: {error}', { error });
+                logger.error('failed to call jellyfin history: {error}', {
+                    error,
+                });
                 return `Error fetching Jellyfin history: ${error}`;
             }
         },
@@ -330,13 +337,16 @@ export const createJellyfinSearchTool = (userId: number) =>
     new DynamicStructuredTool({
         name: 'jellyfin_search',
         description:
-            'Search for movies or TV shows in the user\'s Jellyfin media server by title.',
+            "Search for movies or TV shows in the user's Jellyfin media server by title.",
         schema: z.object({
             query: z.string().describe('Title to search for'),
         }),
         func: async ({ query }: { query: string }) => {
             try {
-                const results = await jellyfinService.searchMetadata(userId, query);
+                const results = await jellyfinService.searchMetadata(
+                    userId,
+                    query,
+                );
                 return JSON.stringify(
                     results.slice(0, 10).map((r) => ({
                         title: r.Name,
@@ -346,7 +356,9 @@ export const createJellyfinSearchTool = (userId: number) =>
                     })),
                 );
             } catch (error) {
-                logger.error('failed to call jellyfin search: {error}', { error });
+                logger.error('failed to call jellyfin search: {error}', {
+                    error,
+                });
                 return `Error searching Jellyfin: ${error}`;
             }
         },

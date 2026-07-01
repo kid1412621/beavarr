@@ -3,10 +3,7 @@ import { client } from '@/lib/api';
 import { useAppFormContext } from '@/lib/form';
 import { type SettingsForm } from '@/lib/types';
 
-import {
-    ConnectableFields,
-    ConnectableHeader,
-} from './connectable-settings';
+import { ConnectableFields, ConnectableHeader } from './connectable-settings';
 
 export function JellyfinSettings() {
     const form = useAppFormContext<SettingsForm>();
@@ -61,9 +58,13 @@ export function JellyfinSettings() {
 
                     {testStatus === 'idle' && (
                         <p className="text-muted-foreground text-sm">
-                            Enter your Jellyfin server URL and API key, then click{' '}
-                            <span className="font-medium">Connect Jellyfin</span>. You can
-                            create an API key in your Jellyfin dashboard under{' '}
+                            Enter your Jellyfin server URL and API key, then
+                            click{' '}
+                            <span className="font-medium">
+                                Connect Jellyfin
+                            </span>
+                            . You can create an API key in your Jellyfin
+                            dashboard under{' '}
                             <span className="font-medium">
                                 Administration → API Keys
                             </span>
@@ -73,8 +74,8 @@ export function JellyfinSettings() {
 
                     {testStatus === 'failed' && (
                         <p className="text-sm text-red-500">
-                            Could not connect to Jellyfin. Check the URL and API key and try
-                            again.
+                            Could not connect to Jellyfin. Check the URL and API
+                            key and try again.
                         </p>
                     )}
                 </div>

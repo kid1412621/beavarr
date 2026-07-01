@@ -89,13 +89,18 @@ export class JellyfinService {
         }
     }
 
-    async getSystemInfo(url: string, apiKey: string): Promise<JellyfinSystemInfo> {
+    async getSystemInfo(
+        url: string,
+        apiKey: string,
+    ): Promise<JellyfinSystemInfo> {
         const cleanUrl = url.replace(/\/$/, '');
         const response = await fetch(`${cleanUrl}/System/Info`, {
             headers: this.headers(apiKey),
         });
         if (!response.ok) {
-            throw new Error(`Failed to get Jellyfin system info: ${response.statusText}`);
+            throw new Error(
+                `Failed to get Jellyfin system info: ${response.statusText}`,
+            );
         }
         return (await response.json()) as JellyfinSystemInfo;
     }
@@ -109,7 +114,9 @@ export class JellyfinService {
             headers: this.headers(apiKey),
         });
         if (!response.ok) {
-            throw new Error(`Failed to get Jellyfin users: ${response.statusText}`);
+            throw new Error(
+                `Failed to get Jellyfin users: ${response.statusText}`,
+            );
         }
         const users = (await response.json()) as Array<{
             Id: string;
@@ -140,7 +147,9 @@ export class JellyfinService {
         const PAGE_SIZE = 500;
 
         // Fetches all items of a given type by paginating through the full library.
-        const fetchAllOfType = async (type: 'Movie' | 'Series'): Promise<JellyfinMediaItem[]> => {
+        const fetchAllOfType = async (
+            type: 'Movie' | 'Series',
+        ): Promise<JellyfinMediaItem[]> => {
             const all: JellyfinMediaItem[] = [];
             let startIndex = 0;
 
@@ -156,11 +165,14 @@ export class JellyfinService {
                     headers: this.headers(apiKey),
                 });
                 if (!res.ok) {
-                    logger.error('Failed to fetch Jellyfin {type} page at {startIndex}: {status}', {
-                        type,
-                        startIndex,
-                        status: res.statusText,
-                    });
+                    logger.error(
+                        'Failed to fetch Jellyfin {type} page at {startIndex}: {status}',
+                        {
+                            type,
+                            startIndex,
+                            status: res.statusText,
+                        },
+                    );
                     break;
                 }
                 const data = (await res.json()) as JellyfinItemsResponse;
@@ -168,7 +180,11 @@ export class JellyfinService {
                 all.push(...page);
 
                 // Stop when we've received all items
-                if (all.length >= data.TotalRecordCount || page.length < PAGE_SIZE) break;
+                if (
+                    all.length >= data.TotalRecordCount ||
+                    page.length < PAGE_SIZE
+                )
+                    break;
                 startIndex += PAGE_SIZE;
             }
 
@@ -205,7 +221,10 @@ export class JellyfinService {
         return [...libraryMovies, ...libraryShows];
     }
 
-    async getHistory(userId: number, limit: number = 20): Promise<LibraryItem[]> {
+    async getHistory(
+        userId: number,
+        limit: number = 20,
+    ): Promise<LibraryItem[]> {
         const { url, apiKey } = await this.getConfig(userId);
 
         // Resolve the Jellyfin user ID for user-scoped endpoints
@@ -214,7 +233,9 @@ export class JellyfinService {
             const user = await this.getCurrentUser(userId);
             jellyfinUserId = user.Id;
         } catch (err) {
-            logger.error('Failed to get Jellyfin user for history: {err}', { err });
+            logger.error('Failed to get Jellyfin user for history: {err}', {
+                err,
+            });
             throw err;
         }
 
@@ -234,7 +255,9 @@ export class JellyfinService {
         );
 
         if (!res.ok) {
-            throw new Error(`Failed to fetch Jellyfin history: ${res.statusText}`);
+            throw new Error(
+                `Failed to fetch Jellyfin history: ${res.statusText}`,
+            );
         }
 
         const data = (await res.json()) as JellyfinItemsResponse;
@@ -261,13 +284,16 @@ export class JellyfinService {
                     { headers: this.headers(apiKey) },
                 );
                 if (seriesRes.ok) {
-                    const seriesData = (await seriesRes.json()) as JellyfinItemsResponse;
+                    const seriesData =
+                        (await seriesRes.json()) as JellyfinItemsResponse;
                     for (const s of seriesData.Items || []) {
                         seriesMap.set(s.Id, s);
                     }
                 }
             } catch (err) {
-                logger.error('Failed to bulk fetch series metadata: {err}', { err });
+                logger.error('Failed to bulk fetch series metadata: {err}', {
+                    err,
+                });
             }
         }
 
@@ -290,7 +316,11 @@ export class JellyfinService {
                         : undefined,
                     jellyfinId: item.Id,
                 });
-            } else if (item.Type === 'Episode' && item.SeriesId && item.SeriesName) {
+            } else if (
+                item.Type === 'Episode' &&
+                item.SeriesId &&
+                item.SeriesName
+            ) {
                 const key = `show-${item.SeriesId}`;
                 if (seenKeys.has(key)) continue;
                 seenKeys.add(key);
@@ -303,7 +333,8 @@ export class JellyfinService {
                         year: seriesMeta.ProductionYear || 0,
                         poster_url: this.buildPosterUrl(seriesMeta),
                         tvdbId: seriesMeta.ProviderIds?.Tvdb
-                            ? parseInt(seriesMeta.ProviderIds.Tvdb, 10) || undefined
+                            ? parseInt(seriesMeta.ProviderIds.Tvdb, 10) ||
+                              undefined
                             : undefined,
                         jellyfinId: item.SeriesId,
                     });
@@ -324,7 +355,10 @@ export class JellyfinService {
         return result.slice(0, limit);
     }
 
-    async searchMetadata(userId: number, query: string): Promise<JellyfinMediaItem[]> {
+    async searchMetadata(
+        userId: number,
+        query: string,
+    ): Promise<JellyfinMediaItem[]> {
         const { url, apiKey } = await this.getConfig(userId);
         const params = new URLSearchParams({
             SearchTerm: query,
@@ -350,7 +384,11 @@ export class JellyfinService {
      * Proxy a poster image from Jellyfin by item ID.
      * Returns the raw Response so the route can stream it through.
      */
-    async fetchImage(userId: number, itemId: string, tag?: string): Promise<Response> {
+    async fetchImage(
+        userId: number,
+        itemId: string,
+        tag?: string,
+    ): Promise<Response> {
         const { url, apiKey } = await this.getConfig(userId);
         const params = new URLSearchParams({ quality: '90' });
         if (tag) params.set('tag', tag);

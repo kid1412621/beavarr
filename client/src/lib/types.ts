@@ -31,7 +31,7 @@ export const mediaSettingsSchema = z.object({
         .optional(),
     jellyfinApiKey: z.string().nullable().optional(),
     posterSource: z
-        .enum(['history', 'trending', 'library', 'jellyfin', ''])
+        .enum(['history', 'trending', 'library', ''])
         .nullable()
         .optional(),
 });

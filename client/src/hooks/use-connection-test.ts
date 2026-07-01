@@ -98,7 +98,9 @@ export function useConnectionTest({
                         queryClient.invalidateQueries({ queryKey: key });
                     }
                     if (statusQueryKey) {
-                        queryClient.invalidateQueries({ queryKey: statusQueryKey });
+                        queryClient.invalidateQueries({
+                            queryKey: statusQueryKey,
+                        });
                     }
                 } catch (saveErr) {
                     console.error('Failed to auto-save settings:', saveErr);
