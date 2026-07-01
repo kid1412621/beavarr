@@ -17,6 +17,8 @@ export interface MediaSettingsForm {
     traktClientId?: string | null;
     traktClientSecret?: string | null;
     tmdbApiKey?: string | null;
+    jellyfinUrl?: string | null;
+    jellyfinApiKey?: string | null;
     posterSource?: 'history' | 'trending' | 'library' | '' | null;
 }
 
@@ -47,6 +49,7 @@ export interface LibraryItem {
     tvdbId?: number; // for shows
     sonarrId?: number;
     radarrId?: number;
+    jellyfinId?: string; // for Jellyfin-sourced items
 }
 
 // Trakt Types
@@ -77,6 +80,19 @@ export interface TraktStatusResponse {
     needsTokenRefresh: boolean;
 }
 
+// Jellyfin Types
+export interface JellyfinStatusResponse {
+    connected: boolean;
+    serverName?: string;
+    version?: string;
+}
+
+export interface JellyfinUserResponse {
+    id: string;
+    name: string;
+    serverId: string;
+}
+
 export interface TraktUserResponse {
     id: number;
     username: string;
@@ -86,3 +102,11 @@ export interface TraktUserResponse {
     avatar?: string | null;
     joined?: string;
 }
+
+export interface ServiceStatusResponse {
+    connected: boolean;
+    version?: string;
+}
+
+export const CONNECTABLE_SERVICES = ['sonarr', 'radarr', 'jellyfin'] as const;
+export type ConnectableService = (typeof CONNECTABLE_SERVICES)[number];

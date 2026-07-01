@@ -32,7 +32,31 @@ export function GeneralSettings() {
                     children={(values) => {
                         const hasSonarr = !!values.sonarrUrl;
                         const hasRadarr = !!values.radarrUrl;
-                        const hasLibrary = hasSonarr || hasRadarr;
+                        const hasJellyfinVal = !!(
+                            values.jellyfinUrl && values.jellyfinApiKey
+                        );
+                        const hasLibrary =
+                            hasSonarr || hasRadarr || hasJellyfinVal;
+                        const hasHistory = hasTrakt || hasJellyfinVal;
+
+                        // Build dynamic labels
+                        let historyLabel = 'Watch History (Not Connected)';
+                        if (hasTrakt && hasJellyfinVal) {
+                            historyLabel = 'Watch History (Trakt & Jellyfin)';
+                        } else if (hasTrakt) {
+                            historyLabel = 'Watch History (Trakt)';
+                        } else if (hasJellyfinVal) {
+                            historyLabel = 'Watch History (Jellyfin)';
+                        }
+
+                        let libraryLabel = 'Library (Not Configured)';
+                        const libraryParts: string[] = [];
+                        if (hasSonarr || hasRadarr)
+                            libraryParts.push('Sonarr/Radarr');
+                        if (hasJellyfinVal) libraryParts.push('Jellyfin');
+                        if (libraryParts.length > 0) {
+                            libraryLabel = `Library (${libraryParts.join(' & ')})`;
+                        }
 
                         return (
                             <form.AppField
@@ -60,11 +84,9 @@ export function GeneralSettings() {
                                             </option>
                                             <option
                                                 value="history"
-                                                disabled={!hasTrakt}
+                                                disabled={!hasHistory}
                                             >
-                                                {hasTrakt
-                                                    ? 'History (Trakt)'
-                                                    : 'History (Trakt - Not Connected)'}
+                                                {historyLabel}
                                             </option>
                                             <option
                                                 value="trending"
@@ -78,14 +100,14 @@ export function GeneralSettings() {
                                                 value="library"
                                                 disabled={!hasLibrary}
                                             >
-                                                {hasLibrary
-                                                    ? 'Library (Sonarr/Radarr)'
-                                                    : 'Library (Not Configured)'}
+                                                {libraryLabel}
                                             </option>
                                         </select>
                                         <p className="text-muted-foreground text-[0.8rem]">
                                             Choose what to display on the home
-                                            page background wall.
+                                            page background wall. Connect Trakt
+                                            or Jellyfin for history, or
+                                            Sonarr/Radarr/Jellyfin for library.
                                             {!hasTrakt &&
                                                 !hasLibrary &&
                                                 ' (Connect services to enable options)'}

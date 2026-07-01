@@ -26,6 +26,7 @@ export function AiSettings() {
                                 onChange={(e) =>
                                     field.handleChange(e.target.value)
                                 }
+                                className="pr-10"
                             />
                             <button
                                 type="button"

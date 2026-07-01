@@ -105,7 +105,7 @@ function PosterRow({
                         className="relative aspect-[2/3] shrink-0 transform-gpu overflow-hidden rounded-xl border border-white/10 bg-gray-800 shadow-lg"
                         style={{ width: `${POSTER_WIDTH}px` }}
                     >
-                        <PosterImage src={url} key={url} />
+                        <PosterImage src={url} />
                     </div>
                 ))}
             </div>
@@ -138,7 +138,7 @@ export function PosterWall() {
             } else if (source === 'library') {
                 res = await client.api.library.$get();
             } else {
-                res = await client.api.trakt.history.$get({
+                res = await client.api.history.$get({
                     query: { limit: '100' },
                 });
             }

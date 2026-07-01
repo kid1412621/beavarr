@@ -1,4 +1,3 @@
-import { useQueryClient } from '@tanstack/react-query';
 import {
     CheckCircle2,
     XCircle,
@@ -6,12 +5,10 @@ import {
     Clipboard,
     ExternalLink,
 } from 'lucide-react';
-import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { client } from '@/lib/api';
 import { useAppFormContext } from '@/lib/form';
 import { type SettingsForm } from '@/lib/types';
 
@@ -32,6 +29,7 @@ interface ConnectableHeaderProps {
     onConnect?: () => void;
     disabled?: boolean;
     serviceName?: string;
+    version?: string;
     action?: React.ReactNode;
     children?: React.ReactNode;
 }
@@ -42,17 +40,23 @@ export function ConnectableHeader({
     onConnect,
     disabled,
     serviceName,
+    version,
     action,
     children,
 }: ConnectableHeaderProps) {
     return (
-        <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <div className="flex flex-wrap items-center gap-2">
                     <h3 className="text-lg font-medium">{title}</h3>
                     {status === 'success' && (
                         <span className="flex items-center gap-1 text-xs text-green-500">
                             <CheckCircle2 className="h-3 w-3" /> Connected
+                            {version && (
+                                <span className="text-muted-foreground ml-1">
+                                    v{version}
+                                </span>
+                            )}
                         </span>
                     )}
                     {status === 'failed' && (
@@ -63,24 +67,29 @@ export function ConnectableHeader({
                 </div>
                 {children}
             </div>
-            {action || (
-                <Button
-                    type="button"
-                    variant="default"
-                    size="sm"
-                    onClick={onConnect}
-                    disabled={status === 'testing' || disabled}
-                >
-                    {status === 'testing' ? (
-                        <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Connecting...
-                        </>
-                    ) : (
-                        `Connect ${serviceName || title}`
-                    )}
-                </Button>
-            )}
+            <div className="flex w-full justify-start sm:w-auto sm:justify-end">
+                {action || (
+                    <Button
+                        type="button"
+                        variant={status === 'success' ? 'outline' : 'default'}
+                        size="sm"
+                        onClick={onConnect}
+                        disabled={status === 'testing' || disabled}
+                        className="w-full sm:w-auto"
+                    >
+                        {status === 'testing' ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Connecting...
+                            </>
+                        ) : status === 'success' ? (
+                            'Test Connection'
+                        ) : (
+                            `Connect ${serviceName || title}`
+                        )}
+                    </Button>
+                )}
+            </div>
         </div>
     );
 }
@@ -105,7 +114,7 @@ export function ConnectableFields({
     const form = useAppFormContext<SettingsForm>();
 
     return (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <form.AppField
                 name={urlName}
                 children={(field) => (
@@ -122,6 +131,7 @@ export function ConnectableFields({
                                     onResetStatus?.();
                                 }}
                                 placeholder={urlPlaceholder}
+                                className="pr-10"
                             />
                             {field.state.value && apiKeyHelperUrl && (
                                 <a
@@ -162,6 +172,7 @@ export function ConnectableFields({
                                     field.handleChange(e.target.value);
                                     onResetStatus?.();
                                 }}
+                                className="pr-10"
                             />
                             <button
                                 type="button"
@@ -177,53 +188,4 @@ export function ConnectableFields({
             />
         </div>
     );
-}
-
-export type ConnectableStatus = 'idle' | 'testing' | 'success' | 'failed';
-
-export function useConnectableTest(
-    serviceType: 'sonarr' | 'radarr',
-    urlName: keyof SettingsForm,
-    apiKeyName: keyof SettingsForm,
-) {
-    const form = useAppFormContext<SettingsForm>();
-    const [status, setStatus] = useState<ConnectableStatus>('idle');
-
-    const queryClient = useQueryClient();
-
-    const testConnection = async () => {
-        const url = form.getFieldValue(urlName);
-        const apiKey = form.getFieldValue(apiKeyName);
-        if (!url || !apiKey) return;
-
-        setStatus('testing');
-        try {
-            const res = await client.api.settings['test-connection'].$post({
-                json: { type: serviceType, url, apiKey },
-            });
-            const data = await res.json();
-            if (data.success) {
-                setStatus('success');
-                // Auto-save only the relevant fields
-                try {
-                    await client.api.settings.$post({
-                        json: {
-                            [urlName]: url,
-                            [apiKeyName]: apiKey,
-                        } as any,
-                    });
-                    queryClient.invalidateQueries({ queryKey: ['settings'] });
-                } catch (saveErr) {
-                    console.error('Failed to auto-save settings:', saveErr);
-                }
-            } else {
-                setStatus('failed');
-            }
-        } catch (err) {
-            console.error('Failed to test connection:', err);
-            setStatus('failed');
-        }
-    };
-
-    return { status, setStatus, testConnection };
 }

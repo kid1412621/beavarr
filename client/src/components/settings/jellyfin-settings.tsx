@@ -5,7 +5,7 @@ import { type SettingsForm } from '@/lib/types';
 
 import { ConnectableFields, ConnectableHeader } from './connectable-settings';
 
-export function RadarrSettings() {
+export function JellyfinSettings() {
     const form = useAppFormContext<SettingsForm>();
     const {
         status: testStatus,
@@ -13,45 +13,44 @@ export function RadarrSettings() {
         meta,
         testConnection,
     } = useConnectionTest({
-        serviceType: 'radarr',
-        urlName: 'radarrUrl',
-        apiKeyName: 'radarrApiKey',
-        statusQueryKey: ['radarr-status'],
+        serviceType: 'jellyfin',
+        urlName: 'jellyfinUrl',
+        apiKeyName: 'jellyfinApiKey',
+        invalidateKeys: [['settings'], ['jellyfin-status']],
+        statusQueryKey: ['jellyfin-status'],
         statusQueryFn: async () => {
-            const res = await client.api.settings.status.$get({
-                query: { service: 'radarr' },
-            });
+            const res = await client.api.jellyfin.status.$get();
             if (!res.ok) return { connected: false };
-            return res.json();
+            return await res.json();
         },
     });
 
     return (
         <form.Subscribe
             selector={(state) => [
-                state.values.radarrUrl,
-                state.values.radarrApiKey,
+                state.values.jellyfinUrl,
+                state.values.jellyfinApiKey,
             ]}
         >
-            {([radarrUrl, radarrApiKey]) => (
+            {([jellyfinUrl, jellyfinApiKey]) => (
                 <div className="space-y-4">
                     <ConnectableHeader
-                        title="Radarr"
-                        serviceName="Radarr"
+                        title="Jellyfin"
+                        serviceName="Jellyfin"
                         status={testStatus}
                         version={meta.version}
                         onConnect={testConnection}
-                        disabled={!radarrUrl || !radarrApiKey}
+                        disabled={!jellyfinUrl || !jellyfinApiKey}
                     />
 
                     <ConnectableFields
-                        serviceName="Radarr"
-                        urlName="radarrUrl"
-                        apiKeyName="radarrApiKey"
-                        urlPlaceholder="http://localhost:7878"
+                        urlName="jellyfinUrl"
+                        apiKeyName="jellyfinApiKey"
+                        serviceName="Jellyfin"
+                        urlPlaceholder="http://your-jellyfin:8096"
                         apiKeyHelperUrl={
-                            radarrUrl
-                                ? `${radarrUrl.replace(/\/$/, '')}/settings/general`
+                            jellyfinUrl
+                                ? `${jellyfinUrl.replace(/\/$/, '')}/web/index.html#!/apikeys.html`
                                 : undefined
                         }
                         onResetStatus={() => setTestStatus('idle')}
@@ -59,11 +58,15 @@ export function RadarrSettings() {
 
                     {testStatus === 'idle' && (
                         <p className="text-muted-foreground text-sm">
-                            Enter your Radarr URL and API key, then click{' '}
-                            <span className="font-medium">Connect Radarr</span>.
-                            You can find the API key in Radarr under{' '}
+                            Enter your Jellyfin server URL and API key, then
+                            click{' '}
                             <span className="font-medium">
-                                Settings → General → Security
+                                Connect Jellyfin
+                            </span>
+                            . You can create an API key in your Jellyfin
+                            dashboard under{' '}
+                            <span className="font-medium">
+                                Administration → API Keys
                             </span>
                             .
                         </p>
@@ -71,7 +74,7 @@ export function RadarrSettings() {
 
                     {testStatus === 'failed' && (
                         <p className="text-sm text-red-500">
-                            Could not connect to Radarr. Check the URL and API
+                            Could not connect to Jellyfin. Check the URL and API
                             key and try again.
                         </p>
                     )}
