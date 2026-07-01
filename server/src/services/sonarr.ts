@@ -1,4 +1,4 @@
-import { ArrBaseService } from './arr-base';
+import { ArrBaseService, type ArrSettings } from './arr-base';
 
 interface SonarrImage {
     coverType: string;
@@ -47,10 +47,10 @@ export interface SonarrSeries {
 export class SonarrService extends ArrBaseService {
     protected serviceName = 'Sonarr';
 
-    protected getServiceSettings(settings: any) {
+    protected getServiceSettings(settings: ArrSettings) {
         return {
-            url: settings?.sonarrUrl,
-            apiKey: settings?.sonarrApiKey,
+            url: settings?.sonarrUrl ?? null,
+            apiKey: settings?.sonarrApiKey ?? null,
         };
     }
 

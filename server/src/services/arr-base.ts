@@ -1,10 +1,12 @@
 import { getSettings } from '../db/repo/settings';
 import { config } from '../lib/config';
 
+export type ArrSettings = Awaited<ReturnType<typeof getSettings>>;
+
 export abstract class ArrBaseService {
     protected abstract serviceName: string;
 
-    protected abstract getServiceSettings(settings: any): {
+    protected abstract getServiceSettings(settings: ArrSettings): {
         url: string | null;
         apiKey: string | null;
     };

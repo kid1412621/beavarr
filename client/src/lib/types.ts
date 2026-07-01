@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import { type SettingsForm } from 'shared';
+import { z } from 'zod';
 
 export * from 'shared';
 
@@ -56,5 +56,5 @@ export function getDefaultSettingsValues(
         openaiBaseUrl: initialValues?.openaiBaseUrl || '',
         openaiModel: initialValues?.openaiModel || '',
         posterSource: initialValues?.posterSource || '',
-    } as SettingsForm;
+    };
 }

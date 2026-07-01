@@ -1,4 +1,4 @@
-import { ArrBaseService } from './arr-base';
+import { ArrBaseService, type ArrSettings } from './arr-base';
 
 interface RadarrImage {
     coverType: string;
@@ -56,10 +56,10 @@ export interface RadarrMovie {
 export class RadarrService extends ArrBaseService {
     protected serviceName = 'Radarr';
 
-    protected getServiceSettings(settings: any) {
+    protected getServiceSettings(settings: ArrSettings) {
         return {
-            url: settings?.radarrUrl,
-            apiKey: settings?.radarrApiKey,
+            url: settings?.radarrUrl ?? null,
+            apiKey: settings?.radarrApiKey ?? null,
         };
     }
 
