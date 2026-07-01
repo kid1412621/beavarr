@@ -100,7 +100,9 @@ const libraryRoute = new Hono<Env>().get('/', async (c) => {
 
         const uniqueJellyfinItems = jellyfinItems.filter((item) => {
             const key = `${item.type}-${item.title.toLowerCase()}-${item.year}`;
-            return !existingKeys.has(key);
+            if (existingKeys.has(key)) return false;
+            existingKeys.add(key);
+            return true;
         });
 
         // Combine and shuffle for a randomized "Library Wall"

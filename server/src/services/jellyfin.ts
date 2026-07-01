@@ -1,4 +1,4 @@
-import type { LibraryItem } from 'shared/dist';
+import type { LibraryItem } from 'shared';
 
 import { getSettings } from '../db/repo/settings';
 import { createLogger } from '../lib/logger';
@@ -144,6 +144,18 @@ export class JellyfinService {
     async getLibrary(userId: number): Promise<LibraryItem[]> {
         const { url, apiKey } = await this.getConfig(userId);
 
+        // Resolve the Jellyfin user ID for user-scoped endpoints
+        let jellyfinUserId: string;
+        try {
+            const user = await this.getCurrentUser(userId);
+            jellyfinUserId = user.Id;
+        } catch (err) {
+            logger.error('Failed to get Jellyfin user for library: {err}', {
+                err,
+            });
+            throw err;
+        }
+
         const PAGE_SIZE = 500;
 
         // Fetches all items of a given type by paginating through the full library.
@@ -161,9 +173,10 @@ export class JellyfinService {
                     Limit: String(PAGE_SIZE),
                     StartIndex: String(startIndex),
                 });
-                const res = await fetch(`${url}/Items?${params.toString()}`, {
-                    headers: this.headers(apiKey),
-                });
+                const res = await fetch(
+                    `${url}/Users/${jellyfinUserId}/Items?${params.toString()}`,
+                    { headers: this.headers(apiKey) },
+                );
                 if (!res.ok) {
                     logger.error(
                         'Failed to fetch Jellyfin {type} page at {startIndex}: {status}',
@@ -360,6 +373,19 @@ export class JellyfinService {
         query: string,
     ): Promise<JellyfinMediaItem[]> {
         const { url, apiKey } = await this.getConfig(userId);
+
+        // Resolve the Jellyfin user ID for user-scoped endpoints
+        let jellyfinUserId: string;
+        try {
+            const user = await this.getCurrentUser(userId);
+            jellyfinUserId = user.Id;
+        } catch (err) {
+            logger.error('Failed to get Jellyfin user for search: {err}', {
+                err,
+            });
+            throw err;
+        }
+
         const params = new URLSearchParams({
             SearchTerm: query,
             IncludeItemTypes: 'Movie,Series',
@@ -368,9 +394,10 @@ export class JellyfinService {
             Limit: '10',
         });
 
-        const res = await fetch(`${url}/Items?${params.toString()}`, {
-            headers: this.headers(apiKey),
-        });
+        const res = await fetch(
+            `${url}/Users/${jellyfinUserId}/Items?${params.toString()}`,
+            { headers: this.headers(apiKey) },
+        );
 
         if (!res.ok) {
             throw new Error(`Failed to search Jellyfin: ${res.statusText}`);
