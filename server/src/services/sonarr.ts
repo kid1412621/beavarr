@@ -1,5 +1,4 @@
-import { getSettings } from '../db/repo/settings';
-import { config } from '../lib/config';
+import { ArrBaseService } from './arr-base';
 
 interface SonarrImage {
     coverType: string;
@@ -45,13 +44,14 @@ export interface SonarrSeries {
     id?: number;
 }
 
-export class SonarrService {
-    private async getBaseUrl(userId: number) {
-        const settings = await getSettings(userId);
-        if (!settings?.sonarrUrl || !settings?.sonarrApiKey) {
-            throw new Error('Sonarr is not configured');
-        }
-        return { url: settings.sonarrUrl, key: settings.sonarrApiKey };
+export class SonarrService extends ArrBaseService {
+    protected serviceName = 'Sonarr';
+
+    protected getServiceSettings(settings: any) {
+        return {
+            url: settings?.sonarrUrl,
+            apiKey: settings?.sonarrApiKey,
+        };
     }
 
     async getSeries(userId: number): Promise<SonarrSeries[]> {
@@ -106,38 +106,6 @@ export class SonarrService {
         });
         if (!response.ok) throw new Error('Failed to get root folders');
         return await response.json();
-    }
-
-    async getSystemStatus(userId: number) {
-        const { url, key } = await this.getBaseUrl(userId);
-        const response = await fetch(`${url}/api/v3/system/status`, {
-            headers: { 'X-Api-Key': key },
-        });
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(
-                `Failed to get system status from Sonarr: ${response.status} - ${errorText}`,
-            );
-        }
-        return await response.json();
-    }
-
-    async testConnection(
-        url: string,
-        apiKey: string,
-        timeoutMs = config.arrConnectionTimeoutMs,
-    ): Promise<{ connected: boolean; version?: string }> {
-        try {
-            const response = await fetch(`${url}/api/v3/system/status`, {
-                headers: { 'X-Api-Key': apiKey },
-                signal: AbortSignal.timeout(timeoutMs),
-            });
-            if (!response.ok) return { connected: false };
-            const data = (await response.json()) as { version?: string };
-            return { connected: true, version: data.version };
-        } catch {
-            return { connected: false };
-        }
     }
 }
 

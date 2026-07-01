@@ -25,7 +25,7 @@ export const authMiddleware: MiddlewareHandler<Env> = async (c, next) => {
                     return await next();
                 }
             }
-        } catch (error: any) {
+        } catch {
             // Token invalid or expired, clear the cookie and fall through to Basic Auth
             // We use logger or console without passing the error object to avoid huge stack traces
             deleteCookie(c, 'auth_token', { path: '/' });
