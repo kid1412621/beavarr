@@ -5,18 +5,10 @@ import { Label } from '@/components/ui/label';
 import { useAppFormContext } from '@/lib/form';
 import { type SettingsForm } from '@/lib/types';
 
+import { pasteFromClipboard } from './connectable-settings';
+
 export function MediaSettings() {
     const form = useAppFormContext<SettingsForm>();
-    const pasteFromClipboard = async (field: {
-        handleChange: (value: string) => void;
-    }) => {
-        try {
-            const text = await navigator.clipboard.readText();
-            field.handleChange(text);
-        } catch (err) {
-            console.error('Failed to read clipboard', err);
-        }
-    };
 
     return (
         <div className="space-y-4">

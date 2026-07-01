@@ -1,3 +1,4 @@
+import { type SettingsForm } from 'shared';
 import { z } from 'zod';
 
 export * from 'shared';
@@ -37,3 +38,23 @@ export const mediaSettingsSchema = z.object({
 });
 
 export const settingsSchema = aiSettingsSchema.and(mediaSettingsSchema);
+
+export function getDefaultSettingsValues(
+    initialValues?: Partial<SettingsForm> | null,
+): SettingsForm {
+    return {
+        sonarrUrl: initialValues?.sonarrUrl || '',
+        sonarrApiKey: initialValues?.sonarrApiKey || '',
+        radarrUrl: initialValues?.radarrUrl || '',
+        radarrApiKey: initialValues?.radarrApiKey || '',
+        traktClientId: initialValues?.traktClientId || '',
+        traktClientSecret: initialValues?.traktClientSecret || '',
+        tmdbApiKey: initialValues?.tmdbApiKey || '',
+        jellyfinUrl: initialValues?.jellyfinUrl || '',
+        jellyfinApiKey: initialValues?.jellyfinApiKey || '',
+        openaiApiKey: initialValues?.openaiApiKey || '',
+        openaiBaseUrl: initialValues?.openaiBaseUrl || '',
+        openaiModel: initialValues?.openaiModel || '',
+        posterSource: initialValues?.posterSource || '',
+    };
+}
