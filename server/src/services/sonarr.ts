@@ -58,6 +58,7 @@ export class SonarrService {
         const { url, key } = await this.getBaseUrl(userId);
         const response = await fetch(`${url}/api/v3/series`, {
             headers: { 'X-Api-Key': key },
+            signal: AbortSignal.timeout(5000),
         });
         if (!response.ok) throw new Error('Failed to get series from Sonarr');
         return (await response.json()) as SonarrSeries[];
@@ -69,6 +70,7 @@ export class SonarrService {
             `${url}/api/v3/series/lookup?term=${encodeURIComponent(term)}`,
             {
                 headers: { 'X-Api-Key': key },
+                signal: AbortSignal.timeout(5000),
             },
         );
         if (!response.ok) throw new Error('Failed to search Sonarr');
@@ -94,6 +96,7 @@ export class SonarrService {
                 seasonFolder: true,
                 rootFolderPath: '/tv', // Needs to be configured or fetched!
             }),
+            signal: AbortSignal.timeout(5000),
         });
         if (!response.ok) throw new Error('Failed to add series to Sonarr');
         return (await response.json()) as SonarrSeries;
@@ -103,6 +106,7 @@ export class SonarrService {
         const { url, key } = await this.getBaseUrl(userId);
         const response = await fetch(`${url}/api/v3/rootfolder`, {
             headers: { 'X-Api-Key': key },
+            signal: AbortSignal.timeout(5000),
         });
         if (!response.ok) throw new Error('Failed to get root folders');
         return await response.json();
@@ -112,6 +116,7 @@ export class SonarrService {
         const { url, key } = await this.getBaseUrl(userId);
         const response = await fetch(`${url}/api/v3/system/status`, {
             headers: { 'X-Api-Key': key },
+            signal: AbortSignal.timeout(5000),
         });
         if (!response.ok) {
             const errorText = await response.text();

@@ -67,6 +67,7 @@ export class RadarrService {
         const { url, key } = await this.getBaseUrl(userId);
         const response = await fetch(`${url}/api/v3/movie`, {
             headers: { 'X-Api-Key': key },
+            signal: AbortSignal.timeout(5000),
         });
         if (!response.ok) throw new Error('Failed to get movies from Radarr');
         return (await response.json()) as RadarrMovie[];
@@ -78,6 +79,7 @@ export class RadarrService {
             `${url}/api/v3/movie/lookup?term=${encodeURIComponent(term)}`,
             {
                 headers: { 'X-Api-Key': key },
+                signal: AbortSignal.timeout(5000),
             },
         );
         if (!response.ok) throw new Error('Failed to search Radarr');
@@ -101,6 +103,7 @@ export class RadarrService {
                 monitored: true,
                 rootFolderPath: '/movies', // Placeholder
             }),
+            signal: AbortSignal.timeout(5000),
         });
         if (!response.ok) throw new Error('Failed to add movie to Radarr');
         return (await response.json()) as RadarrMovie;
@@ -110,6 +113,7 @@ export class RadarrService {
         const { url, key } = await this.getBaseUrl(userId);
         const response = await fetch(`${url}/api/v3/system/status`, {
             headers: { 'X-Api-Key': key },
+            signal: AbortSignal.timeout(5000),
         });
         if (!response.ok) {
             const errorText = await response.text();

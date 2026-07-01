@@ -14,12 +14,15 @@ import {
     createTmdbSearchTool,
     createTraktTrendingTool,
     createTraktWatchlistTool,
+    createFranchiseTimelineTool,
+    createFranchiseAddMissingTool,
 } from './tools';
 
 const SYSTEM_PROMPT = `You are a helpful media assistant named Beavarr.
     You can manage user's media library via Sonarr and Radarr.
     You can also recommend content via Trakt and TMDB.
     You have access to the user's Jellyfin media server for library browsing, watch history, and searching local content.
+    You can lookup show/movie franchise chronology (timelines) and help batch add missing franchise titles.
     Always search before adding content.
     Use the tools provided.`;
 
@@ -60,6 +63,8 @@ export async function createMediaAgent({
         createJellyfinLibraryTool(userId),
         createJellyfinHistoryTool(userId),
         createJellyfinSearchTool(userId),
+        createFranchiseTimelineTool(userId),
+        createFranchiseAddMissingTool(userId),
     ];
 
     const agent = createAgent({

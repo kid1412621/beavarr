@@ -14,27 +14,27 @@ While built on the solid foundation of the BHVR stack, beavarr extends it to cre
 
 - **LLM Integration**: AI-powered recommendations and insights for your library.
     - OpenAI API compatible
-- **Media Stack Integration**: Seamlessly works with Trakt, Sonarr, and Radarr.
+- **Media Stack Integration**: Seamlessly works with Trakt, Sonarr, Radarr, and Jellyfin.
 
-    | service       | Watch history | Library | Metadata |
-    | ------------- | :-----------: | :-----: | :------: |
-    | Sonarr        |               |   ✅    |    ✅    |
-    | Radarr        |               |   ✅    |    ✅    |
-    | Jellyfin(WIP) |      ✅       |   ✅    |    ✅    |
-    | Trakt         |      ✅       |         |          |
-    | TMDB(Planed)  |               |         |    ✅    |
-    | TVDB(Planed)  |               |         |    ✅    |
-    | IMDB(Planed)  |               |         |    ✅    |
+    | service      | Watch history | Library | Metadata |
+    | ------------ | :-----------: | :-----: | :------: |
+    | Sonarr       |               |   ✅    |    ✅    |
+    | Radarr       |               |   ✅    |    ✅    |
+    | Jellyfin     |      ✅       |   ✅    |    ✅    |
+    | Trakt        |      ✅       |         |          |
+    | TMDB         |               |         |    ✅    |
+    | TVDB         |               |         |    ✅    |
+    | IMDB(Planed) |               |         |    ✅    |
+
+- **Franchise & Timeline Explorer**: Chronologically explore storylines of movie franchises (e.g. Alien, Indiana Jones) or custom LLM-generated mixed movie/TV universes (e.g. Marvel Cinematic Universe, Star Wars).
+    - Cross-references titles with Radarr, Sonarr, and Jellyfin to show what you own, what's available to watch, and what's missing.
+    - Add missing movies or shows to download directly with one click.
+- **Agent Tools Support**: The Beavarr media agent has tools to query timelines (`get_franchise_timeline`) and automatically download missing titles on command (`add_franchise_missing_titles`) directly in chat.
+- **High Performance Local Caching**: Caches Sonarr, Radarr, and Jellyfin libraries in a local SQLite database (via Drizzle) so query operations run instantly and prevent full in-memory API requests on every user action.
 
 ### TODO
 
-- explore the franchise/timeline
 - explore what's the references in the show/movie, like poster in the scene, etc
-- **[performance]** cache Sonarr/Radarr library data in local SQLite (via Drizzle) and sync
-  periodically or on-demand, so `sonarr_list`/`radarr_list` agent tools can query locally
-  with real pagination instead of fetching the entire library into memory on every LLM call.
-  Neither the Sonarr `GET /api/v3/series` nor the Radarr `GET /api/v3/movie` endpoint supports
-  server-side pagination, making a local cache the only way to avoid full in-memory loads.
 
 ## Tech statck
 

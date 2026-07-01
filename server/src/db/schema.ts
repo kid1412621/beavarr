@@ -49,3 +49,80 @@ export type InsertSettings = typeof settings.$inferInsert;
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
+
+// Cache tables for media
+export const movies = sqliteTable('movies', {
+    tmdbId: integer('tmdb_id').primaryKey(),
+    title: text('title').notNull(),
+    releaseDate: text('release_date'),
+    overview: text('overview'),
+    posterPath: text('poster_path'),
+    radarrId: integer('radarr_id'), // Nullable
+    jellyfinId: text('jellyfin_id'), // Nullable
+    inLibrary: integer('in_library', { mode: 'boolean' })
+        .default(false)
+        .notNull(),
+    libraryStatus: text('library_status'),
+    createdAt: integer('created_at', { mode: 'timestamp' })
+        .default(sql`(strftime('%s', 'now'))`)
+        .notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(
+        () => new Date(),
+    ),
+});
+
+export const shows = sqliteTable('shows', {
+    tvdbId: integer('tvdb_id').primaryKey(),
+    tmdbId: integer('tmdb_id'), // TMDB ID (if resolved)
+    title: text('title').notNull(),
+    releaseDate: text('release_date'),
+    overview: text('overview'),
+    posterPath: text('poster_path'),
+    sonarrId: integer('sonarr_id'), // Nullable
+    jellyfinId: text('jellyfin_id'), // Nullable
+    inLibrary: integer('in_library', { mode: 'boolean' })
+        .default(false)
+        .notNull(),
+    libraryStatus: text('library_status'),
+    createdAt: integer('created_at', { mode: 'timestamp' })
+        .default(sql`(strftime('%s', 'now'))`)
+        .notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(
+        () => new Date(),
+    ),
+});
+
+export const franchises = sqliteTable('franchises', {
+    id: integer('id').primaryKey(),
+    name: text('name').notNull(),
+    slug: text('slug').unique().notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' })
+        .default(sql`(strftime('%s', 'now'))`)
+        .notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(
+        () => new Date(),
+    ),
+});
+
+export const franchiseItems = sqliteTable('franchise_items', {
+    id: integer('id').primaryKey(),
+    franchiseId: integer('franchise_id')
+        .references(() => franchises.id, { onDelete: 'cascade' })
+        .notNull(),
+    mediaType: text('media_type').notNull(), // 'movie' | 'show'
+    mediaId: integer('media_id').notNull(),
+    order: integer('order').notNull(),
+    seasonNumber: integer('season_number'),
+});
+
+export type Movie = typeof movies.$inferSelect;
+export type InsertMovie = typeof movies.$inferInsert;
+
+export type Show = typeof shows.$inferSelect;
+export type InsertShow = typeof shows.$inferInsert;
+
+export type Franchise = typeof franchises.$inferSelect;
+export type InsertFranchise = typeof franchises.$inferInsert;
+
+export type FranchiseItem = typeof franchiseItems.$inferSelect;
+export type InsertFranchiseItem = typeof franchiseItems.$inferInsert;

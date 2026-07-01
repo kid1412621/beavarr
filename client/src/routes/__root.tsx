@@ -7,7 +7,7 @@ import {
     useLocation,
 } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
-import { Home, MessageSquare, Settings } from 'lucide-react';
+import { Home, MessageSquare, Settings, Film } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 import { Sidebar } from '@/components/sidebar';
@@ -18,6 +18,11 @@ import { cn } from '@/lib/utils';
 
 const navItems = [
     { title: 'Home', to: '/', icon: <Home className="size-4" /> },
+    {
+        title: 'Timeline',
+        to: '/timeline',
+        icon: <Film className="size-4" />,
+    },
     { title: 'Chat', to: '/chat', icon: <MessageSquare className="size-4" /> },
     {
         title: 'Settings',

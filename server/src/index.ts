@@ -9,6 +9,7 @@ import { logger } from './lib/logger';
 import { authMiddleware, requirePasswordChange } from './middleware/auth';
 import authRoute from './routes/auth';
 import chatRoute from './routes/chat';
+import franchiseRoute from './routes/franchise';
 import historyRoute from './routes/history';
 import jellyfinRoute from './routes/jellyfin';
 import libraryRoute from './routes/library';
@@ -54,6 +55,7 @@ export const route = app
     .route('/library', libraryRoute)
     .route('/history', historyRoute)
     .route('/chat', chatRoute)
+    .route('/franchise', franchiseRoute)
     .get('/', (c) => {
         return c.text('Hello Hono!');
     })

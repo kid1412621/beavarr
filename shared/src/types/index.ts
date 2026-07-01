@@ -110,3 +110,38 @@ export interface ServiceStatusResponse {
 
 export const CONNECTABLE_SERVICES = ['sonarr', 'radarr', 'jellyfin'] as const;
 export type ConnectableService = (typeof CONNECTABLE_SERVICES)[number];
+
+// Franchise & Timeline Types
+export interface TimelineItem {
+    mediaId: number; // The movie's tmdbId or the show's tvdbId (table primary key)
+    title: string;
+    type: 'movie' | 'show';
+    releaseDate?: string;
+    overview?: string;
+    posterPath?: string | null;
+    sonarrId?: number | null; // Reference ID in Sonarr
+    radarrId?: number | null; // Reference ID in Radarr
+    jellyfinId?: string | null; // Reference ID in Jellyfin
+    order: number;
+    seasonNumber?: number | null;
+    inLibrary: boolean;
+    libraryStatus?: string; // e.g. "monitored", "not_monitored", "not_in_library"
+}
+
+export interface FranchiseTimeline {
+    id?: number;
+    name: string;
+    slug: string;
+    items: TimelineItem[];
+    updatedAt: string;
+}
+
+export interface FranchiseSearchResponse {
+    results: {
+        id: number;
+        name: string;
+        posterPath?: string | null;
+        overview?: string;
+        type: 'collection' | 'custom';
+    }[];
+}

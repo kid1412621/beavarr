@@ -15,6 +15,13 @@
       "when": 1751186400000,
       "tag": "0001_add_jellyfin",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1782899053537,
+      "tag": "0002_round_earthquake",
+      "breakpoints": true
     }
   ]
 }

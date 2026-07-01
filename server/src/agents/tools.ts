@@ -2,6 +2,7 @@ import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 
 import { createLogger } from '../lib/logger';
+import { franchiseService } from '../services/franchise';
 import { jellyfinService } from '../services/jellyfin';
 import { radarrService } from '../services/radarr';
 import { sonarrService } from '../services/sonarr';
@@ -361,5 +362,115 @@ export const createJellyfinSearchTool = (userId: number) =>
                 });
                 return `Error searching Jellyfin: ${error}`;
             }
+        },
+    });
+
+export const createFranchiseTimelineTool = (userId: number) =>
+    new DynamicStructuredTool({
+        name: 'get_franchise_timeline',
+        description:
+            "Get a chronological timeline of movies and TV shows in a franchise (e.g. Star Wars, Alien, Marvel, Indiana Jones, etc.). It resolves all titles, details, and tracks if they are present in the user's local library (Radarr, Sonarr, Jellyfin). Returns the list of titles.",
+        schema: z.object({
+            slug: z
+                .string()
+                .describe(
+                    'The name or identifier of the franchise to lookup (e.g. "Alien" or a TMDB collection slug like "collection-80")',
+                ),
+            refresh: z
+                .boolean()
+                .optional()
+                .default(false)
+                .describe(
+                    'Set to true to force refresh the timeline metadata and sync from external APIs',
+                ),
+        }),
+        func: async ({
+            slug,
+            refresh,
+        }: {
+            slug: string;
+            refresh?: boolean;
+        }) => {
+            try {
+                const timeline = await franchiseService.getFranchiseTimeline(
+                    userId,
+                    slug,
+                    refresh,
+                );
+                return JSON.stringify({
+                    name: timeline.name,
+                    slug: timeline.slug,
+                    updatedAt: timeline.updatedAt,
+                    items: timeline.items.map((i) => ({
+                        order: i.order,
+                        title: i.title,
+                        type: i.type,
+                        releaseYear: i.releaseDate
+                            ? new Date(i.releaseDate).getFullYear()
+                            : null,
+                        inLibrary: i.inLibrary,
+                        radarrId: i.radarrId,
+                        sonarrId: i.sonarrId,
+                        jellyfinId: i.jellyfinId,
+                        libraryStatus: i.libraryStatus,
+                        seasonNumber: i.seasonNumber,
+                    })),
+                });
+            } catch (error) {
+                logger.error('failed to call get franchise timeline: {error}', {
+                    error,
+                });
+                return `Error fetching franchise timeline: ${error}`;
+            }
+        },
+    });
+
+export const createFranchiseAddMissingTool = (userId: number) =>
+    new DynamicStructuredTool({
+        name: 'add_franchise_missing_titles',
+        description:
+            "Batch add missing movies or TV shows from a franchise timeline into the user's libraries (Radarr for movies, Sonarr for TV shows) so they can start downloading.",
+        schema: z.object({
+            items: z
+                .array(
+                    z.object({
+                        mediaId: z
+                            .number()
+                            .int()
+                            .describe(
+                                'The database primary key / TMDB ID (movies) or TVDB ID (TV shows) of the item',
+                            ),
+                        type: z
+                            .enum(['movie', 'show'])
+                            .describe('Type of media: movie or show'),
+                        title: z.string().describe('Title of the media'),
+                    }),
+                )
+                .describe('List of items to add'),
+        }),
+        func: async ({
+            items,
+        }: {
+            items: { mediaId: number; type: 'movie' | 'show'; title: string }[];
+        }) => {
+            const added: string[] = [];
+            const failed: string[] = [];
+            for (const item of items) {
+                try {
+                    await franchiseService.addTimelineItem(userId, item);
+                    added.push(item.title);
+                } catch (error: any) {
+                    logger.error(
+                        'failed to add franchise item {title}: {error}',
+                        { title: item.title, error },
+                    );
+                    failed.push(`${item.title} (${error.message || error})`);
+                }
+            }
+            return JSON.stringify({
+                success: true,
+                added,
+                failed,
+            });
         },
     });

@@ -50,7 +50,7 @@ export function JellyfinSettings() {
                         urlPlaceholder="http://your-jellyfin:8096"
                         apiKeyHelperUrl={
                             jellyfinUrl
-                                ? `${jellyfinUrl.replace(/\/$/, '')}/web/index.html#!/apikeys.html`
+                                ? `${jellyfinUrl.replace(/\/$/, '')}/web/index.html#/dashboard/keys`
                                 : undefined
                         }
                         onResetStatus={() => setTestStatus('idle')}
