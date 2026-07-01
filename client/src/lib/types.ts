@@ -26,6 +26,8 @@ export const mediaSettingsSchema = z.object({
     traktClientId: z.string().nullable().optional(),
     traktClientSecret: z.string().nullable().optional(),
     tmdbApiKey: z.string().nullable().optional(),
+    tvdbApiKey: z.string().nullable().optional(),
+    imdbApiKey: z.string().nullable().optional(),
     jellyfinUrl: z
         .union([z.url(), z.literal('')])
         .nullable()

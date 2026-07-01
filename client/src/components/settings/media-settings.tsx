@@ -41,6 +41,66 @@ export function MediaSettings() {
                     </div>
                 )}
             />
+
+            <form.AppField
+                name="tvdbApiKey"
+                children={(field) => (
+                    <div className="space-y-2">
+                        <Label htmlFor={field.name}>TVDB API Key</Label>
+                        <div className="relative">
+                            <Input
+                                id={field.name}
+                                name={field.name}
+                                type="password"
+                                value={field.state.value || ''}
+                                onBlur={field.handleBlur}
+                                onChange={(e) =>
+                                    field.handleChange(e.target.value)
+                                }
+                                className="pr-10"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => pasteFromClipboard(field)}
+                                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
+                                title="Paste from clipboard"
+                            >
+                                <ClipboardIcon className="h-4 w-4" />
+                            </button>
+                        </div>
+                    </div>
+                )}
+            />
+
+            <form.AppField
+                name="imdbApiKey"
+                children={(field) => (
+                    <div className="space-y-2">
+                        <Label htmlFor={field.name}>IMDB API Key</Label>
+                        <div className="relative">
+                            <Input
+                                id={field.name}
+                                name={field.name}
+                                type="password"
+                                value={field.state.value || ''}
+                                onBlur={field.handleBlur}
+                                onChange={(e) =>
+                                    field.handleChange(e.target.value)
+                                }
+                                className="pr-10"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => pasteFromClipboard(field)}
+                                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
+                                title="Paste from clipboard"
+                            >
+                                <ClipboardIcon className="h-4 w-4" />
+                            </button>
+                        </div>
+                    </div>
+                )}
+            />
         </div>
     );
 }

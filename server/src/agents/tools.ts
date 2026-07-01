@@ -1,4 +1,5 @@
 import { DynamicStructuredTool } from '@langchain/core/tools';
+import { MEDIA_TYPES, type MediaType } from 'shared';
 import { z } from 'zod';
 
 import { createLogger } from '../lib/logger';
@@ -441,7 +442,7 @@ export const createFranchiseAddMissingTool = (userId: number) =>
                                 'The database primary key / TMDB ID (movies) or TVDB ID (TV shows) of the item',
                             ),
                         type: z
-                            .enum(['movie', 'show'])
+                            .enum(MEDIA_TYPES)
                             .describe('Type of media: movie or show'),
                         title: z.string().describe('Title of the media'),
                     }),
@@ -451,7 +452,7 @@ export const createFranchiseAddMissingTool = (userId: number) =>
         func: async ({
             items,
         }: {
-            items: { mediaId: number; type: 'movie' | 'show'; title: string }[];
+            items: { mediaId: number; type: MediaType; title: string }[];
         }) => {
             const added: string[] = [];
             const failed: string[] = [];

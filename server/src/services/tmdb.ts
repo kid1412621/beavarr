@@ -37,7 +37,10 @@ export class TMDBService {
     private async request(
         userId: number,
         path: string,
-        params: Record<string, string | number | boolean | null | undefined> = {},
+        params: Record<
+            string,
+            string | number | boolean | null | undefined
+        > = {},
     ): Promise<Response> {
         const apiKey = await this.getApiKey(userId);
         const isV4 = apiKey.startsWith('eyJ');
@@ -51,7 +54,7 @@ export class TMDBService {
         }
 
         const headers: Record<string, string> = {
-            'accept': 'application/json',
+            accept: 'application/json',
         };
 
         if (isV4) {
@@ -95,7 +98,9 @@ export class TMDBService {
             overview: string;
         }>;
     }> {
-        const response = await this.request(userId, '/search/collection', { query });
+        const response = await this.request(userId, '/search/collection', {
+            query,
+        });
         if (!response.ok)
             throw new Error('Failed to search collections on TMDB');
         return (await response.json()) as any;

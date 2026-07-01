@@ -1,7 +1,12 @@
-import { ChatOpenAI } from '@langchain/openai';
 import { eq, asc } from 'drizzle-orm';
-import type { TimelineItem, FranchiseTimeline, LibraryItem } from 'shared';
+import type {
+    TimelineItem,
+    FranchiseTimeline,
+    LibraryItem,
+    MediaType,
+} from 'shared';
 
+import { generateAITimeline } from '../agents/timeline';
 import { db } from '../db';
 import { getSettings } from '../db/repo/settings';
 import { franchises, franchiseItems, movies, shows } from '../db/schema';
@@ -16,67 +21,84 @@ const logger = createLogger('franchise-service');
 export class FranchiseService {
     async searchFranchise(userId: number, query: string) {
         try {
-            // Priority 1: Search TMDB Collections
-            const response = await tmdbService.searchCollection(userId, query);
+            const settings = await getSettings(userId);
             const results: Array<{
                 id: number;
                 name: string;
                 posterPath: string | null;
                 overview: string;
                 type: 'collection' | 'custom';
-            }> = response.results.map((c) => ({
-                id: c.id,
-                name: c.name,
-                posterPath: c.poster_path,
-                overview: c.overview || '',
-                type: 'collection',
-            }));
+            }> = [];
+
+            // Priority 1: Search TMDB Collections
+            if (settings?.tmdbApiKey) {
+                try {
+                    const response = await tmdbService.searchCollection(
+                        userId,
+                        query,
+                    );
+                    const tmdbResults = response.results.map((c) => ({
+                        id: c.id,
+                        name: c.name,
+                        posterPath: c.poster_path,
+                        overview: c.overview || '',
+                        type: 'collection' as const,
+                    }));
+                    results.push(...tmdbResults);
+                } catch (err) {
+                    logger.error('Failed to search TMDB collections: {error}', {
+                        error: err,
+                    });
+                }
+            }
 
             // Priority 2: Scan local Radarr library to check if any collection names match the search query
-            try {
-                const radarrMovies = await radarrService.getMovies(userId);
-                const localCollections = new Map<
-                    number,
-                    { id: number; name: string }
-                >();
+            if (settings?.radarrUrl && settings?.radarrApiKey) {
+                try {
+                    const radarrMovies = await radarrService.getMovies(userId);
+                    const localCollections = new Map<
+                        number,
+                        { id: number; name: string }
+                    >();
 
-                for (const m of radarrMovies) {
-                    if (
-                        m.collection &&
-                        m.collection.tmdbId &&
-                        m.collection.name
-                    ) {
-                        const nameLower = m.collection.name.toLowerCase();
-                        const queryLower = query.toLowerCase();
+                    for (const m of radarrMovies) {
                         if (
-                            nameLower.includes(queryLower) &&
-                            !localCollections.has(m.collection.tmdbId)
+                            m.collection &&
+                            m.collection.tmdbId &&
+                            m.collection.name
                         ) {
-                            localCollections.set(m.collection.tmdbId, {
-                                id: m.collection.tmdbId,
-                                name: m.collection.name,
+                            const nameLower = m.collection.name.toLowerCase();
+                            const queryLower = query.toLowerCase();
+                            if (
+                                nameLower.includes(queryLower) &&
+                                !localCollections.has(m.collection.tmdbId)
+                            ) {
+                                localCollections.set(m.collection.tmdbId, {
+                                    id: m.collection.tmdbId,
+                                    name: m.collection.name,
+                                });
+                            }
+                        }
+                    }
+
+                    // Add local collections to results if they are not already present
+                    for (const lc of localCollections.values()) {
+                        if (!results.some((r) => r.id === lc.id)) {
+                            results.push({
+                                id: lc.id,
+                                name: lc.name,
+                                posterPath: null,
+                                overview: 'From your Radarr Library',
+                                type: 'collection',
                             });
                         }
                     }
+                } catch (err) {
+                    logger.error(
+                        'Failed to query local Radarr library during search: {error}',
+                        { error: err },
+                    );
                 }
-
-                // Add local collections to results if they are not already present
-                for (const lc of localCollections.values()) {
-                    if (!results.some((r) => r.id === lc.id)) {
-                        results.push({
-                            id: lc.id,
-                            name: lc.name,
-                            posterPath: null,
-                            overview: 'From your Radarr Library',
-                            type: 'collection',
-                        });
-                    }
-                }
-            } catch (err) {
-                logger.error(
-                    'Failed to query local Radarr library during search: {error}',
-                    { error: err },
-                );
             }
 
             // Always add a custom option for the search query to support mixed media timeline generation
@@ -355,7 +377,7 @@ export class FranchiseService {
         let name = slug;
         let rawItems: Array<{
             title: string;
-            type: 'movie' | 'show';
+            type: MediaType;
             releaseYear?: number;
             mediaId?: number; // tmdbId or tvdbId if already resolved
             seasonNumber?: number;
@@ -395,65 +417,16 @@ export class FranchiseService {
                     : undefined,
             }));
         } else {
-            // LLM-assisted mixed media timeline generation
-            const settings = await getSettings(userId);
-            if (!settings?.openaiApiKey) {
-                throw new Error(
-                    'OpenAI API Key is required to build custom timelines',
-                );
-            }
-
-            const model = new ChatOpenAI({
-                apiKey: settings.openaiApiKey,
-                model: settings.openaiModel || 'gpt-4o-mini',
-                temperature: 0,
-                configuration: {
-                    baseURL: settings.openaiBaseUrl || undefined,
-                },
-            });
-
-            const prompt = `You are a professional movie and TV show database expert.
-Generate a chronological timeline (in story order, or release order if story order doesn't apply) for the franchise or topic: "${slug}".
-Include both movies and TV shows/series that are part of this franchise.
-
-Return ONLY a JSON object with this exact structure:
-{
-  "name": "Star Wars Cinematic Universe",
-  "items": [
-    {
-      "title": "Star Wars: Episode I - The Phantom Menace",
-      "type": "movie",
-      "releaseYear": 1999,
-      "tmdbId": 1893,
-      "seasonNumber": null
-    },
-    {
-      "title": "Star Wars: The Clone Wars",
-      "type": "show",
-      "releaseYear": 2008,
-      "tmdbId": 41263,
-      "seasonNumber": null
-    }
-  ]
-}
-
-Ensure all significant entries in the franchise are included. Make sure "tmdbId" is correct if you know it, otherwise set it to null.
-Do NOT include any markdown formatting, backticks, or comments. Just the raw JSON.`;
-
-            const response = await model.invoke(prompt);
-            const content =
-                typeof response.content === 'string'
-                    ? response.content
-                    : JSON.stringify(response.content);
-
-            // Clean up possible markdown code block wrapper
-            const jsonText = content
-                .replace(/^```json\s*/, '')
-                .replace(/```\s*$/, '')
-                .trim();
-            const parsed = JSON.parse(jsonText);
-            name = parsed.name || slug;
-            rawItems = parsed.items || [];
+            // LLM-assisted mixed media timeline generation via agent
+            const aiTimeline = await generateAITimeline(userId, slug);
+            name = aiTimeline.name;
+            rawItems = aiTimeline.items.map((item) => ({
+                title: item.title,
+                type: item.type,
+                releaseYear: item.releaseYear,
+                mediaId: item.tmdbId || undefined,
+                seasonNumber: item.seasonNumber || undefined,
+            }));
         }
 
         // 3. Resolve metadata and TMDB/TVDB IDs
@@ -729,34 +702,39 @@ Do NOT include any markdown formatting, backticks, or comments. Just the raw JSO
         let localShows: any[] = [];
         let jellyfinItems: LibraryItem[] = [];
 
-        try {
-            localMovies = await radarrService.getMovies(userId);
-        } catch (err) {
-            logger.warn(
-                'Failed to fetch local Radarr movies for enrichment: {error}',
-                { error: err },
-            );
-        }
+        const settings = await getSettings(userId);
 
-        try {
-            localShows = await sonarrService.getSeries(userId);
-        } catch (err) {
-            logger.warn(
-                'Failed to fetch local Sonarr series for enrichment: {error}',
-                { error: err },
-            );
-        }
-
-        try {
-            const settings = await getSettings(userId);
-            if (settings?.jellyfinUrl && settings?.jellyfinApiKey) {
-                jellyfinItems = await jellyfinService.getLibrary(userId);
+        if (settings?.radarrUrl && settings?.radarrApiKey) {
+            try {
+                localMovies = await radarrService.getMovies(userId);
+            } catch (err) {
+                logger.warn(
+                    'Failed to fetch local Radarr movies for enrichment: {error}',
+                    { error: err },
+                );
             }
-        } catch (err) {
-            logger.warn(
-                'Failed to fetch local Jellyfin items for enrichment: {error}',
-                { error: err },
-            );
+        }
+
+        if (settings?.sonarrUrl && settings?.sonarrApiKey) {
+            try {
+                localShows = await sonarrService.getSeries(userId);
+            } catch (err) {
+                logger.warn(
+                    'Failed to fetch local Sonarr series for enrichment: {error}',
+                    { error: err },
+                );
+            }
+        }
+
+        if (settings?.jellyfinUrl && settings?.jellyfinApiKey) {
+            try {
+                jellyfinItems = await jellyfinService.getLibrary(userId);
+            } catch (err) {
+                logger.warn(
+                    'Failed to fetch local Jellyfin items for enrichment: {error}',
+                    { error: err },
+                );
+            }
         }
 
         // Create lookups
@@ -843,9 +821,16 @@ Do NOT include any markdown formatting, backticks, or comments. Just the raw JSO
 
     async addTimelineItem(
         userId: number,
-        item: { mediaId: number; type: 'movie' | 'show'; title: string },
+        item: { mediaId: number; type: MediaType; title: string },
     ) {
+        const settings = await getSettings(userId);
+
         if (item.type === 'movie') {
+            if (!settings?.radarrUrl || !settings?.radarrApiKey) {
+                throw new Error(
+                    'Radarr is not configured. Please connect Radarr in Settings.',
+                );
+            }
             // Find movie details to get Title Slug and images
             const searchRes = await radarrService.search(userId, item.title);
             const searchMatch =
@@ -880,6 +865,11 @@ Do NOT include any markdown formatting, backticks, or comments. Just the raw JSO
 
             return result;
         } else {
+            if (!settings?.sonarrUrl || !settings?.sonarrApiKey) {
+                throw new Error(
+                    'Sonarr is not configured. Please connect Sonarr in Settings.',
+                );
+            }
             // TV Show - TVDB ID is used
             const searchRes = await sonarrService.search(userId, item.title);
             const searchMatch =

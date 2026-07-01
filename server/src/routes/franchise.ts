@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import type { MediaType } from 'shared';
 
 import { type Env } from '../lib/auth';
 import { createLogger } from '../lib/logger';
@@ -82,7 +83,7 @@ const franchiseRoute = new Hono<Env>()
         try {
             const body = await c.req.json<{
                 mediaId: number;
-                type: 'movie' | 'show';
+                type: MediaType;
                 title: string;
             }>();
             if (!body || !body.mediaId || !body.type || !body.title) {

@@ -1,3 +1,5 @@
+import type { MediaType } from 'shared';
+
 import { getSettings } from '../db/repo/settings';
 import { traktOAuthService } from './trakt_oauth';
 
@@ -63,7 +65,7 @@ export interface TraktWatchlistItem {
     rank: number;
     id: number;
     listed_at: string;
-    type: 'movie' | 'show';
+    type: MediaType;
     movie?: TraktMovie;
     show?: TraktShow;
 }

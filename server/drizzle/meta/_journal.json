@@ -22,6 +22,13 @@
       "when": 1782899053537,
       "tag": "0002_round_earthquake",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1782900257313,
+      "tag": "0003_open_scarlet_witch",
+      "breakpoints": true
     }
   ]
 }

@@ -17,6 +17,8 @@ export interface MediaSettingsForm {
     traktClientId?: string | null;
     traktClientSecret?: string | null;
     tmdbApiKey?: string | null;
+    tvdbApiKey?: string | null;
+    imdbApiKey?: string | null;
     jellyfinUrl?: string | null;
     jellyfinApiKey?: string | null;
     posterSource?: 'history' | 'trending' | 'library' | '' | null;
@@ -39,9 +41,13 @@ export interface ChatResponse {
     messages: ChatMessage[];
 }
 
+// Media Types
+export const MEDIA_TYPES = ['movie', 'show'] as const;
+export type MediaType = (typeof MEDIA_TYPES)[number];
+
 // Library Types
 export interface LibraryItem {
-    type: 'movie' | 'show';
+    type: MediaType;
     title: string;
     year: number;
     poster_url: string | null;
@@ -115,7 +121,7 @@ export type ConnectableService = (typeof CONNECTABLE_SERVICES)[number];
 export interface TimelineItem {
     mediaId: number; // The movie's tmdbId or the show's tvdbId (table primary key)
     title: string;
-    type: 'movie' | 'show';
+    type: MediaType;
     releaseDate?: string;
     overview?: string;
     posterPath?: string | null;
