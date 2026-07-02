@@ -491,7 +491,7 @@ function TimelineExplorer() {
                                     {/* Timeline Card */}
                                     <Card
                                         className={cn(
-                                            'bg-card border-border rounded-xl transition-all duration-200 overflow-hidden shadow-sm hover:shadow-md border',
+                                            'bg-card border-border rounded-xl transition-all duration-200 overflow-hidden shadow-sm hover:shadow-md border p-0',
                                         )}
                                     >
                                         <div className="flex flex-col md:flex-row">
@@ -500,10 +500,10 @@ function TimelineExplorer() {
                                                 <img
                                                     src={`https://image.tmdb.org/t/p/w185${item.posterPath}`}
                                                     alt={item.title}
-                                                    className="h-48 w-full object-cover md:h-auto md:w-32"
+                                                    className="h-48 w-full object-cover rounded-t-xl md:rounded-tr-none md:rounded-l-xl md:h-auto md:w-32"
                                                 />
                                             ) : (
-                                                <div className="bg-muted text-muted-foreground flex h-48 w-full flex-col items-center justify-center md:h-auto md:w-32">
+                                                <div className="bg-muted text-muted-foreground flex h-48 w-full flex-col items-center justify-center rounded-t-xl md:rounded-tr-none md:rounded-l-xl md:h-auto md:w-32">
                                                     {item.type === 'movie' ? (
                                                         <Film className="size-8" />
                                                     ) : (
@@ -761,10 +761,10 @@ function TimelineExplorer() {
                                                         <img
                                                             src={`https://image.tmdb.org/t/p/w185${item.posterPath}`}
                                                             alt={item.title}
-                                                            className="h-full w-full object-cover"
+                                                            className="h-full w-full object-cover rounded-t-xl"
                                                         />
                                                     ) : (
-                                                        <div className="bg-muted text-muted-foreground flex h-full w-full flex-col items-center justify-center">
+                                                        <div className="bg-muted text-muted-foreground flex h-full w-full flex-col items-center justify-center rounded-t-xl">
                                                             {item.type ===
                                                             'movie' ? (
                                                                 <Film className="size-8" />
