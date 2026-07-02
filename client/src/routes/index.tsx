@@ -24,7 +24,7 @@ function Index() {
 
             {/* Content */}
             <div className="animate-fade-in-up relative z-10 flex flex-col items-center gap-8 text-center">
-                <div className="space-y-2">
+                <div className="flex flex-col gap-2">
                     <h1 className="from-foreground to-muted-foreground bg-gradient-to-br bg-clip-text text-7xl font-black tracking-tighter text-transparent drop-shadow-2xl md:text-9xl">
                         bhvr
                     </h1>
@@ -39,7 +39,7 @@ function Index() {
                             size="lg"
                             className="h-14 rounded-full px-8 text-lg shadow-lg transition-all hover:scale-105 active:scale-95"
                         >
-                            <MessageSquare className="mr-3 h-5 w-5" />
+                            <MessageSquare data-icon="inline-start" />
                             Start Chat
                         </Button>
                     </Link>
@@ -50,7 +50,7 @@ function Index() {
                             variant="outline"
                             className="bg-background/50 h-14 rounded-full px-8 text-lg backdrop-blur-sm transition-all hover:scale-105"
                         >
-                            <Settings className="mr-3 h-5 w-5" />
+                            <Settings data-icon="inline-start" />
                             Settings
                         </Button>
                     </Link>
@@ -63,10 +63,10 @@ function Index() {
                         <Button
                             size="icon"
                             variant="ghost"
-                            className="h-14 w-14 rounded-full transition-all hover:scale-110"
+                            className="size-14 rounded-full transition-all hover:scale-110"
                             title="Go to Sonarr"
                         >
-                            <TvMinimalPlay className="h-6 w-6" />
+                            <TvMinimalPlay className="size-6" />
                         </Button>
                     </a>
 
@@ -78,10 +78,10 @@ function Index() {
                         <Button
                             size="icon"
                             variant="ghost"
-                            className="h-14 w-14 rounded-full transition-all hover:scale-110"
+                            className="size-14 rounded-full transition-all hover:scale-110"
                             title="Go to Radarr"
                         >
-                            <Clapperboard className="h-6 w-6" />
+                            <Clapperboard className="size-6" />
                         </Button>
                     </a>
                 </div>

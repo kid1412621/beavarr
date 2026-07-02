@@ -1,3 +1,4 @@
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useConnectionTest } from '@/hooks/use-connection-test';
 import { client } from '@/lib/api';
 import { useAppFormContext } from '@/lib/form';
@@ -33,7 +34,7 @@ export function JellyfinSettings() {
             ]}
         >
             {([jellyfinUrl, jellyfinApiKey]) => (
-                <div className="space-y-4">
+                <div className="flex flex-col gap-4">
                     <ConnectableHeader
                         title="Jellyfin"
                         serviceName="Jellyfin"
@@ -73,10 +74,12 @@ export function JellyfinSettings() {
                     )}
 
                     {testStatus === 'failed' && (
-                        <p className="text-sm text-red-500">
-                            Could not connect to Jellyfin. Check the URL and API
-                            key and try again.
-                        </p>
+                        <Alert variant="destructive">
+                            <AlertDescription>
+                                Could not connect to Jellyfin. Check the URL and
+                                API key and try again.
+                            </AlertDescription>
+                        </Alert>
                     )}
                 </div>
             )}

@@ -1,5 +1,9 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
+
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export const Route = createFileRoute('/trakt_callback')({
     component: TraktCallback,
@@ -65,99 +69,120 @@ function TraktCallback() {
                         err instanceof Error ? err.message : 'Unknown error',
                 });
             });
-    }, [code, queryState, queryError, navigate]);
+    }, [code, queryState, queryError, navigate, SERVER_URL]);
 
     if (state.status === 'error') {
         return (
-            <div className="bg-background flex min-h-screen items-center justify-center">
-                <div className="w-full max-w-md p-8">
-                    <h1 className="text-destructive mb-4 text-2xl font-bold">
-                        Authorization Failed
-                    </h1>
-                    <p className="text-muted-foreground mb-6">
-                        Error: {state.message}
-                    </p>
-                    <a
-                        href="/settings"
-                        className="text-primary hover:underline"
-                    >
-                        Return to Settings
-                    </a>
-                </div>
+            <div className="bg-background flex min-h-screen items-center justify-center p-4">
+                <Card className="w-full max-w-md">
+                    <CardHeader>
+                        <CardTitle className="text-destructive text-2xl">
+                            Authorization Failed
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-4">
+                        <Alert variant="destructive">
+                            <AlertDescription>
+                                Error: {state.message}
+                            </AlertDescription>
+                        </Alert>
+                        <Link to="/settings" className="w-full">
+                            <Button className="w-full" variant="outline">
+                                Return to Settings
+                            </Button>
+                        </Link>
+                    </CardContent>
+                </Card>
             </div>
         );
     }
 
     if (state.status === 'missing-data') {
         return (
-            <div className="bg-background flex min-h-screen items-center justify-center">
-                <div className="w-full max-w-md p-8">
-                    <h1 className="text-destructive mb-4 text-2xl font-bold">
-                        Missing Authorization Data
-                    </h1>
-                    <p className="text-muted-foreground mb-6">
-                        Authorization code or state is missing.
-                    </p>
-                    <a
-                        href="/settings"
-                        className="text-primary hover:underline"
-                    >
-                        Return to Settings
-                    </a>
-                </div>
+            <div className="bg-background flex min-h-screen items-center justify-center p-4">
+                <Card className="w-full max-w-md">
+                    <CardHeader>
+                        <CardTitle className="text-destructive text-2xl">
+                            Missing Authorization Data
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-4">
+                        <Alert variant="destructive">
+                            <AlertDescription>
+                                Authorization code or state is missing.
+                            </AlertDescription>
+                        </Alert>
+                        <Link to="/settings" className="w-full">
+                            <Button className="w-full" variant="outline">
+                                Return to Settings
+                            </Button>
+                        </Link>
+                    </CardContent>
+                </Card>
             </div>
         );
     }
 
     if (state.status === 'failed') {
         return (
-            <div className="bg-background flex min-h-screen items-center justify-center">
-                <div className="w-full max-w-md p-8">
-                    <h1 className="text-destructive mb-4 text-2xl font-bold">
-                        Connection Failed
-                    </h1>
-                    <p className="text-muted-foreground mb-6">
-                        {state.message}
-                    </p>
-                    <a
-                        href="/settings"
-                        className="text-primary hover:underline"
-                    >
-                        Return to Settings
-                    </a>
-                </div>
+            <div className="bg-background flex min-h-screen items-center justify-center p-4">
+                <Card className="w-full max-w-md">
+                    <CardHeader>
+                        <CardTitle className="text-destructive text-2xl">
+                            Connection Failed
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-4">
+                        <Alert variant="destructive">
+                            <AlertDescription>{state.message}</AlertDescription>
+                        </Alert>
+                        <Link to="/settings" className="w-full">
+                            <Button className="w-full" variant="outline">
+                                Return to Settings
+                            </Button>
+                        </Link>
+                    </CardContent>
+                </Card>
             </div>
         );
     }
 
     if (state.status === 'success') {
         return (
-            <div className="bg-background flex min-h-screen items-center justify-center">
-                <div className="w-full max-w-md p-8 text-center">
-                    <h1 className="mb-4 text-2xl font-bold text-green-600">
-                        Successfully Connected!
-                    </h1>
-                    <p className="text-muted-foreground mb-4">
-                        Trakt has been connected to your account.
-                    </p>
-                    <p className="text-muted-foreground text-sm">
-                        Redirecting to settings...
-                    </p>
-                </div>
+            <div className="bg-background flex min-h-screen items-center justify-center p-4">
+                <Card className="w-full max-w-md text-center">
+                    <CardHeader>
+                        <CardTitle className="text-2xl">
+                            Successfully Connected!
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-4">
+                        <p className="text-muted-foreground">
+                            Trakt has been connected to your account.
+                        </p>
+                        <p className="text-muted-foreground text-sm">
+                            Redirecting to settings...
+                        </p>
+                    </CardContent>
+                </Card>
             </div>
         );
     }
 
     return (
-        <div className="bg-background flex min-h-screen items-center justify-center">
-            <div className="w-full max-w-md p-8 text-center">
-                <h1 className="mb-4 text-2xl font-bold">
-                    Connecting to Trakt...
-                </h1>
-                <p className="text-muted-foreground">
-                    Redirecting to complete authorization...
-                </p>
-            </div>
+        <div className="bg-background flex min-h-screen items-center justify-center p-4">
+            <Card className="w-full max-w-md text-center">
+                <CardHeader>
+                    <CardTitle className="text-2xl">
+                        Connecting to Trakt...
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-4">
+                    <p className="text-muted-foreground">
+                        Redirecting to complete authorization...
+                    </p>
+                </CardContent>
+            </Card>
         </div>
     );
 }

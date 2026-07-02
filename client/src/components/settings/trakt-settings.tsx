@@ -1,15 +1,24 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-    Clipboard as ClipboardIcon,
-    ExternalLink,
-    RefreshCw,
-} from 'lucide-react';
+import { Clipboard as ClipboardIcon, ExternalLink } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import type { TraktDeviceCodeResponse } from 'shared';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import {
+    Field,
+    FieldLabel,
+    FieldError,
+    FieldGroup,
+} from '@/components/ui/field';
+import {
+    InputGroup,
+    InputGroupInput,
+    InputGroupAddon,
+} from '@/components/ui/input-group';
+import { Spinner } from '@/components/ui/spinner';
 import { client } from '@/lib/api';
 import { useAppFormContext } from '@/lib/form';
 import { type SettingsForm } from '@/lib/types';
@@ -173,7 +182,7 @@ export function TraktSettings() {
     };
 
     return (
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
             <ConnectableHeader
                 title="Trakt"
                 serviceName="Trakt"
@@ -191,11 +200,16 @@ export function TraktSettings() {
                         <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end">
                             <div className="flex items-center gap-2">
                                 {user?.avatar ? (
-                                    <img
-                                        src={`/api/trakt/avatar?url=${encodeURIComponent(user.avatar)}`}
-                                        alt={user.name || user.username}
-                                        className="h-6 w-6 rounded-full"
-                                    />
+                                    <Avatar className="size-6">
+                                        <AvatarImage
+                                            src={`/api/trakt/avatar?url=${encodeURIComponent(user.avatar)}`}
+                                            alt={user.name || user.username}
+                                        />
+                                        <AvatarFallback>
+                                            {(user.name ||
+                                                user.username)?.[0]?.toUpperCase()}
+                                        </AvatarFallback>
+                                    </Avatar>
                                 ) : null}
                                 <span className="text-sm font-medium">
                                     {user?.name || user?.username}
@@ -208,6 +222,9 @@ export function TraktSettings() {
                                 disabled={handleDisconnect.isPending}
                                 className="w-full sm:w-auto"
                             >
+                                {handleDisconnect.isPending && (
+                                    <Spinner data-icon="inline-start" />
+                                )}
                                 {handleDisconnect.isPending
                                     ? 'Disconnecting...'
                                     : 'Disconnect'}
@@ -226,16 +243,14 @@ export function TraktSettings() {
                 }
             >
                 {isConnected && isDeviceFlow && (
-                    <span className="rounded bg-green-100 px-2 py-0.5 text-xs text-green-800">
-                        Device Flow
-                    </span>
+                    <Badge variant="secondary">Device Flow</Badge>
                 )}
             </ConnectableHeader>
 
             {/* Device Flow UI */}
             {!isConnected && deviceCodeInfo && (
                 <div className="bg-muted/50 rounded-lg border p-4">
-                    <div className="space-y-4 text-center">
+                    <div className="flex flex-col gap-4 text-center">
                         <p className="text-muted-foreground text-sm">
                             Go to{' '}
                             <a
@@ -245,37 +260,41 @@ export function TraktSettings() {
                                 className="text-primary inline-flex items-center gap-1 hover:underline"
                             >
                                 {deviceCodeInfo.verification_url}
-                                <ExternalLink className="h-3 w-3" />
+                                <ExternalLink className="size-3.5" />
                             </a>
                         </p>
-                        <div className="space-y-2">
+                        <div className="flex flex-col gap-2">
                             <p className="text-sm">Enter this code:</p>
                             <div className="flex items-center justify-center gap-2">
                                 <div className="text-primary font-mono text-3xl font-bold tracking-wider">
                                     {deviceCodeInfo.user_code}
                                 </div>
-                                <button
+                                <Button
                                     type="button"
+                                    variant="ghost"
+                                    size="icon"
                                     onClick={() =>
                                         navigator.clipboard.writeText(
                                             deviceCodeInfo.user_code,
                                         )
                                     }
-                                    className="text-muted-foreground hover:text-foreground p-1"
+                                    className="text-muted-foreground hover:text-foreground"
                                     title="Copy to clipboard"
                                 >
-                                    <ClipboardIcon className="h-5 w-5" />
-                                </button>
+                                    <ClipboardIcon data-icon="inline-start" />
+                                </Button>
                             </div>
                         </div>
                         <div className="text-muted-foreground flex items-center justify-center gap-2 text-sm">
-                            <RefreshCw className="h-4 w-4 animate-spin" />
+                            <Spinner />
                             <span>
                                 Time remaining: {formatTime(timeRemaining)}
                             </span>
                         </div>
                         {pollError && (
-                            <p className="text-sm text-red-500">{pollError}</p>
+                            <Alert variant="destructive">
+                                <AlertDescription>{pollError}</AlertDescription>
+                            </Alert>
                         )}
                     </div>
                 </div>
@@ -283,18 +302,19 @@ export function TraktSettings() {
 
             {/* Advanced Toggle */}
             {!isConnected && (
-                <button
+                <Button
                     type="button"
+                    variant="link"
                     onClick={() => setShowAdvanced(!showAdvanced)}
-                    className="text-muted-foreground hover:text-foreground text-sm underline"
+                    className="text-muted-foreground hover:text-foreground h-auto self-start p-0 text-sm"
                 >
                     {showAdvanced ? 'Hide' : 'Show'} advanced options
-                </button>
+                </Button>
             )}
 
             {/* Advanced: Custom Credentials */}
             {showAdvanced && (
-                <div className="space-y-4 rounded-lg border p-4">
+                <div className="flex flex-col gap-4 rounded-lg border p-4">
                     <div className="flex items-center justify-between">
                         <h4 className="font-medium">Authorization Code Flow</h4>
                         <p className="text-muted-foreground text-xs">
@@ -310,77 +330,113 @@ export function TraktSettings() {
                             </a>
                         </p>
                     </div>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <FieldGroup className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <form.AppField
                             name="traktClientId"
-                            children={(field) => (
-                                <div className="space-y-2">
-                                    <Label htmlFor={field.name}>
-                                        Trakt Client ID
-                                    </Label>
-                                    <div className="relative">
-                                        <Input
-                                            id={field.name}
-                                            name={field.name}
-                                            value={field.state.value || ''}
-                                            onBlur={field.handleBlur}
-                                            onChange={(e) =>
-                                                field.handleChange(
-                                                    e.target.value,
-                                                )
-                                            }
-                                            className="pr-10"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                pasteFromClipboard(field)
-                                            }
-                                            className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
-                                            title="Paste from clipboard"
-                                        >
-                                            <ClipboardIcon className="h-4 w-4" />
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
+                            children={(field) => {
+                                const hasError = !!(
+                                    field.state.meta.errors &&
+                                    field.state.meta.errors.length > 0
+                                );
+                                return (
+                                    <Field data-invalid={hasError}>
+                                        <FieldLabel htmlFor={field.name}>
+                                            Trakt Client ID
+                                        </FieldLabel>
+                                        <InputGroup>
+                                            <InputGroupInput
+                                                id={field.name}
+                                                name={field.name}
+                                                value={field.state.value || ''}
+                                                onBlur={field.handleBlur}
+                                                onChange={(e) =>
+                                                    field.handleChange(
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                aria-invalid={hasError}
+                                            />
+                                            <InputGroupAddon>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() =>
+                                                        pasteFromClipboard(
+                                                            field,
+                                                        )
+                                                    }
+                                                    title="Paste from clipboard"
+                                                >
+                                                    <ClipboardIcon data-icon="inline-start" />
+                                                </Button>
+                                            </InputGroupAddon>
+                                        </InputGroup>
+                                        {hasError && (
+                                            <FieldError>
+                                                {field.state.meta.errors?.join(
+                                                    ', ',
+                                                )}
+                                            </FieldError>
+                                        )}
+                                    </Field>
+                                );
+                            }}
                         />
                         <form.AppField
                             name="traktClientSecret"
-                            children={(field) => (
-                                <div className="space-y-2">
-                                    <Label htmlFor={field.name}>
-                                        Trakt Client Secret
-                                    </Label>
-                                    <div className="relative">
-                                        <Input
-                                            id={field.name}
-                                            name={field.name}
-                                            type="password"
-                                            value={field.state.value || ''}
-                                            onBlur={field.handleBlur}
-                                            onChange={(e) =>
-                                                field.handleChange(
-                                                    e.target.value,
-                                                )
-                                            }
-                                            className="pr-10"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                pasteFromClipboard(field)
-                                            }
-                                            className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
-                                            title="Paste from clipboard"
-                                        >
-                                            <ClipboardIcon className="h-4 w-4" />
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
+                            children={(field) => {
+                                const hasError = !!(
+                                    field.state.meta.errors &&
+                                    field.state.meta.errors.length > 0
+                                );
+                                return (
+                                    <Field data-invalid={hasError}>
+                                        <FieldLabel htmlFor={field.name}>
+                                            Trakt Client Secret
+                                        </FieldLabel>
+                                        <InputGroup>
+                                            <InputGroupInput
+                                                id={field.name}
+                                                name={field.name}
+                                                type="password"
+                                                value={field.state.value || ''}
+                                                onBlur={field.handleBlur}
+                                                onChange={(e) =>
+                                                    field.handleChange(
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                aria-invalid={hasError}
+                                            />
+                                            <InputGroupAddon>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() =>
+                                                        pasteFromClipboard(
+                                                            field,
+                                                        )
+                                                    }
+                                                    title="Paste from clipboard"
+                                                >
+                                                    <ClipboardIcon data-icon="inline-start" />
+                                                </Button>
+                                            </InputGroupAddon>
+                                        </InputGroup>
+                                        {hasError && (
+                                            <FieldError>
+                                                {field.state.meta.errors?.join(
+                                                    ', ',
+                                                )}
+                                            </FieldError>
+                                        )}
+                                    </Field>
+                                );
+                            }}
                         />
-                    </div>
+                    </FieldGroup>
                 </div>
             )}
 
