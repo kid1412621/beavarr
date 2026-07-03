@@ -39,7 +39,7 @@ function Index() {
                             size="lg"
                             className="h-14 rounded-full px-8 text-lg shadow-lg transition-all hover:scale-105 active:scale-95"
                         >
-                            <MessageSquare data-icon="inline-start" />
+                            <MessageSquare />
                             Start Chat
                         </Button>
                     </Link>
@@ -50,7 +50,7 @@ function Index() {
                             variant="outline"
                             className="bg-background/50 h-14 rounded-full px-8 text-lg backdrop-blur-sm transition-all hover:scale-105"
                         >
-                            <Settings data-icon="inline-start" />
+                            <Settings />
                             Settings
                         </Button>
                     </Link>
