@@ -40,7 +40,7 @@ export async function createMediaAgent({
 
     const model = new ChatOpenAI({
         apiKey: openaiApiKey,
-        model: openaiModel || 'gpt-4.1-nano',
+        model: openaiModel || 'gpt-5-nano',
         temperature: 0,
         configuration: {
             baseURL: openaiBaseUrl || undefined,

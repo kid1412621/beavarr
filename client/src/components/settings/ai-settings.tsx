@@ -2,6 +2,7 @@ import { Clipboard as ClipboardIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Field, FieldLabel, FieldError } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
 import {
     InputGroup,
     InputGroupInput,
@@ -75,7 +76,7 @@ export function AiSettings() {
                             <FieldLabel htmlFor={field.name}>
                                 OpenAI Base URL
                             </FieldLabel>
-                            <InputGroupInput
+                            <Input
                                 id={field.name}
                                 name={field.name}
                                 value={field.state.value || ''}
@@ -106,10 +107,10 @@ export function AiSettings() {
                             <FieldLabel htmlFor={field.name}>
                                 OpenAI Model Name
                             </FieldLabel>
-                            <InputGroupInput
+                            <Input
                                 id={field.name}
                                 name={field.name}
-                                placeholder="gpt-4.1-nano"
+                                placeholder="gpt-5-nano"
                                 value={field.state.value || ''}
                                 onBlur={field.handleBlur}
                                 onChange={(e) =>
