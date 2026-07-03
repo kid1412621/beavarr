@@ -56,12 +56,37 @@ export function MessageScrollerProvider({
         return () => viewport.removeEventListener('scroll', handleScroll);
     }, [handleScroll]);
 
-    // Whenever children change, auto scroll if enabled and not currently scrolled up
+    // Auto-scroll when the height of the content container changes, if autoScroll is enabled
+    // and the user has not scrolled up (i.e. showScrollButton is false).
+    // Using ResizeObserver avoids triggering auto-scrolling when the children reference
+    // changes due to parent component re-renders (e.g. typing in an input box).
     React.useEffect(() => {
-        if (autoScroll && !showScrollButton) {
-            scrollToBottom();
+        const viewport = viewportRef.current;
+        if (!viewport) return;
+
+        let lastScrollHeight = viewport.scrollHeight;
+
+        const observer = new ResizeObserver(() => {
+            if (viewport.scrollHeight !== lastScrollHeight) {
+                lastScrollHeight = viewport.scrollHeight;
+                if (autoScroll && !showScrollButton) {
+                    scrollToBottom();
+                }
+            }
+        });
+
+        // Observe the content container (first child of viewport)
+        const content = viewport.firstElementChild;
+        if (content) {
+            observer.observe(content);
+        } else {
+            observer.observe(viewport);
         }
-    }, [children, autoScroll, showScrollButton, scrollToBottom]);
+
+        return () => {
+            observer.disconnect();
+        };
+    }, [autoScroll, showScrollButton, scrollToBottom]);
 
     return (
         <ScrollerContext.Provider

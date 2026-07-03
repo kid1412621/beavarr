@@ -11,12 +11,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import {
-    FieldGroup,
-    Field,
-    FieldLabel,
-    FieldError,
-} from '@/components/ui/field';
+import { FieldGroup, Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -76,9 +71,6 @@ function LoginPage() {
                                     }
                                     aria-invalid={!!error}
                                 />
-                                {error && (
-                                    <FieldError>Invalid credentials</FieldError>
-                                )}
                             </Field>
                             <Field data-invalid={!!error}>
                                 <FieldLabel htmlFor="password">
