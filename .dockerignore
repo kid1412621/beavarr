@@ -35,3 +35,10 @@ yarn-error.log*
 .turbo
 server/node_modules
 client/node_modules
+
+.agents
+.claude
+.codex
+AGENTS.md
+CLAUDE.md
+skill-lock.json
