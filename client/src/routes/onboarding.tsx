@@ -20,6 +20,7 @@ import {
     CardDescription,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Spinner } from '@/components/ui/spinner';
 import { client, settingsQueryOptions } from '@/lib/api';
 import { useAppForm, getErrorMessage } from '@/lib/form';
 import {
@@ -27,6 +28,7 @@ import {
     settingsSchema,
     getDefaultSettingsValues,
 } from '@/lib/types';
+import { cn } from '@/lib/utils';
 
 const onboardingSearchSchema = z.object({
     step: z.number().catch(1),
@@ -116,10 +118,16 @@ function InnerForm({
                 <CardHeader>
                     <div className="mb-2 flex items-center gap-2">
                         <div
-                            className={`h-2 flex-1 rounded-full ${step >= 1 ? 'bg-primary' : 'bg-muted'}`}
+                            className={cn(
+                                'h-2 flex-1 rounded-full',
+                                step >= 1 ? 'bg-primary' : 'bg-muted',
+                            )}
                         />
                         <div
-                            className={`h-2 flex-1 rounded-full ${step >= 2 ? 'bg-primary' : 'bg-muted'}`}
+                            className={cn(
+                                'h-2 flex-1 rounded-full',
+                                step >= 2 ? 'bg-primary' : 'bg-muted',
+                            )}
                         />
                     </div>
                     <CardTitle>
@@ -145,7 +153,12 @@ function InnerForm({
                             className="space-y-6"
                         >
                             <div
-                                className={`animate-in fade-in slide-in-from-right-4 space-y-4 duration-300 ${step !== 1 ? 'hidden' : ''}`}
+                                className={cn(
+                                    'animate-in fade-in slide-in-from-right-4 duration-300',
+                                    step !== 1
+                                        ? 'hidden'
+                                        : 'flex flex-col gap-4',
+                                )}
                             >
                                 <Alert className="bg-muted/50 border-none">
                                     <AlertDescription>
@@ -158,9 +171,14 @@ function InnerForm({
                             </div>
 
                             <div
-                                className={`animate-in fade-in slide-in-from-right-4 space-y-6 duration-300 ${step !== 2 ? 'hidden' : ''}`}
+                                className={cn(
+                                    'animate-in fade-in slide-in-from-right-4 duration-300',
+                                    step !== 2
+                                        ? 'hidden'
+                                        : 'flex flex-col gap-6',
+                                )}
                             >
-                                <div className="space-y-4">
+                                <div className="flex flex-col gap-4">
                                     <h3 className="text-muted-foreground text-sm font-medium tracking-wider uppercase">
                                         Library
                                     </h3>
@@ -168,14 +186,14 @@ function InnerForm({
                                     <RadarrSettings />
                                 </div>
                                 <Separator />
-                                <div className="space-y-4">
+                                <div className="flex flex-col gap-4">
                                     <h3 className="text-muted-foreground text-sm font-medium tracking-wider uppercase">
                                         General
                                     </h3>
                                     <GeneralSettings />
                                 </div>
                                 <Separator />
-                                <div className="space-y-4">
+                                <div className="flex flex-col gap-4">
                                     <h3 className="text-muted-foreground text-sm font-medium tracking-wider uppercase">
                                         History & Metadata
                                     </h3>
@@ -217,6 +235,9 @@ function InnerForm({
                                             type="submit"
                                             disabled={isSaving}
                                         >
+                                            {isSaving && (
+                                                <Spinner data-icon="inline-start" />
+                                            )}
                                             {isSaving
                                                 ? 'Finishing...'
                                                 : 'Complete Setup'}

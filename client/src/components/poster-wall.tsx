@@ -3,6 +3,7 @@ import { Film } from 'lucide-react';
 import { useState, useRef, useLayoutEffect } from 'react';
 import type { LibraryItem } from 'shared';
 
+import { Skeleton } from '@/components/ui/skeleton';
 import { client, settingsQueryOptions } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
@@ -28,7 +29,7 @@ function PosterImage({ src, className }: { src?: string; className?: string }) {
         >
             {/* Loading Skeleton */}
             {isLoading && (
-                <div className="absolute inset-0 z-10 animate-pulse bg-white/5" />
+                <Skeleton className="absolute inset-0 z-10 rounded-none bg-white/5" />
             )}
 
             {/* Image */}
@@ -56,8 +57,8 @@ function PosterImage({ src, className }: { src?: string; className?: string }) {
             {/* Fallback */}
             {(hasError || !src || src.includes('placehold.co')) && (
                 <div className="absolute inset-0 z-0 flex flex-col items-center justify-center border border-white/5 bg-gradient-to-br from-gray-800 to-gray-900 p-4 text-center">
-                    <div className="animate-in fade-in zoom-in mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-white/5 duration-300">
-                        <Film className="h-6 w-6 text-white/20" />
+                    <div className="animate-in fade-in zoom-in mb-2 flex size-12 items-center justify-center rounded-full bg-white/5 duration-300">
+                        <Film className="size-6 text-white/20" />
                     </div>
                     <span className="text-xs font-medium tracking-wider text-white/30">
                         NO IMAGE

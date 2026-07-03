@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -10,8 +11,8 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { FieldGroup, Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
 
 export const Route = createFileRoute('/change-password')({
@@ -60,37 +61,47 @@ function ChangePasswordPage() {
                         You must change your password to continue.
                     </CardDescription>
                 </CardHeader>
-                <form onSubmit={handleSubmit} className="grid gap-6">
-                    <CardContent className="grid gap-4">
+                <form onSubmit={handleSubmit}>
+                    <CardContent className="flex flex-col gap-6">
                         {error && (
-                            <div className="text-sm text-red-500">{error}</div>
+                            <Alert variant="destructive">
+                                <AlertDescription>{error}</AlertDescription>
+                            </Alert>
                         )}
-                        <div className="grid gap-2">
-                            <Label htmlFor="password">New Password</Label>
-                            <Input
-                                id="password"
-                                type="password"
-                                required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="confirmPassword">
-                                Confirm Password
-                            </Label>
-                            <Input
-                                id="confirmPassword"
-                                type="password"
-                                required
-                                value={confirmPassword}
-                                onChange={(e) =>
-                                    setConfirmPassword(e.target.value)
-                                }
-                            />
-                        </div>
+                        <FieldGroup className="flex flex-col gap-4">
+                            <Field data-invalid={!!error}>
+                                <FieldLabel htmlFor="password">
+                                    New Password
+                                </FieldLabel>
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    required
+                                    value={password}
+                                    onChange={(e) =>
+                                        setPassword(e.target.value)
+                                    }
+                                    aria-invalid={!!error}
+                                />
+                            </Field>
+                            <Field data-invalid={!!error}>
+                                <FieldLabel htmlFor="confirmPassword">
+                                    Confirm Password
+                                </FieldLabel>
+                                <Input
+                                    id="confirmPassword"
+                                    type="password"
+                                    required
+                                    value={confirmPassword}
+                                    onChange={(e) =>
+                                        setConfirmPassword(e.target.value)
+                                    }
+                                    aria-invalid={!!error}
+                                />
+                            </Field>
+                        </FieldGroup>
                     </CardContent>
-                    <CardFooter>
+                    <CardFooter className="pt-6">
                         <Button className="w-full" type="submit">
                             Change Password
                         </Button>

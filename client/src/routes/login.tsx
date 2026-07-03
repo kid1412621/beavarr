@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -10,8 +11,8 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { FieldGroup, Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
 
 export const Route = createFileRoute('/login')({
@@ -47,34 +48,48 @@ function LoginPage() {
                         Enter your credentials to access the account.
                     </CardDescription>
                 </CardHeader>
-                <form onSubmit={handleSubmit} className="grid gap-6">
-                    <CardContent className="grid gap-4">
+                <form onSubmit={handleSubmit}>
+                    <CardContent className="flex flex-col gap-6">
                         {error && (
-                            <div className="text-sm text-red-500">{error}</div>
+                            <Alert variant="destructive">
+                                <AlertDescription>{error}</AlertDescription>
+                            </Alert>
                         )}
-                        <div className="grid gap-2">
-                            <Label htmlFor="username">Username</Label>
-                            <Input
-                                id="username"
-                                type="text"
-                                placeholder="admin"
-                                required
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                            />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="password">Password</Label>
-                            <Input
-                                id="password"
-                                type="password"
-                                required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
-                        </div>
+                        <FieldGroup className="flex flex-col gap-4">
+                            <Field data-invalid={!!error}>
+                                <FieldLabel htmlFor="username">
+                                    Username
+                                </FieldLabel>
+                                <Input
+                                    id="username"
+                                    type="text"
+                                    placeholder="admin"
+                                    required
+                                    value={username}
+                                    onChange={(e) =>
+                                        setUsername(e.target.value)
+                                    }
+                                    aria-invalid={!!error}
+                                />
+                            </Field>
+                            <Field data-invalid={!!error}>
+                                <FieldLabel htmlFor="password">
+                                    Password
+                                </FieldLabel>
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    required
+                                    value={password}
+                                    onChange={(e) =>
+                                        setPassword(e.target.value)
+                                    }
+                                    aria-invalid={!!error}
+                                />
+                            </Field>
+                        </FieldGroup>
                     </CardContent>
-                    <CardFooter>
+                    <CardFooter className="pt-6">
                         <Button className="w-full" type="submit">
                             Sign in
                         </Button>

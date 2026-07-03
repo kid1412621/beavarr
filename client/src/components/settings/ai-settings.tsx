@@ -1,7 +1,13 @@
 import { Clipboard as ClipboardIcon } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
+import { Field, FieldLabel, FieldError } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import {
+    InputGroup,
+    InputGroupInput,
+    InputGroupAddon,
+} from '@/components/ui/input-group';
 import { useAppFormContext } from '@/lib/form';
 import { type SettingsForm } from '@/lib/types';
 
@@ -10,84 +16,116 @@ import { pasteFromClipboard } from './connectable-settings';
 export function AiSettings() {
     const form = useAppFormContext<SettingsForm>();
     return (
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
             <form.AppField
                 name="openaiApiKey"
-                children={(field) => (
-                    <div className="space-y-2">
-                        <Label htmlFor={field.name}>OpenAI API Key</Label>
-                        <div className="relative">
+                children={(field) => {
+                    const hasError = !!(
+                        field.state.meta.errors &&
+                        field.state.meta.errors.length > 0
+                    );
+                    return (
+                        <Field data-invalid={hasError}>
+                            <FieldLabel htmlFor={field.name}>
+                                OpenAI API Key
+                            </FieldLabel>
+                            <InputGroup>
+                                <InputGroupInput
+                                    id={field.name}
+                                    name={field.name}
+                                    type="password"
+                                    value={field.state.value || ''}
+                                    onBlur={field.handleBlur}
+                                    onChange={(e) =>
+                                        field.handleChange(e.target.value)
+                                    }
+                                    aria-invalid={hasError}
+                                />
+                                <InputGroupAddon>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() =>
+                                            pasteFromClipboard(field)
+                                        }
+                                        title="Paste from clipboard"
+                                    >
+                                        <ClipboardIcon data-icon="inline-start" />
+                                    </Button>
+                                </InputGroupAddon>
+                            </InputGroup>
+                            {hasError && (
+                                <FieldError>
+                                    {field.state.meta.errors?.join(', ')}
+                                </FieldError>
+                            )}
+                        </Field>
+                    );
+                }}
+            />
+            <form.AppField
+                name="openaiBaseUrl"
+                children={(field) => {
+                    const hasError = !!(
+                        field.state.meta.errors &&
+                        field.state.meta.errors.length > 0
+                    );
+                    return (
+                        <Field data-invalid={hasError}>
+                            <FieldLabel htmlFor={field.name}>
+                                OpenAI Base URL
+                            </FieldLabel>
                             <Input
                                 id={field.name}
                                 name={field.name}
-                                type="password"
                                 value={field.state.value || ''}
                                 onBlur={field.handleBlur}
                                 onChange={(e) =>
                                     field.handleChange(e.target.value)
                                 }
-                                className="pr-10"
+                                aria-invalid={hasError}
                             />
-                            <button
-                                type="button"
-                                onClick={() => pasteFromClipboard(field)}
-                                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
-                                title="Paste from clipboard"
-                            >
-                                <ClipboardIcon className="h-4 w-4" />
-                            </button>
-                        </div>
-                        {field.state.meta.errors &&
-                            field.state.meta.errors.length > 0 && (
-                                <em className="text-xs text-red-500">
-                                    {field.state.meta.errors.join(', ')}
-                                </em>
+                            {hasError && (
+                                <FieldError>
+                                    {field.state.meta.errors?.join(', ')}
+                                </FieldError>
                             )}
-                    </div>
-                )}
-            />
-            <form.AppField
-                name="openaiBaseUrl"
-                children={(field) => (
-                    <div className="space-y-2">
-                        <Label htmlFor={field.name}>OpenAI Base URL</Label>
-                        <Input
-                            id={field.name}
-                            name={field.name}
-                            value={field.state.value || ''}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                        />
-                        {field.state.meta.errors &&
-                            field.state.meta.errors.length > 0 && (
-                                <em className="text-xs text-red-500">
-                                    {field.state.meta.errors.join(', ')}
-                                </em>
-                            )}
-                    </div>
-                )}
+                        </Field>
+                    );
+                }}
             />
             <form.AppField
                 name="openaiModel"
-                children={(field) => (
-                    <div className="space-y-2">
-                        <Label htmlFor={field.name}>OpenAI Model Name</Label>
-                        <Input
-                            id={field.name}
-                            name={field.name}
-                            placeholder="gpt-4.1-nano"
-                            value={field.state.value || ''}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                        />
-                        {field.state.meta.errors &&
-                            field.state.meta.errors.length > 0 && (
-                                <em className="text-xs text-red-500">
-                                    {field.state.meta.errors.join(', ')}
-                                </em>
+                children={(field) => {
+                    const hasError = !!(
+                        field.state.meta.errors &&
+                        field.state.meta.errors.length > 0
+                    );
+                    return (
+                        <Field data-invalid={hasError}>
+                            <FieldLabel htmlFor={field.name}>
+                                OpenAI Model Name
+                            </FieldLabel>
+                            <Input
+                                id={field.name}
+                                name={field.name}
+                                placeholder="gpt-5-nano"
+                                value={field.state.value || ''}
+                                onBlur={field.handleBlur}
+                                onChange={(e) =>
+                                    field.handleChange(e.target.value)
+                                }
+                                aria-invalid={hasError}
+                            />
+                            {hasError && (
+                                <FieldError>
+                                    {field.state.meta.errors?.join(', ')}
+                                </FieldError>
                             )}
-                    </div>
-                )}
+                        </Field>
+                    );
+                }}
             />
         </div>
     );

@@ -27,6 +27,7 @@ import {
     CardDescription,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Spinner } from '@/components/ui/spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { client, settingsQueryOptions } from '@/lib/api';
 import { useAppForm, getErrorMessage } from '@/lib/form';
@@ -112,14 +113,14 @@ function InnerForm({
                                         value="general"
                                         className="flex items-center gap-2"
                                     >
-                                        <Sliders className="h-4 w-4" />
+                                        <Sliders />
                                         <span>General</span>
                                     </TabsTrigger>
                                     <TabsTrigger
                                         value="ai"
                                         className="flex items-center gap-2"
                                     >
-                                        <Sparkles className="h-4 w-4" />
+                                        <Sparkles />
                                         <span className="hidden sm:inline">
                                             AI Settings
                                         </span>
@@ -129,7 +130,7 @@ function InnerForm({
                                         value="media"
                                         className="flex items-center gap-2"
                                     >
-                                        <Database className="h-4 w-4" />
+                                        <Database />
                                         <span className="hidden sm:inline">
                                             Media Services
                                         </span>
@@ -168,13 +169,13 @@ function InnerForm({
 
                                 <TabsContent
                                     value="media"
-                                    className="mt-4 space-y-4"
+                                    className="mt-4 flex flex-col gap-4"
                                     keepMounted
                                 >
                                     <Card>
                                         <CardHeader>
                                             <CardTitle className="flex items-center gap-2">
-                                                <Server className="text-primary h-5 w-5" />
+                                                <Server className="text-primary" />
                                                 <span>Media Servers</span>
                                             </CardTitle>
                                             <CardDescription>
@@ -192,7 +193,7 @@ function InnerForm({
                                     <Card>
                                         <CardHeader>
                                             <CardTitle className="flex items-center gap-2">
-                                                <Tv className="text-primary h-5 w-5" />
+                                                <Tv className="text-primary" />
                                                 <span>
                                                     Library Managers &
                                                     Automation
@@ -205,7 +206,7 @@ function InnerForm({
                                                 movies.
                                             </CardDescription>
                                         </CardHeader>
-                                        <CardContent className="space-y-4">
+                                        <CardContent className="flex flex-col gap-4">
                                             <SonarrSettings />
                                             <Separator />
                                             <RadarrSettings />
@@ -215,7 +216,7 @@ function InnerForm({
                                     <Card>
                                         <CardHeader>
                                             <CardTitle className="flex items-center gap-2">
-                                                <History className="text-primary h-5 w-5" />
+                                                <History className="text-primary" />
                                                 <span>
                                                     Watch History & Sync
                                                 </span>
@@ -234,7 +235,7 @@ function InnerForm({
                                     <Card>
                                         <CardHeader>
                                             <CardTitle className="flex items-center gap-2">
-                                                <Globe className="text-primary h-5 w-5" />
+                                                <Globe className="text-primary" />
                                                 <span>Metadata Services</span>
                                             </CardTitle>
                                             <CardDescription>
@@ -255,6 +256,9 @@ function InnerForm({
                                     disabled={isSaving}
                                     className="w-full sm:w-auto"
                                 >
+                                    {isSaving && (
+                                        <Spinner data-icon="inline-start" />
+                                    )}
                                     {isSaving ? 'Saving...' : 'Save Settings'}
                                 </Button>
                                 <form.Subscribe
