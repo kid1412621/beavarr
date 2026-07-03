@@ -28,6 +28,7 @@ import {
     settingsSchema,
     getDefaultSettingsValues,
 } from '@/lib/types';
+import { cn } from '@/lib/utils';
 
 const onboardingSearchSchema = z.object({
     step: z.number().catch(1),
