@@ -1,12 +1,29 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Send, User, Bot, Loader2, Plus } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import { Send, User, Bot, Plus } from 'lucide-react';
+import { useState } from 'react';
 
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Bubble, BubbleContent } from '@/components/ui/bubble';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+    Message,
+    MessageAvatar,
+    MessageContent,
+    MessageGroup,
+} from '@/components/ui/message';
+import {
+    MessageScrollerProvider,
+    MessageScroller,
+    MessageScrollerViewport,
+    MessageScrollerContent,
+    MessageScrollerItem,
+    MessageScrollerButton,
+} from '@/components/ui/message-scroller';
+import { Separator } from '@/components/ui/separator';
+import { Spinner } from '@/components/ui/spinner';
 import { client } from '@/lib/api';
-import { cn } from '@/lib/utils';
 
 // Add missing types/declarations
 interface MediaItem {
@@ -25,14 +42,14 @@ export const Route = createFileRoute('/chat')({
     component: ChatPage,
 });
 
-interface Message {
+interface ChatMessage {
     role: 'user' | 'assistant';
     content: string;
     steps?: any[];
 }
 
 function ChatPage() {
-    const [messages, setMessages] = useState<Message[]>([
+    const [messages, setMessages] = useState<ChatMessage[]>([
         {
             role: 'assistant',
             content:
@@ -41,13 +58,6 @@ function ChatPage() {
     ]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const scrollRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
-    }, [messages]);
 
     const sendMessage = async (text: string) => {
         if (!text || isLoading) return;
@@ -98,118 +108,179 @@ function ChatPage() {
     return (
         <div className="mx-auto flex h-[calc(100vh-theme(spacing.16))] max-w-4xl flex-col p-4">
             <Card className="flex flex-1 flex-col overflow-hidden">
-                <CardContent className="flex-1 space-y-4 overflow-y-auto p-4">
-                    {messages.map((m, i) => (
-                        <div key={i} className="flex flex-col gap-2">
-                            <div
-                                className={cn(
-                                    'flex gap-3',
-                                    m.role === 'user'
-                                        ? 'justify-end'
-                                        : 'justify-start',
-                                )}
-                            >
-                                {m.role === 'assistant' && (
-                                    <div className="bg-primary/10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
-                                        <Bot size={16} />
-                                    </div>
-                                )}
+                <MessageScrollerProvider autoScroll>
+                    <MessageScroller>
+                        <MessageScrollerViewport>
+                            <MessageScrollerContent className="flex flex-col gap-6 p-4">
+                                {messages.map((m, i) => (
+                                    <MessageScrollerItem
+                                        key={i}
+                                        messageId={`msg-${i}`}
+                                        scrollAnchor={m.role === 'user'}
+                                    >
+                                        <MessageGroup className="flex flex-col gap-2">
+                                            <Message
+                                                align={
+                                                    m.role === 'user'
+                                                        ? 'end'
+                                                        : 'start'
+                                                }
+                                            >
+                                                <MessageAvatar>
+                                                    <Avatar
+                                                        className={
+                                                            m.role ===
+                                                            'assistant'
+                                                                ? 'bg-primary/10'
+                                                                : 'bg-primary text-primary-foreground'
+                                                        }
+                                                    >
+                                                        <AvatarFallback>
+                                                            {m.role ===
+                                                            'assistant' ? (
+                                                                <Bot />
+                                                            ) : (
+                                                                <User />
+                                                            )}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                </MessageAvatar>
 
-                                <div
-                                    className={cn(
-                                        'p-3 rounded-lg max-w-[80%]',
-                                        m.role === 'user'
-                                            ? 'bg-primary text-primary-foreground ml-12'
-                                            : 'bg-muted mr-12',
-                                    )}
-                                >
-                                    <p className="text-sm whitespace-pre-wrap">
-                                        {m.content}
-                                    </p>
-                                </div>
+                                                <MessageContent>
+                                                    <Bubble
+                                                        variant={
+                                                            m.role === 'user'
+                                                                ? 'default'
+                                                                : 'muted'
+                                                        }
+                                                        align={
+                                                            m.role === 'user'
+                                                                ? 'end'
+                                                                : 'start'
+                                                        }
+                                                    >
+                                                        <BubbleContent>
+                                                            {m.content}
+                                                        </BubbleContent>
+                                                    </Bubble>
+                                                </MessageContent>
+                                            </Message>
 
-                                {m.role === 'user' && (
-                                    <div className="bg-primary text-primary-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
-                                        <User size={16} />
-                                    </div>
-                                )}
-                            </div>
+                                            {/* Render Rich Cards from Steps */}
+                                            {m.steps?.map(
+                                                (
+                                                    step: any,
+                                                    stepIndex: number,
+                                                ) => {
+                                                    if (
+                                                        !step.action ||
+                                                        !step.observation
+                                                    )
+                                                        return null;
+                                                    const tool =
+                                                        step.action.tool;
+                                                    const output =
+                                                        step.observation;
 
-                            {/* Render Rich Cards from Steps */}
-                            {m.steps?.map((step: any, stepIndex: number) => {
-                                // Check if tool is search related
-                                if (!step.action || !step.observation)
-                                    return null;
-                                const tool = step.action.tool;
-                                const output = step.observation;
-
-                                if (
-                                    [
-                                        'sonarr_search',
-                                        'radarr_search',
-                                        'tmdb_search',
-                                        'trakt_trending',
-                                    ].includes(tool)
-                                ) {
-                                    let items: any[] = [];
-                                    try {
-                                        const parsed = JSON.parse(output);
-                                        items = Array.isArray(parsed)
-                                            ? parsed
-                                            : [];
-                                    } catch (e) {
-                                        console.error(
-                                            `Failed to parse ${tool} output:`,
-                                            e,
-                                        );
-                                        return null;
-                                    }
-
-                                    if (items.length === 0) return null;
-
-                                    return (
-                                        <div
-                                            key={`step-${stepIndex}`}
-                                            className="overflow-x-auto pr-4 pl-12"
-                                        >
-                                            <div className="flex gap-4 pb-2">
-                                                {items.map(
-                                                    (
-                                                        item: any,
-                                                        itemIndex: number,
-                                                    ) => (
-                                                        <MediaCard
-                                                            key={itemIndex}
-                                                            item={item}
-                                                            onAdd={(title) =>
-                                                                sendMessage(
-                                                                    `Add ${title} to my library`,
+                                                    if (
+                                                        [
+                                                            'sonarr_search',
+                                                            'radarr_search',
+                                                            'tmdb_search',
+                                                            'trakt_trending',
+                                                        ].includes(tool)
+                                                    ) {
+                                                        let items: any[] = [];
+                                                        try {
+                                                            const parsed =
+                                                                JSON.parse(
+                                                                    output,
+                                                                );
+                                                            items =
+                                                                Array.isArray(
+                                                                    parsed,
                                                                 )
-                                                            }
-                                                        />
-                                                    ),
-                                                )}
-                                            </div>
-                                        </div>
-                                    );
-                                }
-                                return null;
-                            })}
-                        </div>
-                    ))}
-                    {isLoading && (
-                        <div className="flex justify-start gap-3">
-                            <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-full">
-                                <Bot size={16} />
-                            </div>
-                            <div className="bg-muted flex items-center rounded-lg p-3">
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                            </div>
-                        </div>
-                    )}
-                    <div ref={scrollRef} />
-                </CardContent>
-                <div className="border-t p-4">
+                                                                    ? parsed
+                                                                    : [];
+                                                        } catch (e) {
+                                                            console.error(
+                                                                `Failed to parse ${tool} output:`,
+                                                                e,
+                                                            );
+                                                            return null;
+                                                        }
+
+                                                        if (items.length === 0)
+                                                            return null;
+
+                                                        return (
+                                                            <div
+                                                                key={`step-${stepIndex}`}
+                                                                className="overflow-x-auto pr-4 pl-12"
+                                                            >
+                                                                <div className="flex gap-4 pb-2">
+                                                                    {items.map(
+                                                                        (
+                                                                            item: any,
+                                                                            itemIndex: number,
+                                                                        ) => (
+                                                                            <MediaCard
+                                                                                key={
+                                                                                    itemIndex
+                                                                                }
+                                                                                item={
+                                                                                    item
+                                                                                }
+                                                                                onAdd={(
+                                                                                    title,
+                                                                                ) =>
+                                                                                    sendMessage(
+                                                                                        `Add ${title} to my library`,
+                                                                                    )
+                                                                                }
+                                                                            />
+                                                                        ),
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    }
+                                                    return null;
+                                                },
+                                            )}
+                                        </MessageGroup>
+                                    </MessageScrollerItem>
+                                ))}
+                                {isLoading && (
+                                    <MessageScrollerItem
+                                        messageId="loading"
+                                        scrollAnchor
+                                    >
+                                        <Message align="start">
+                                            <MessageAvatar>
+                                                <Avatar className="bg-primary/10">
+                                                    <AvatarFallback>
+                                                        <Bot />
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                            </MessageAvatar>
+                                            <MessageContent>
+                                                <Bubble variant="muted">
+                                                    <BubbleContent className="flex min-w-8 items-center justify-center">
+                                                        <Spinner />
+                                                    </BubbleContent>
+                                                </Bubble>
+                                            </MessageContent>
+                                        </Message>
+                                    </MessageScrollerItem>
+                                )}
+                            </MessageScrollerContent>
+                        </MessageScrollerViewport>
+                        <MessageScrollerButton />
+                    </MessageScroller>
+                </MessageScrollerProvider>
+                <Separator />
+                <div className="p-4">
                     <form onSubmit={handleSubmit} className="flex gap-2">
                         <Input
                             value={input}
@@ -221,8 +292,9 @@ function ChatPage() {
                         <Button
                             type="submit"
                             disabled={isLoading || !input.trim()}
+                            size="icon"
                         >
-                            <Send size={16} />
+                            <Send data-icon="inline-start" />
                         </Button>
                     </form>
                 </div>
@@ -264,11 +336,11 @@ function MediaCard({
                         variant="secondary"
                         onClick={() => onAdd(title)}
                     >
-                        <Plus size={16} className="mr-1" /> Add
+                        <Plus data-icon="inline-start" /> Add
                     </Button>
                 </div>
             </div>
-            <div className="space-y-1 p-2">
+            <div className="flex flex-col gap-1 p-2">
                 <h4 className="truncate text-xs font-semibold" title={title}>
                     {title}
                 </h4>

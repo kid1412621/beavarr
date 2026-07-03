@@ -1,14 +1,19 @@
-import {
-    CheckCircle2,
-    XCircle,
-    Loader2,
-    Clipboard,
-    ExternalLink,
-} from 'lucide-react';
+import { CheckCircle2, XCircle, Clipboard, ExternalLink } from 'lucide-react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import {
+    Field,
+    FieldLabel,
+    FieldError,
+    FieldGroup,
+} from '@/components/ui/field';
+import {
+    InputGroup,
+    InputGroupInput,
+    InputGroupAddon,
+} from '@/components/ui/input-group';
+import { Spinner } from '@/components/ui/spinner';
 import { useAppFormContext } from '@/lib/form';
 import { type SettingsForm } from '@/lib/types';
 
@@ -50,19 +55,22 @@ export function ConnectableHeader({
                 <div className="flex flex-wrap items-center gap-2">
                     <h3 className="text-lg font-medium">{title}</h3>
                     {status === 'success' && (
-                        <span className="flex items-center gap-1 text-xs text-green-500">
-                            <CheckCircle2 className="h-3 w-3" /> Connected
+                        <Badge className="gap-1 border-emerald-500/20 bg-emerald-500/10 text-emerald-700 select-none hover:bg-emerald-500/10">
+                            <CheckCircle2 className="size-3.5" /> Connected
                             {version && (
-                                <span className="text-muted-foreground ml-1">
+                                <span className="ml-1 text-emerald-700/80">
                                     v{version}
                                 </span>
                             )}
-                        </span>
+                        </Badge>
                     )}
                     {status === 'failed' && (
-                        <span className="flex items-center gap-1 text-xs text-red-500">
-                            <XCircle className="h-3 w-3" /> Connection Failed
-                        </span>
+                        <Badge
+                            variant="destructive"
+                            className="gap-1 select-none"
+                        >
+                            <XCircle className="size-3.5" /> Connection Failed
+                        </Badge>
                     )}
                 </div>
                 {children}
@@ -79,7 +87,7 @@ export function ConnectableHeader({
                     >
                         {status === 'testing' ? (
                             <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                <Spinner data-icon="inline-start" />
                                 Connecting...
                             </>
                         ) : status === 'success' ? (
@@ -114,78 +122,103 @@ export function ConnectableFields({
     const form = useAppFormContext<SettingsForm>();
 
     return (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <FieldGroup className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <form.AppField
                 name={urlName}
-                children={(field) => (
-                    <div className="space-y-2">
-                        <Label htmlFor={field.name}>{serviceName} URL</Label>
-                        <div className="relative">
-                            <Input
-                                id={field.name}
-                                name={field.name}
-                                value={field.state.value || ''}
-                                onBlur={field.handleBlur}
-                                onChange={(e) => {
-                                    field.handleChange(e.target.value);
-                                    onResetStatus?.();
-                                }}
-                                placeholder={urlPlaceholder}
-                                className="pr-10"
-                            />
-                            {field.state.value && apiKeyHelperUrl && (
-                                <a
-                                    href={apiKeyHelperUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
-                                    title="Get API key"
-                                >
-                                    <ExternalLink className="h-4 w-4" />
-                                </a>
+                children={(field) => {
+                    const hasError = !!(
+                        field.state.meta.errors &&
+                        field.state.meta.errors.length > 0
+                    );
+                    return (
+                        <Field data-invalid={hasError}>
+                            <FieldLabel htmlFor={field.name}>
+                                {serviceName} URL
+                            </FieldLabel>
+                            <InputGroup>
+                                <InputGroupInput
+                                    id={field.name}
+                                    name={field.name}
+                                    value={field.state.value || ''}
+                                    onBlur={field.handleBlur}
+                                    onChange={(e) => {
+                                        field.handleChange(e.target.value);
+                                        onResetStatus?.();
+                                    }}
+                                    placeholder={urlPlaceholder}
+                                    aria-invalid={hasError}
+                                />
+                                {field.state.value && apiKeyHelperUrl && (
+                                    <InputGroupAddon>
+                                        <a
+                                            href={apiKeyHelperUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-muted-foreground hover:text-foreground flex items-center justify-center p-1"
+                                            title="Get API key"
+                                        >
+                                            <ExternalLink className="size-4" />
+                                        </a>
+                                    </InputGroupAddon>
+                                )}
+                            </InputGroup>
+                            {hasError && (
+                                <FieldError>
+                                    {field.state.meta.errors?.join(', ')}
+                                </FieldError>
                             )}
-                        </div>
-                        {field.state.meta.errors &&
-                            field.state.meta.errors.length > 0 && (
-                                <em className="text-xs text-red-500">
-                                    {field.state.meta.errors.join(', ')}
-                                </em>
-                            )}
-                    </div>
-                )}
+                        </Field>
+                    );
+                }}
             />
             <form.AppField
                 name={apiKeyName}
-                children={(field) => (
-                    <div className="space-y-2">
-                        <Label htmlFor={field.name}>
-                            {serviceName} API Key
-                        </Label>
-                        <div className="relative">
-                            <Input
-                                id={field.name}
-                                name={field.name}
-                                type="password"
-                                value={field.state.value || ''}
-                                onBlur={field.handleBlur}
-                                onChange={(e) => {
-                                    field.handleChange(e.target.value);
-                                    onResetStatus?.();
-                                }}
-                                className="pr-10"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => pasteFromClipboard(field)}
-                                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
-                                title="Paste from clipboard"
-                            >
-                                <Clipboard className="h-4 w-4" />
-                            </button>
-                        </div>
-                    </div>
-                )}
+                children={(field) => {
+                    const hasError = !!(
+                        field.state.meta.errors &&
+                        field.state.meta.errors.length > 0
+                    );
+                    return (
+                        <Field data-invalid={hasError}>
+                            <FieldLabel htmlFor={field.name}>
+                                {serviceName} API Key
+                            </FieldLabel>
+                            <InputGroup>
+                                <InputGroupInput
+                                    id={field.name}
+                                    name={field.name}
+                                    type="password"
+                                    value={field.state.value || ''}
+                                    onBlur={field.handleBlur}
+                                    onChange={(e) => {
+                                        field.handleChange(e.target.value);
+                                        onResetStatus?.();
+                                    }}
+                                    aria-invalid={hasError}
+                                />
+                                <InputGroupAddon>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() =>
+                                            pasteFromClipboard(field)
+                                        }
+                                        title="Paste from clipboard"
+                                    >
+                                        <Clipboard data-icon="inline-start" />
+                                    </Button>
+                                </InputGroupAddon>
+                            </InputGroup>
+                            {hasError && (
+                                <FieldError>
+                                    {field.state.meta.errors?.join(', ')}
+                                </FieldError>
+                            )}
+                        </Field>
+                    );
+                }}
             />
-        </div>
+        </FieldGroup>
     );
 }

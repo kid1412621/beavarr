@@ -7,7 +7,12 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
+import {
+    Field,
+    FieldLabel,
+    FieldDescription,
+    FieldError,
+} from '@/components/ui/field';
 import { settingsQueryOptions } from '@/lib/api';
 import { useAppFormContext } from '@/lib/form';
 import { type SettingsForm } from '@/lib/types';
@@ -26,7 +31,7 @@ export function GeneralSettings() {
                 <CardTitle>General Preferences</CardTitle>
                 <CardDescription>Customize your experience.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="flex flex-col gap-4">
                 <form.Subscribe
                     selector={(state) => state.values}
                     children={(values) => {
@@ -61,59 +66,74 @@ export function GeneralSettings() {
                         return (
                             <form.AppField
                                 name="posterSource"
-                                children={(field) => (
-                                    <div className="space-y-2">
-                                        <Label htmlFor={field.name}>
-                                            Home Page Poster Source
-                                        </Label>
-                                        <select
-                                            id={field.name}
-                                            name={field.name}
-                                            value={field.state.value || ''}
-                                            onBlur={field.handleBlur}
-                                            onChange={(e) =>
-                                                field.handleChange(
-                                                    e.target
-                                                        .value as SettingsForm['posterSource'],
-                                                )
-                                            }
-                                            className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                                        >
-                                            <option value="">
-                                                None (Empty)
-                                            </option>
-                                            <option
-                                                value="history"
-                                                disabled={!hasHistory}
+                                children={(field) => {
+                                    const hasError = !!(
+                                        field.state.meta.errors &&
+                                        field.state.meta.errors.length > 0
+                                    );
+                                    return (
+                                        <Field data-invalid={hasError}>
+                                            <FieldLabel htmlFor={field.name}>
+                                                Home Page Poster Source
+                                            </FieldLabel>
+                                            <select
+                                                id={field.name}
+                                                name={field.name}
+                                                value={field.state.value || ''}
+                                                onBlur={field.handleBlur}
+                                                onChange={(e) =>
+                                                    field.handleChange(
+                                                        e.target
+                                                            .value as SettingsForm['posterSource'],
+                                                    )
+                                                }
+                                                className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                             >
-                                                {historyLabel}
-                                            </option>
-                                            <option
-                                                value="trending"
-                                                disabled={!hasTrakt}
-                                            >
-                                                {hasTrakt
-                                                    ? 'Trending (Trakt)'
-                                                    : 'Trending (Trakt - Not Connected)'}
-                                            </option>
-                                            <option
-                                                value="library"
-                                                disabled={!hasLibrary}
-                                            >
-                                                {libraryLabel}
-                                            </option>
-                                        </select>
-                                        <p className="text-muted-foreground text-[0.8rem]">
-                                            Choose what to display on the home
-                                            page background wall. Connect Trakt
-                                            or Jellyfin for history, or
-                                            Sonarr/Radarr/Jellyfin for library.
-                                            {!hasTrakt &&
-                                                !hasLibrary &&
-                                                ' (Connect services to enable options)'}
-                                        </p>
-                                    </div>
-                                )}
+                                                <option value="">
+                                                    None (Empty)
+                                                </option>
+                                                <option
+                                                    value="history"
+                                                    disabled={!hasHistory}
+                                                >
+                                                    {historyLabel}
+                                                </option>
+                                                <option
+                                                    value="trending"
+                                                    disabled={!hasTrakt}
+                                                >
+                                                    {hasTrakt
+                                                        ? 'Trending (Trakt)'
+                                                        : 'Trending (Trakt - Not Connected)'}
+                                                </option>
+                                                <option
+                                                    value="library"
+                                                    disabled={!hasLibrary}
+                                                >
+                                                    {libraryLabel}
+                                                </option>
+                                            </select>
+                                            <FieldDescription>
+                                                Choose what to display on the
+                                                home page background wall.
+                                                Connect Trakt or Jellyfin for
+                                                history, or
+                                                Sonarr/Radarr/Jellyfin for
+                                                library.
+                                                {!hasTrakt &&
+                                                    !hasLibrary &&
+                                                    ' (Connect services to enable options)'}
+                                            </FieldDescription>
+                                            {hasError && (
+                                                <FieldError>
+                                                    {field.state.meta.errors?.join(
+                                                        ', ',
+                                                    )}
+                                                </FieldError>
+                                            )}
+                                        </Field>
+                                    );
+                                }}
                             />
                         );
                     }}
