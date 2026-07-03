@@ -6,9 +6,26 @@ import {
     useNavigate,
     useLocation,
 } from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 import { Home, MessageSquare, Settings, Film } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
+
+const TanStackRouterDevtools =
+    process.env.NODE_ENV === 'production'
+        ? () => null
+        : lazy(() =>
+              import('@tanstack/react-router-devtools').then((res) => ({
+                  default: res.TanStackRouterDevtools,
+              })),
+          );
+
+const ReactQueryDevtools =
+    process.env.NODE_ENV === 'production'
+        ? () => null
+        : lazy(() =>
+              import('@tanstack/react-query-devtools').then((res) => ({
+                  default: res.ReactQueryDevtools,
+              })),
+          );
 
 import { Sidebar } from '@/components/sidebar';
 import { Button } from '@/components/ui/button';
@@ -224,7 +241,10 @@ function Root() {
                         <Outlet />
                     </main>
                 </div>
-                <TanStackRouterDevtools />
+                <Suspense fallback={null}>
+                    <TanStackRouterDevtools position="bottom-right" />
+                    <ReactQueryDevtools />
+                </Suspense>
             </div>
             <Toaster />
         </>
