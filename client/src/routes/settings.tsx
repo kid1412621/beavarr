@@ -31,7 +31,11 @@ import { Spinner } from '@/components/ui/spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { client, settingsQueryOptions } from '@/lib/api';
 import { useAppForm, getErrorMessage } from '@/lib/form';
-import { type SettingsForm, settingsSchema } from '@/lib/types';
+import {
+    type SettingsForm,
+    settingsSchema,
+    getDefaultSettingsValues,
+} from '@/lib/types';
 
 export const Route = createFileRoute('/settings')({
     component: Settings,
@@ -75,21 +79,7 @@ function InnerForm({
     });
 
     const form = useAppForm({
-        defaultValues: {
-            sonarrUrl: initialValues?.sonarrUrl || '',
-            sonarrApiKey: initialValues?.sonarrApiKey || '',
-            radarrUrl: initialValues?.radarrUrl || '',
-            radarrApiKey: initialValues?.radarrApiKey || '',
-            traktClientId: initialValues?.traktClientId || '',
-            traktClientSecret: initialValues?.traktClientSecret || '',
-            tmdbApiKey: initialValues?.tmdbApiKey || '',
-            jellyfinUrl: initialValues?.jellyfinUrl || '',
-            jellyfinApiKey: initialValues?.jellyfinApiKey || '',
-            openaiApiKey: initialValues?.openaiApiKey || '',
-            openaiBaseUrl: initialValues?.openaiBaseUrl || '',
-            openaiModel: initialValues?.openaiModel || '',
-            posterSource: initialValues?.posterSource || '',
-        } as SettingsForm,
+        defaultValues: getDefaultSettingsValues(initialValues),
         validators: {
             onChange: settingsSchema,
         },
