@@ -1,0 +1,7 @@
+{
+    "entries": [
+        { "path": ".agents/skills" },
+        { "path": "client/.agents/skills" },
+        { "path": "server/.agents/skills" }
+    ]
+}
