@@ -67,62 +67,98 @@ export function MediaSettings() {
 
             <form.AppField
                 name="tvdbApiKey"
-                children={(field) => (
-                    <div className="space-y-2">
-                        <Label htmlFor={field.name}>TVDB API Key</Label>
-                        <div className="relative">
-                            <Input
-                                id={field.name}
-                                name={field.name}
-                                type="password"
-                                value={field.state.value || ''}
-                                onBlur={field.handleBlur}
-                                onChange={(e) =>
-                                    field.handleChange(e.target.value)
-                                }
-                                className="pr-10"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => pasteFromClipboard(field)}
-                                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
-                                title="Paste from clipboard"
-                            >
-                                <ClipboardIcon className="h-4 w-4" />
-                            </button>
-                        </div>
-                    </div>
-                )}
+                children={(field) => {
+                    const hasError = !!(
+                        field.state.meta.errors &&
+                        field.state.meta.errors.length > 0
+                    );
+                    return (
+                        <Field data-invalid={hasError}>
+                            <FieldLabel htmlFor={field.name}>
+                                TVDB API Key
+                            </FieldLabel>
+                            <InputGroup>
+                                <InputGroupInput
+                                    id={field.name}
+                                    name={field.name}
+                                    type="password"
+                                    value={field.state.value || ''}
+                                    onBlur={field.handleBlur}
+                                    onChange={(e) =>
+                                        field.handleChange(e.target.value)
+                                    }
+                                    aria-invalid={hasError}
+                                />
+                                <InputGroupAddon>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() =>
+                                            pasteFromClipboard(field)
+                                        }
+                                        title="Paste from clipboard"
+                                    >
+                                        <ClipboardIcon data-icon="inline-start" />
+                                    </Button>
+                                </InputGroupAddon>
+                            </InputGroup>
+                            {hasError && (
+                                <FieldError>
+                                    {field.state.meta.errors?.join(', ')}
+                                </FieldError>
+                            )}
+                        </Field>
+                    );
+                }}
             />
 
             <form.AppField
                 name="imdbApiKey"
-                children={(field) => (
-                    <div className="space-y-2">
-                        <Label htmlFor={field.name}>IMDB API Key</Label>
-                        <div className="relative">
-                            <Input
-                                id={field.name}
-                                name={field.name}
-                                type="password"
-                                value={field.state.value || ''}
-                                onBlur={field.handleBlur}
-                                onChange={(e) =>
-                                    field.handleChange(e.target.value)
-                                }
-                                className="pr-10"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => pasteFromClipboard(field)}
-                                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
-                                title="Paste from clipboard"
-                            >
-                                <ClipboardIcon className="h-4 w-4" />
-                            </button>
-                        </div>
-                    </div>
-                )}
+                children={(field) => {
+                    const hasError = !!(
+                        field.state.meta.errors &&
+                        field.state.meta.errors.length > 0
+                    );
+                    return (
+                        <Field data-invalid={hasError}>
+                            <FieldLabel htmlFor={field.name}>
+                                IMDB API Key
+                            </FieldLabel>
+                            <InputGroup>
+                                <InputGroupInput
+                                    id={field.name}
+                                    name={field.name}
+                                    type="password"
+                                    value={field.state.value || ''}
+                                    onBlur={field.handleBlur}
+                                    onChange={(e) =>
+                                        field.handleChange(e.target.value)
+                                    }
+                                    aria-invalid={hasError}
+                                />
+                                <InputGroupAddon>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() =>
+                                            pasteFromClipboard(field)
+                                        }
+                                        title="Paste from clipboard"
+                                    >
+                                        <ClipboardIcon data-icon="inline-start" />
+                                    </Button>
+                                </InputGroupAddon>
+                            </InputGroup>
+                            {hasError && (
+                                <FieldError>
+                                    {field.state.meta.errors?.join(', ')}
+                                </FieldError>
+                            )}
+                        </Field>
+                    );
+                }}
             />
         </div>
     );
