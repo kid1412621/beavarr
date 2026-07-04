@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "skills": {
+    "bun": {
+      "source": "bun.sh",
+      "sourceType": "well-known",
+      "computedHash": "9458294734e42da6b2445af25ef5b0b6aaa349c6f75db4ea4cd423e83b5b8620"
+    },
+    "shadcn": {
+      "source": "shadcn/ui",
+      "sourceType": "github",
+      "skillPath": "skills/shadcn/SKILL.md",
+      "computedHash": "d81caa0f86aabab65b25e302d454f23a3328760386ed9078345584c0d5c8058e"
+    }
+  }
+}
