@@ -12,6 +12,8 @@
         "server/drizzle/**",
         "server/dist/**",
         "server/static/**",
+        "**/.agents/**",
+        "skills-lock.json",
         ".turbo/**"
     ],
     "experimentalSortImports": {},

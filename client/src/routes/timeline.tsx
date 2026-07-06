@@ -500,10 +500,10 @@ function TimelineExplorer() {
                                                 <img
                                                     src={`https://image.tmdb.org/t/p/w185${item.posterPath}`}
                                                     alt={item.title}
-                                                    className="h-48 w-full object-cover rounded-t-xl md:rounded-tr-none md:rounded-l-xl md:h-auto md:w-32"
+                                                    className="h-48 w-full rounded-t-xl object-cover md:h-auto md:w-32 md:rounded-l-xl md:rounded-tr-none"
                                                 />
                                             ) : (
-                                                <div className="bg-muted text-muted-foreground flex h-48 w-full flex-col items-center justify-center rounded-t-xl md:rounded-tr-none md:rounded-l-xl md:h-auto md:w-32">
+                                                <div className="bg-muted text-muted-foreground flex h-48 w-full flex-col items-center justify-center rounded-t-xl md:h-auto md:w-32 md:rounded-l-xl md:rounded-tr-none">
                                                     {item.type === 'movie' ? (
                                                         <Film className="size-8" />
                                                     ) : (
@@ -761,7 +761,7 @@ function TimelineExplorer() {
                                                         <img
                                                             src={`https://image.tmdb.org/t/p/w185${item.posterPath}`}
                                                             alt={item.title}
-                                                            className="h-full w-full object-cover rounded-t-xl"
+                                                            className="h-full w-full rounded-t-xl object-cover"
                                                         />
                                                     ) : (
                                                         <div className="bg-muted text-muted-foreground flex h-full w-full flex-col items-center justify-center rounded-t-xl">
