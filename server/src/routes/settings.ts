@@ -10,8 +10,11 @@ import { getOrCreateSettings, updateSettings } from '../db/repo/settings';
 import { type Env } from '../lib/auth';
 import { createLogger } from '../lib/logger';
 import { jellyfinService } from '../services/jellyfin';
+import { omdbService } from '../services/omdb';
 import { radarrService } from '../services/radarr';
 import { sonarrService } from '../services/sonarr';
+import { tmdbService } from '../services/tmdb';
+import { tvdbService } from '../services/tvdb';
 
 const logger = createLogger('settings');
 const settingsRoute = new Hono<Env>()
@@ -53,10 +56,16 @@ const settingsRoute = new Hono<Env>()
             if (!user) return c.json({ error: 'Unauthorized' }, 401);
 
             const service = c.req.query('service');
-            if (service !== 'sonarr' && service !== 'radarr') {
+            if (
+                service !== 'sonarr' &&
+                service !== 'radarr' &&
+                service !== 'tmdb' &&
+                service !== 'tvdb' &&
+                service !== 'omdb'
+            ) {
                 return c.json(
                     {
-                        error: 'Invalid service. Use ?service=sonarr or ?service=radarr',
+                        error: 'Invalid service.',
                     },
                     400,
                 );
@@ -79,18 +88,67 @@ const settingsRoute = new Hono<Env>()
                 }
             }
 
-            // radarr
-            if (!settings?.radarrUrl || !settings?.radarrApiKey) {
-                return c.json<ServiceStatusResponse>({ connected: false });
+            if (service === 'radarr') {
+                if (!settings?.radarrUrl || !settings?.radarrApiKey) {
+                    return c.json<ServiceStatusResponse>({ connected: false });
+                }
+                try {
+                    const result = await radarrService.testConnection(
+                        settings.radarrUrl,
+                        settings.radarrApiKey,
+                    );
+                    return c.json<ServiceStatusResponse>(result);
+                } catch {
+                    return c.json<ServiceStatusResponse>({ connected: false });
+                }
             }
-            try {
-                const result = await radarrService.testConnection(
-                    settings.radarrUrl,
-                    settings.radarrApiKey,
-                );
-                return c.json<ServiceStatusResponse>(result);
-            } catch {
-                return c.json<ServiceStatusResponse>({ connected: false });
+
+            if (service === 'tmdb') {
+                if (!settings?.tmdbApiKey) {
+                    return c.json<ServiceStatusResponse>({ connected: false });
+                }
+                try {
+                    const result = await tmdbService.testConnection(
+                        settings.tmdbApiKey,
+                    );
+                    return c.json<ServiceStatusResponse>({
+                        connected: result.connected,
+                    });
+                } catch {
+                    return c.json<ServiceStatusResponse>({ connected: false });
+                }
+            }
+
+            if (service === 'tvdb') {
+                if (!settings?.tvdbApiKey) {
+                    return c.json<ServiceStatusResponse>({ connected: false });
+                }
+                try {
+                    const result = await tvdbService.testConnection(
+                        settings.tvdbApiKey,
+                    );
+                    return c.json<ServiceStatusResponse>({
+                        connected: result.connected,
+                    });
+                } catch {
+                    return c.json<ServiceStatusResponse>({ connected: false });
+                }
+            }
+
+            if (service === 'omdb') {
+                if (!settings?.omdbApiKey) {
+                    return c.json<ServiceStatusResponse>({ connected: false });
+                }
+                try {
+                    const result = await omdbService.testConnection(
+                        settings.omdbApiKey,
+                    );
+                    return c.json<ServiceStatusResponse>({
+                        connected: result.connected,
+                    });
+                } catch {
+                    return c.json<ServiceStatusResponse>({ connected: false });
+                }
             }
         } catch (error) {
             logger.error('Error checking service status: {error}', { error });
@@ -101,7 +159,7 @@ const settingsRoute = new Hono<Env>()
         try {
             const { type, url, apiKey } = await c.req.json<{
                 type: ConnectableService;
-                url: string;
+                url?: string | null;
                 apiKey: string;
             }>();
 
@@ -112,25 +170,50 @@ const settingsRoute = new Hono<Env>()
                 );
             }
 
-            let result: { connected: boolean; version?: string } = {
+            let result: {
+                connected: boolean;
+                version?: string;
+                error?: string;
+            } = {
                 connected: false,
             };
             if (type === 'sonarr') {
+                if (!url) {
+                    return c.json(
+                        { success: false, error: 'URL required' },
+                        400,
+                    );
+                }
                 result = await sonarrService.testConnection(url, apiKey);
             } else if (type === 'radarr') {
+                if (!url) {
+                    return c.json(
+                        { success: false, error: 'URL required' },
+                        400,
+                    );
+                }
                 result = await radarrService.testConnection(url, apiKey);
             } else if (type === 'jellyfin') {
-                result.connected = await jellyfinService.testConnection(
-                    url,
-                    apiKey,
-                );
+                if (!url) {
+                    return c.json(
+                        { success: false, error: 'URL required' },
+                        400,
+                    );
+                }
+                result = await jellyfinService.testConnection(url, apiKey);
+            } else if (type === 'tmdb') {
+                result = await tmdbService.testConnection(apiKey);
+            } else if (type === 'tvdb') {
+                result = await tvdbService.testConnection(apiKey);
+            } else if (type === 'omdb') {
+                result = await omdbService.testConnection(apiKey);
             }
 
             // Also return server name/version where available
             if (result.connected && type === 'jellyfin') {
                 try {
                     const info = await jellyfinService.getSystemInfo(
-                        url,
+                        url!,
                         apiKey,
                     );
                     return c.json({
@@ -146,10 +229,11 @@ const settingsRoute = new Hono<Env>()
             return c.json({
                 success: result.connected,
                 version: result.version,
+                error: result.error,
             });
         } catch (error) {
             logger.error('Error testing connection: {error}', { error });
-            return c.json({ success: false, error: 'Connection test failed' });
+            return c.json({ success: false, error: 'network' });
         }
     });
 

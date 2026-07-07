@@ -76,16 +76,26 @@ export class JellyfinService {
         };
     }
 
-    async testConnection(url: string, apiKey: string): Promise<boolean> {
+    async testConnection(
+        url: string,
+        apiKey: string,
+    ): Promise<{ connected: boolean; error?: string }> {
         try {
             const cleanUrl = url.replace(/\/$/, '');
             const response = await fetch(`${cleanUrl}/System/Info/Public`, {
                 headers: this.headers(apiKey),
                 signal: AbortSignal.timeout(5000),
             });
-            return response.ok;
+            if (!response.ok) {
+                if (response.status === 401)
+                    return { connected: false, error: 'unauthorized' };
+                if (response.status === 403)
+                    return { connected: false, error: 'forbidden' };
+                return { connected: false, error: `status_${response.status}` };
+            }
+            return { connected: true };
         } catch {
-            return false;
+            return { connected: false, error: 'network' };
         }
     }
 

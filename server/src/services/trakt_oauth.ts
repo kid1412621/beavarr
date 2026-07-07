@@ -3,11 +3,12 @@ import { createLogger } from '../lib/logger';
 
 const logger = createLogger('trakt-oauth');
 
+const TRAKT_API_URL = 'https://api.trakt.tv';
 const TRAKT_AUTH_URL = 'https://trakt.tv/oauth/authorize';
-const TRAKT_TOKEN_URL = 'https://api.trakt.tv/oauth/token';
-const TRAKT_DEVICE_CODE_URL = 'https://api.trakt.tv/oauth/device/code';
-const TRAKT_DEVICE_TOKEN_URL = 'https://api.trakt.tv/oauth/device/token';
-const TRAKT_REVOKE_URL = 'https://api.trakt.tv/oauth/revoke';
+const TRAKT_TOKEN_URL = `${TRAKT_API_URL}/oauth/token`;
+const TRAKT_DEVICE_CODE_URL = `${TRAKT_API_URL}/oauth/device/code`;
+const TRAKT_DEVICE_TOKEN_URL = `${TRAKT_API_URL}/oauth/device/token`;
+const TRAKT_REVOKE_URL = `${TRAKT_API_URL}/oauth/revoke`;
 
 // Hardcoded credentials for device flow (public Trakt client for plugins)
 const TRAKT_CLIENT_ID =

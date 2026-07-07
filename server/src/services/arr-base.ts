@@ -40,17 +40,23 @@ export abstract class ArrBaseService {
         url: string,
         apiKey: string,
         timeoutMs = config.arrConnectionTimeoutMs,
-    ): Promise<{ connected: boolean; version?: string }> {
+    ): Promise<{ connected: boolean; version?: string; error?: string }> {
         try {
             const response = await fetch(`${url}/api/v3/system/status`, {
                 headers: { 'X-Api-Key': apiKey },
                 signal: AbortSignal.timeout(timeoutMs),
             });
-            if (!response.ok) return { connected: false };
+            if (!response.ok) {
+                if (response.status === 401)
+                    return { connected: false, error: 'unauthorized' };
+                if (response.status === 403)
+                    return { connected: false, error: 'forbidden' };
+                return { connected: false, error: `status_${response.status}` };
+            }
             const data = (await response.json()) as { version?: string };
             return { connected: true, version: data.version };
         } catch {
-            return { connected: false };
+            return { connected: false, error: 'network' };
         }
     }
 }

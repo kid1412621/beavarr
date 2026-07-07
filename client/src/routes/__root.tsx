@@ -9,23 +9,21 @@ import {
 import { Home, MessageSquare, Settings, Film } from 'lucide-react';
 import { useState, useEffect, lazy, Suspense } from 'react';
 
-const TanStackRouterDevtools =
-    process.env.NODE_ENV === 'production'
-        ? () => null
-        : lazy(() =>
-              import('@tanstack/react-router-devtools').then((res) => ({
-                  default: res.TanStackRouterDevtools,
-              })),
-          );
+const TanStackRouterDevtools = import.meta.env.PROD
+    ? () => null
+    : lazy(() =>
+          import('@tanstack/react-router-devtools').then((res) => ({
+              default: res.TanStackRouterDevtools,
+          })),
+      );
 
-const ReactQueryDevtools =
-    process.env.NODE_ENV === 'production'
-        ? () => null
-        : lazy(() =>
-              import('@tanstack/react-query-devtools').then((res) => ({
-                  default: res.ReactQueryDevtools,
-              })),
-          );
+const ReactQueryDevtools = import.meta.env.PROD
+    ? () => null
+    : lazy(() =>
+          import('@tanstack/react-query-devtools').then((res) => ({
+              default: res.ReactQueryDevtools,
+          })),
+      );
 
 import { Sidebar } from '@/components/sidebar';
 import { Button } from '@/components/ui/button';

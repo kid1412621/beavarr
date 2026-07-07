@@ -57,12 +57,10 @@ export function ConnectableHeader({
                     {status === 'success' && (
                         <Badge className="gap-1 border-emerald-500/20 bg-emerald-500/10 text-emerald-700 select-none hover:bg-emerald-500/10">
                             <CheckCircle2 className="size-3.5" /> Connected
-                            {version && (
-                                <span className="ml-1 text-emerald-700/80">
-                                    v{version}
-                                </span>
-                            )}
                         </Badge>
+                    )}
+                    {status === 'success' && version && (
+                        <Badge variant="secondary">v{version}</Badge>
                     )}
                     {status === 'failed' && (
                         <Badge

@@ -27,7 +27,7 @@ export const mediaSettingsSchema = z.object({
     traktClientSecret: z.string().nullable().optional(),
     tmdbApiKey: z.string().nullable().optional(),
     tvdbApiKey: z.string().nullable().optional(),
-    imdbApiKey: z.string().nullable().optional(),
+    omdbApiKey: z.string().nullable().optional(),
     jellyfinUrl: z
         .union([z.url(), z.literal('')])
         .nullable()
@@ -52,6 +52,8 @@ export function getDefaultSettingsValues(
         traktClientId: initialValues?.traktClientId || '',
         traktClientSecret: initialValues?.traktClientSecret || '',
         tmdbApiKey: initialValues?.tmdbApiKey || '',
+        tvdbApiKey: initialValues?.tvdbApiKey || '',
+        omdbApiKey: initialValues?.omdbApiKey || '',
         jellyfinUrl: initialValues?.jellyfinUrl || '',
         jellyfinApiKey: initialValues?.jellyfinApiKey || '',
         openaiApiKey: initialValues?.openaiApiKey || '',

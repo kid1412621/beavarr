@@ -3,6 +3,8 @@ import type { MediaType } from 'shared';
 import { getSettings } from '../db/repo/settings';
 import { traktOAuthService } from './trakt_oauth';
 
+const TRAKT_API_URL = 'https://api.trakt.tv';
+
 interface TraktUser {
     id: number;
     username: string;
@@ -131,7 +133,7 @@ export class TraktService {
     async getTrendingMovies(userId: number): Promise<TraktTrendingMovie[]> {
         const accessToken = await this.getValidToken(userId);
         const response = await fetch(
-            'https://api.trakt.tv/movies/trending?extended=full,images',
+            `${TRAKT_API_URL}/movies/trending?extended=full,images`,
             {
                 headers: this.headers(accessToken),
             },
@@ -147,7 +149,7 @@ export class TraktService {
     async getTrendingShows(userId: number): Promise<TraktTrendingShow[]> {
         const accessToken = await this.getValidToken(userId);
         const response = await fetch(
-            'https://api.trakt.tv/shows/trending?extended=full,images',
+            `${TRAKT_API_URL}/shows/trending?extended=full,images`,
             {
                 headers: this.headers(accessToken),
             },
@@ -163,7 +165,7 @@ export class TraktService {
     async getUser(userId: number): Promise<TraktUser> {
         const accessToken = await this.getValidToken(userId);
         const response = await fetch(
-            'https://api.trakt.tv/users/me?extended=full',
+            `${TRAKT_API_URL}/users/me?extended=full`,
             {
                 headers: this.headers(accessToken),
             },
@@ -181,7 +183,7 @@ export class TraktService {
         type: 'movies' | 'shows' | 'all' = 'all',
     ): Promise<TraktWatchlistItem[]> {
         const accessToken = await this.getValidToken(userId);
-        const url = new URL('https://api.trakt.tv/users/me/watchlist');
+        const url = new URL(`${TRAKT_API_URL}/users/me/watchlist`);
         if (type !== 'all') {
             url.searchParams.set('type', type);
         }
@@ -204,7 +206,7 @@ export class TraktService {
         limit: number = 20,
     ): Promise<TraktHistoryItem[]> {
         const accessToken = await this.getValidToken(userId);
-        const url = new URL('https://api.trakt.tv/users/me/history');
+        const url = new URL(`${TRAKT_API_URL}/users/me/history`);
         if (type !== 'all') {
             url.pathname += `/${type}`;
         }

@@ -2,7 +2,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useConnectionTest } from '@/hooks/use-connection-test';
 import { client } from '@/lib/api';
 import { useAppFormContext } from '@/lib/form';
-import { type SettingsForm } from '@/lib/types';
+import { type SettingsForm, type ServiceStatusResponse } from '@/lib/types';
 
 import { ConnectableFields, ConnectableHeader } from './connectable-settings';
 
@@ -12,6 +12,7 @@ export function RadarrSettings() {
         status: testStatus,
         setStatus: setTestStatus,
         meta,
+        error: testError,
         testConnection,
     } = useConnectionTest({
         serviceType: 'radarr',
@@ -23,7 +24,7 @@ export function RadarrSettings() {
                 query: { service: 'radarr' },
             });
             if (!res.ok) return { connected: false };
-            return res.json();
+            return res.json() as Promise<ServiceStatusResponse>;
         },
     });
 
@@ -73,8 +74,12 @@ export function RadarrSettings() {
                     {testStatus === 'failed' && (
                         <Alert variant="destructive">
                             <AlertDescription>
-                                Could not connect to Radarr. Check the URL and
-                                API key and try again.
+                                {testError === 'network'
+                                    ? 'Could not connect to Radarr. Please check your network connection and the URL.'
+                                    : testError === 'unauthorized' ||
+                                        testError === 'forbidden'
+                                      ? 'Could not connect to Radarr. Please check if the API key is correct and has sufficient permissions.'
+                                      : 'Could not connect to Radarr. Check the URL and API key and try again.'}
                             </AlertDescription>
                         </Alert>
                     )}

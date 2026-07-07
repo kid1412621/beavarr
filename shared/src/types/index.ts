@@ -18,7 +18,7 @@ export interface MediaSettingsForm {
     traktClientSecret?: string | null;
     tmdbApiKey?: string | null;
     tvdbApiKey?: string | null;
-    imdbApiKey?: string | null;
+    omdbApiKey?: string | null;
     jellyfinUrl?: string | null;
     jellyfinApiKey?: string | null;
     posterSource?: 'history' | 'trending' | 'library' | '' | null;
@@ -114,7 +114,14 @@ export interface ServiceStatusResponse {
     version?: string;
 }
 
-export const CONNECTABLE_SERVICES = ['sonarr', 'radarr', 'jellyfin'] as const;
+export const CONNECTABLE_SERVICES = [
+    'sonarr',
+    'radarr',
+    'jellyfin',
+    'tmdb',
+    'tvdb',
+    'omdb',
+] as const;
 export type ConnectableService = (typeof CONNECTABLE_SERVICES)[number];
 
 // Franchise & Timeline Types

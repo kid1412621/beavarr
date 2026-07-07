@@ -1,5 +1,7 @@
 import { getSettings } from '../db/repo/settings';
 
+const TMDB_API_URL = 'https://api.themoviedb.org/3';
+
 export interface TMDBResult {
     id: number;
     media_type: 'movie' | 'tv' | 'person';
@@ -26,6 +28,37 @@ export interface TMDBSearchResponse {
 }
 
 export class TMDBService {
+    async testConnection(
+        apiKey: string,
+    ): Promise<{ connected: boolean; error?: string }> {
+        const isV4 = apiKey.startsWith('eyJ');
+        const url = new URL(`${TMDB_API_URL}/configuration`);
+        const headers: Record<string, string> = {
+            accept: 'application/json',
+        };
+        if (isV4) {
+            headers['Authorization'] = `Bearer ${apiKey}`;
+        } else {
+            url.searchParams.set('api_key', apiKey);
+        }
+        try {
+            const res = await fetch(url.toString(), {
+                headers,
+                signal: AbortSignal.timeout(5000),
+            });
+            if (!res.ok) {
+                if (res.status === 401)
+                    return { connected: false, error: 'unauthorized' };
+                if (res.status === 403)
+                    return { connected: false, error: 'forbidden' };
+                return { connected: false, error: `status_${res.status}` };
+            }
+            return { connected: true };
+        } catch {
+            return { connected: false, error: 'network' };
+        }
+    }
+
     private async getApiKey(userId: number) {
         const settings = await getSettings(userId);
         if (!settings?.tmdbApiKey) {
@@ -45,7 +78,7 @@ export class TMDBService {
         const apiKey = await this.getApiKey(userId);
         const isV4 = apiKey.startsWith('eyJ');
 
-        const url = new URL(`https://api.themoviedb.org/3${path}`);
+        const url = new URL(`${TMDB_API_URL}${path}`);
 
         for (const [key, value] of Object.entries(params)) {
             if (value !== undefined && value !== null) {

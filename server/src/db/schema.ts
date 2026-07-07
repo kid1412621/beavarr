@@ -16,7 +16,7 @@ export const settings = sqliteTable('settings', {
     }),
     tmdbApiKey: text('tmdb_api_key'),
     tvdbApiKey: text('tvdb_api_key'),
-    imdbApiKey: text('imdb_api_key'),
+    omdbApiKey: text('omdb_api_key'),
     jellyfinUrl: text('jellyfin_url'),
     jellyfinApiKey: text('jellyfin_api_key'),
     posterSource: text('poster_source'),

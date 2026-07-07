@@ -15,7 +15,7 @@ export interface ConnectionMeta {
 
 interface UseConnectionTestOptions {
     serviceType: ConnectableService;
-    urlName: keyof SettingsForm;
+    urlName?: keyof SettingsForm;
     apiKeyName: keyof SettingsForm;
     invalidateKeys?: string[][];
     statusQueryKey?: string[];
@@ -42,6 +42,7 @@ export function useConnectionTest({
     const queryClient = useQueryClient();
     const [status, setStatus] = useState<ConnectionStatus>('idle');
     const [meta, setMeta] = useState<ConnectionMeta>({});
+    const [error, setError] = useState<string | undefined>(undefined);
 
     const { data: initialStatus } = useQuery({
         queryKey: statusQueryKey ?? [],
@@ -64,21 +65,25 @@ export function useConnectionTest({
     ]);
 
     const testConnection = async () => {
-        const url = form.getFieldValue(urlName) as string | undefined;
+        const url = urlName
+            ? (form.getFieldValue(urlName) as string | undefined)
+            : undefined;
         const apiKey = form.getFieldValue(apiKeyName) as string | undefined;
-        if (!url || !apiKey) return;
+        if ((urlName && !url) || !apiKey) return;
 
         setStatus('testing');
         setMeta({});
+        setError(undefined);
 
         try {
             const res = await client.api.settings['test-connection'].$post({
-                json: { type: serviceType, url, apiKey },
+                json: { type: serviceType, url: url || undefined, apiKey },
             });
             const data = (await res.json()) as {
                 success: boolean;
                 serverName?: string;
                 version?: string;
+                error?: string;
             };
 
             if (data.success) {
@@ -91,8 +96,12 @@ export function useConnectionTest({
                 onSuccess?.(newMeta);
 
                 try {
+                    const savePayload: any = { [apiKeyName]: apiKey };
+                    if (urlName && url) {
+                        savePayload[urlName] = url;
+                    }
                     await client.api.settings.$post({
-                        json: { [urlName]: url, [apiKeyName]: apiKey } as any,
+                        json: savePayload,
                     });
                     for (const key of invalidateKeys) {
                         queryClient.invalidateQueries({ queryKey: key });
@@ -107,14 +116,16 @@ export function useConnectionTest({
                 }
             } else {
                 setStatus('failed');
+                setError(data.error || 'unknown');
                 onFailure?.();
             }
         } catch (err) {
             console.error('Failed to test connection:', err);
             setStatus('failed');
+            setError('network');
             onFailure?.();
         }
     };
 
-    return { status, setStatus, meta, testConnection };
+    return { status, setStatus, meta, error, testConnection };
 }

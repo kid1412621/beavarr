@@ -29,6 +29,13 @@
       "when": 1782900257313,
       "tag": "0003_add_tvdb_imdb_keys",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1783394668922,
+      "tag": "0004_bouncy_blacklash",
+      "breakpoints": true
     }
   ]
 }

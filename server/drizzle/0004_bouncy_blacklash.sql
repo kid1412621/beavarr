@@ -1,0 +1,1 @@
+ALTER TABLE `settings` RENAME COLUMN "imdb_api_key" TO "omdb_api_key";

@@ -12,6 +12,7 @@ export function JellyfinSettings() {
         status: testStatus,
         setStatus: setTestStatus,
         meta,
+        error: testError,
         testConnection,
     } = useConnectionTest({
         serviceType: 'jellyfin',
@@ -76,8 +77,12 @@ export function JellyfinSettings() {
                     {testStatus === 'failed' && (
                         <Alert variant="destructive">
                             <AlertDescription>
-                                Could not connect to Jellyfin. Check the URL and
-                                API key and try again.
+                                {testError === 'network'
+                                    ? 'Could not connect to Jellyfin. Please check your network connection and the URL.'
+                                    : testError === 'unauthorized' ||
+                                        testError === 'forbidden'
+                                      ? 'Could not connect to Jellyfin. Please check if the API key is correct and has sufficient permissions.'
+                                      : 'Could not connect to Jellyfin. Check the URL and API key and try again.'}
                             </AlertDescription>
                         </Alert>
                     )}
