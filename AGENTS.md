@@ -20,3 +20,4 @@ The detailed rules and guidelines have been split into the following domain-spec
 - [Frontend Guidelines](./.agents/rules/frontend-guidelines.md): Client Development (React + Vite), Mobile-First principles, and Adding a New UI Component.
 - [Backend Guidelines](./.agents/rules/backend-guidelines.md): Server Development (Hono) and Adding a New API Endpoint.
 - [Workflows and Operations](./.agents/rules/workflows-and-ops.md): Adding New Packages, Testing Strategy, Build Process, and Updating Shared Types.
+- [Integration Services](./.agents/rules/integration-services.md): API documentation links for external services (Jellyfin, Radarr, Sonarr, Trakt, TMDB, TVDB, OMDB).

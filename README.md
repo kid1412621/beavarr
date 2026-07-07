@@ -16,15 +16,15 @@ While built on the solid foundation of the BHVR stack, beavarr extends it to cre
     - OpenAI API compatible
 - **Media Stack Integration**: Seamlessly works with Trakt, Sonarr, Radarr, and Jellyfin.
 
-    | service      | Watch history | Library | Metadata |
-    | ------------ | :-----------: | :-----: | :------: |
-    | Sonarr       |               |   ✅    |    ✅    |
-    | Radarr       |               |   ✅    |    ✅    |
-    | Jellyfin     |      ✅       |   ✅    |    ✅    |
-    | Trakt        |      ✅       |         |          |
-    | TMDB         |               |         |    ✅    |
-    | TVDB         |               |         |    ✅    |
-    | IMDB(Planed) |               |         |    ✅    |
+    | Service  | Watch history | Library | Metadata |
+    | -------- | :-----------: | :-----: | :------: |
+    | Sonarr   |               |   ✅    |    ✅    |
+    | Radarr   |               |   ✅    |    ✅    |
+    | Jellyfin |      ✅       |   ✅    |    ✅    |
+    | Trakt    |      ✅       |         |          |
+    | TMDB     |               |         |    ✅    |
+    | TVDB     |               |         |    ✅    |
+    | OMDB     |               |         |    ✅    |
 
 - **Franchise & Timeline Explorer**: Chronologically explore storylines of movie franchises (e.g. Alien, Indiana Jones) or custom LLM-generated mixed movie/TV universes (e.g. Marvel Cinematic Universe, Star Wars).
     - Cross-references titles with Radarr, Sonarr, and Jellyfin to show what you own, what's available to watch, and what's missing.
@@ -293,5 +293,4 @@ bun run test
 
 - [BHVR](https://github.com/stevedylandev/bhvr)
 - [Langchain](https://langchain.com)
-- [Recommendarr](https://github.com/TannerMidd/recommendarr)
 - [Reiverr](https://github.com/aleksilassila/reiverr)
