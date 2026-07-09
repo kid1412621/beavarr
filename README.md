@@ -38,7 +38,7 @@ While built on the solid foundation of the BHVR stack, beavarr extends it to cre
 
 ## Tech statck
 
-- [TypeScript](https://www.typescriptlang.org/docs/) full-stack
+- [TypeScript 7](https://www.typescriptlang.org/docs/) full-stack
 - [Bun](https://bun.sh) as the JavaScript runtime and package manager
 - [Hono](https://hono.dev) as the backend framework
 - [Vite](https://vitejs.dev) for frontend bundling
