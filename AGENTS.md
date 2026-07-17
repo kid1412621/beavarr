@@ -9,7 +9,7 @@ Beavarr is a full-stack TypeScript monorepo project using Bun, Hono, Vite, and R
 - Frontend: [Vite](https://vitejs.dev/llms.txt) + [React](https://react.dev/llms.txt) + [Tanstack](https://tanstack.com/llms.txt) + [Shadcn UI](https://ui.shadcn.com/llms.txt) + [Base UI](https://base-ui.com/llms.txt)
 - Build orchestration: [Turbo](https://turbo.build/llms.txt)
 - Linting/Formatting: [Oxc](https://oxc.rs/llms.txt) (Oxlint & Oxfmt)
-- Language: TypeScript
+- Language: TypeScript 7
 
 ## Index of Rules
 
