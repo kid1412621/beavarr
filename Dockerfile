@@ -1,4 +1,4 @@
-FROM oven/bun:alpine AS base
+FROM oven/bun:1.4.0-alpine AS base
 WORKDIR /app
 
 # --- Step 1: Install All Dependencies ---
@@ -24,7 +24,7 @@ RUN bun run build
 
 
 # --- Step 3: Final Runtime Image ---
-FROM oven/bun:alpine AS runtime
+FROM oven/bun:1.4.0-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=4242
